@@ -7,14 +7,39 @@
 # scripts/printing-press-version.txt pins the commit this artifact was built from;
 # the script warns if the local generator is at a different commit.
 #
-# Hand-authored files under internal/cli/*.go are preserved by the generator's
-# --force flag.
+# IMPORTANT: the printing-press --force flag is destructive. It will reset the
+# output directory, including .git/, hand-authored helpers, and any directories
+# the generator does not own (composites/, docs/, scripts/, specs/, HANDOFF.md).
+# This script guards against that by refusing to run on a dirty working tree
+# unless REGENERATE_ALLOW_DIRTY=1 is set explicitly. Even with that escape
+# hatch, prefer to commit work first; recovery from a wipe requires re-cloning
+# from origin and selectively replaying spec patches and doc edits.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PP_REPO="${PP_REPO:-$HOME/Projects/cli-printing-press}"
 PINNED_VERSION="$(cat "$REPO_ROOT/scripts/printing-press-version.txt")"
+
+# Safety guard: refuse to run on a dirty working tree.
+# The generator's --force flag wiped .git and uncommitted spec patches once
+# already (10-05-2026 incident; see HANDOFF.md "Phase 1 incident").
+if [[ -d "$REPO_ROOT/.git" ]]; then
+  cd "$REPO_ROOT"
+  if ! git diff --quiet || ! git diff --cached --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
+    echo "error: working tree is dirty. printing-press --force is destructive and" >&2
+    echo "       will reset the output directory, wiping any uncommitted changes" >&2
+    echo "       (including spec patches, hand-authored helpers, and untracked dirs)." >&2
+    echo "" >&2
+    echo "       Commit or stash your work before regenerating, or pass" >&2
+    echo "       REGENERATE_ALLOW_DIRTY=1 to bypass this check." >&2
+    if [[ "${REGENERATE_ALLOW_DIRTY:-0}" != "1" ]]; then
+      exit 1
+    fi
+    echo "" >&2
+    echo "warning: REGENERATE_ALLOW_DIRTY=1 set, proceeding anyway." >&2
+  fi
+fi
 
 if [[ ! -d "$PP_REPO" ]]; then
   echo "error: printing-press generator not found at $PP_REPO" >&2
