@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+*.mcpb
+
+# Generator runtime state
+.runstate/
+
+# Go binaries (root-level standalones from `go build`)
+/printing-press
+/miro-developer-platform-pp-cli
+/miro-developer-platform-pp-mcp
+
+# OS / editor noise
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Local env / secrets
+.env
+.env.local
+*.token
