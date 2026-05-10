@@ -13,7 +13,7 @@ Remaining for Phase 1:
 | Item | Status | Notes |
 |---|---|---|
 | `GET /v2/boards/{board_id}/groups/items` (get-items-by-id) | not patched | Inline shape with double-`data` envelope is suspicious but uses the right item schema (`ItemPagedResponse`). Path is also unusual. Verify with a live call before patching. See `docs/SPEC-PATCHES.md`. |
-| Live-call verification of the four patched endpoints | pending | The patches are mechanical, JSON-valid, and the regen output reflects them. Run `--json` calls against AnalyticsDev Demo board (`uXjVG34x8Cg=`) for: `boards groups get-all`, `boards groups get-by-id`, `boards groups update`, `boards groups un --delete-items`. |
+| Live-call verification of the four patched endpoints | done (10-05-2026) | All four return shapes that match `BoardItemGroupResponse`. PUT update returns a new `id` per spec. The `delete` alias on the merged `un` command routes through to `DELETE /v2/boards/{board_id}/groups/{group_id}`. Test board (`uXjVG34x8Cg=`) returned to its pre-test 1-group state. See `docs/SPEC-PATCHES.md` for invocation examples. |
 
 ## Phase 1 incident (10-05-2026): regenerate.sh `--force` is destructive
 

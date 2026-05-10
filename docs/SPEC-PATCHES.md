@@ -37,6 +37,35 @@ Note: this endpoint is `PUT`, not `PATCH` as HANDOFF originally listed. Two refs
 
 After these patches, `GroupResponseShort` has zero references in the spec. The schema definition still exists under `components.schemas` and can stay; leaving it keeps the SCIM-shape available if a real consumer surfaces. Safe to delete on a future cleanup pass.
 
+**Verified live (10-05-2026)** against AnalyticsDev Demo board `uXjVG34x8Cg=`:
+
+```bash
+# get-all (returns BoardItemGroupResponse[])
+miro-developer-platform-pp-cli boards groups get-all uXjVG34x8Cg= --json
+
+# get-by-id (returns BoardItemGroupResponse)
+miro-developer-platform-pp-cli boards groups get-by-id uXjVG34x8Cg= <group_id> --json
+
+# create (CLI auto-wraps body in {"data": ...}, so pass the inner shape)
+miro-developer-platform-pp-cli boards groups create uXjVG34x8Cg= \
+  --data '{"items":["<item_id_1>","<item_id_2>"]}' --json
+
+# update (PUT replaces the group entirely; response includes a NEW id)
+miro-developer-platform-pp-cli boards groups update uXjVG34x8Cg= <group_id> \
+  --data '{"items":["<item_id_3>","<item_id_4>"]}' --json
+
+# un (HTTP 204; default keeps items on the board)
+miro-developer-platform-pp-cli boards groups un uXjVG34x8Cg= <group_id>
+
+# 'delete' alias on the merged un command — routes to the same HTTP DELETE
+miro-developer-platform-pp-cli boards groups delete uXjVG34x8Cg= <group_id>
+```
+
+Two gotchas surfaced during verification, neither blocking:
+
+- `--quiet` plus `--json` on a successful create silently suppresses the response body (and the new group's `id`). This is a CLI UX issue, not a spec issue. Use `--json` alone if you need to capture the new `id`.
+- The board's `get-all` listing showed only 1 group initially despite 2 existing — the second wasn't visible on the first page. Likely a Miro indexing latency, not a spec issue. The `links.self` cursor in the response is the canonical way to paginate; CLI should consume it transparently.
+
 ## Applied — trailing `?` typo on `/v2/boards/{board_id}/groups/{group_id}?`
 
 The Miro spec used a trailing `?` on the path key as a workaround for OpenAPI's "one operation per verb per path" rule. Two HTTP-level identical operations were split across two path entries:
