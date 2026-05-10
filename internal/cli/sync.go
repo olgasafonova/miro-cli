@@ -6,6 +6,8 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/cobra"
+	"miro-developer-platform-pp-cli/internal/store"
 	"net/url"
 	"os"
 	"regexp"
@@ -14,8 +16,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"miro-developer-platform-pp-cli/internal/store"
-	"github.com/spf13/cobra"
 )
 
 // syncResult holds the outcome of syncing a single resource.
@@ -713,8 +713,7 @@ type discriminatorDispatch struct {
 	Values map[string]string
 }
 
-var discriminatorDispatchers = map[string]discriminatorDispatch{
-}
+var discriminatorDispatchers = map[string]discriminatorDispatch{}
 
 func upsertResourceBatch(db *store.Store, resource string, items []json.RawMessage) (int, int, error) {
 	if _, ok := discriminatorDispatchers[resource]; !ok {
@@ -898,12 +897,12 @@ func defaultSyncResources() []string {
 // this preserves the actual endpoint path like "/ISteamApps/GetAppList/v2".
 func syncResourcePath(resource string) (string, error) {
 	paths := map[string]string{
-		"boards": "/v2/boards",
-		"groups": "/Groups",
-		"resource-types": "/ResourceTypes",
-		"schemas": "/Schemas",
+		"boards":                  "/v2/boards",
+		"groups":                  "/Groups",
+		"resource-types":          "/ResourceTypes",
+		"schemas":                 "/Schemas",
 		"service-provider-config": "/ServiceProviderConfig",
-		"users": "/Users",
+		"users":                   "/Users",
 	}
 	if p, ok := paths[resource]; ok {
 		return p, nil
@@ -924,7 +923,7 @@ func dependentResourceDefs() []dependentResourceDef {
 		{Name: "boards_groups", ParentTable: "boards", ParentIDParam: "board_id", PathTemplate: "/v2/boards/{board_id}/groups"},
 		{Name: "boards_members", ParentTable: "boards", ParentIDParam: "board_id", PathTemplate: "/v2/boards/{board_id}/members"},
 		{Name: "connectors", ParentTable: "boards", ParentIDParam: "board_id", PathTemplate: "/v2/boards/{board_id}/connectors"},
-		{Name: "items", ParentTable: "boards", ParentIDParam: "board_id_PlatformContainers", PathTemplate: "/v2/boards/{board_id_PlatformContainers}/items"},
+		{Name: "items", ParentTable: "boards", ParentIDParam: "board_id_PlatformTags", PathTemplate: "/v2/boards/{board_id_PlatformTags}/items"},
 		{Name: "tags", ParentTable: "boards", ParentIDParam: "board_id", PathTemplate: "/v2/boards/{board_id}/tags"},
 		{Name: "v2_experimental", ParentTable: "boards", ParentIDParam: "board_id", PathTemplate: "/v2-experimental/boards/{board_id}/code_widgets"},
 	}
@@ -1140,12 +1139,12 @@ func syncDependentResource(c interface {
 // annotations on a child path-item are honored at runtime, not just on
 // flat paths.
 var resourceIDFieldOverrides = map[string]string{
-	"boards": "id",
-	"boards_groups": "id",
-	"boards_members": "id",
-	"connectors": "id",
-	"items": "id",
-	"tags": "id",
+	"boards":          "id",
+	"boards_groups":   "id",
+	"boards_members":  "id",
+	"connectors":      "id",
+	"items":           "id",
+	"tags":            "id",
 	"v2_experimental": "id",
 }
 
@@ -1162,8 +1161,7 @@ var genericIDFieldFallbacks = []string{"id", "ID", "name", "uuid", "slug", "key"
 // Includes both flat resources and dependent (parent-child) resources so a
 // failed child sync flagged x-critical: true exits non-zero just like a
 // flat-resource critical failure.
-var criticalResources = map[string]bool{
-}
+var criticalResources = map[string]bool{}
 
 // extractID resolves an item's primary-key field. It consults the
 // per-resource templated override first; on miss, it falls through to the

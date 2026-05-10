@@ -2,24 +2,35 @@
 
 Roadmap from current state (initial demo build, 10-05-2026) to "ready to reveal" (either as a public repo flip or as a merge into `miro-mcp-server`). Items are roughly ordered by dependency + value.
 
-## Phase 1 — Finish the spec patches (1-2h)
+## Phase 1 — Finish the spec patches (mostly done)
 
-Bug #2 (the SCIM-vs-board-item-group schema confusion) was patched only for `POST /v2/boards/{board_id}/groups`. Other board-group endpoints share the same wrong response schema reference. They produce broken output today.
+Bug #2 (the SCIM-vs-board-item-group schema confusion) was patched only for `POST /v2/boards/{board_id}/groups`. Three more endpoints in the same family had the same broken refs.
 
-Endpoints that still need spec patches:
+**Done (10-05-2026 follow-up):** ref repointings applied for the get-all, get-by-id, and update endpoints. Plus the trailing `?` path typo was resolved by dropping the redundant `deleteGroup` operation from the spec entirely (the merged `unGroup` covers both behaviors via `delete_items`). After regen, `boards groups delete` no longer exists; use `boards groups un --delete-items`. Details in `docs/SPEC-PATCHES.md`.
 
-| Endpoint | Current broken ref | Should ref |
+Remaining for Phase 1:
+
+| Item | Status | Notes |
 |---|---|---|
-| `GET /v2/boards/{board_id}/groups` (get-all) | response 200 → `GroupResponseShort` (SCIM) | `BoardItemGroupResponse` or paginated wrapper |
-| `GET /v2/boards/{board_id}/groups/{group_id}` (get-by-id) | response 200 → `GroupResponseShort` | `BoardItemGroupResponse` |
-| `PATCH /v2/boards/{board_id}/groups/{group_id}` (update) | request body + response | `BoardItemGroupCreateBody` + `BoardItemGroupResponse` |
-| `GET /v2/boards/{board_id}/groups/items` (get-items-by-id) | response | TBD — verify with live API |
+| `GET /v2/boards/{board_id}/groups/items` (get-items-by-id) | not patched | Inline shape with double-`data` envelope is suspicious but uses the right item schema (`ItemPagedResponse`). Path is also unusual. Verify with a live call before patching. See `docs/SPEC-PATCHES.md`. |
+| Live-call verification of the four patched endpoints | pending | The patches are mechanical, JSON-valid, and the regen output reflects them. Run `--json` calls against AnalyticsDev Demo board (`uXjVG34x8Cg=`) for: `boards groups get-all`, `boards groups get-by-id`, `boards groups update`, `boards groups un --delete-items`. |
 
-Same pattern as bug #2: edit `specs/miro-spec-curated.json`, re-point `$ref`s, regenerate, verify with live calls.
+## Phase 1 incident (10-05-2026): regenerate.sh `--force` is destructive
 
-The trailing `?` typo in path `/v2/boards/{board_id}/groups/{group_id}?` (line 12232 in the spec) should also be fixed in this pass.
+`./scripts/regenerate.sh` ran with `--force` and wiped:
+- `.git/`
+- `composites/`, `docs/`, `scripts/`, `specs/` (the curated spec with my unpushed patches!)
+- `HANDOFF.md`
+- The 4 hand-authored cohesion-split helpers (`filter_fields.go`, `pagination.go`, `render_csv.go`, `render_table.go`) and the split `helpers.go`
 
-**Test plan:** for each fixed endpoint, run a real call with `--json` and confirm shape matches Miro's actual API. Use the AnalyticsDev Demo board (`uXjVG34x8Cg=`).
+The HANDOFF previously claimed `--force` preserves hand-authored files. That is wrong; the printing-press generator's `--force` resets the output directory before writing. Recovery required re-cloning from `origin/main`, copying back regen output, and re-applying spec patches.
+
+**Mitigations to add before next regen:**
+
+- The script should `git stash --include-untracked` the entire repo before running, so `git stash pop` recovers everything if something goes wrong.
+- Or: refuse to run if the working tree contains uncommitted changes.
+- Or: refuse to run if `.git/` is inside the output directory and the generator's behavior may include `rm -rf $output`.
+- File an upstream issue against `cli-printing-press` for the destructive `--force` semantics; it should at minimum honor `.git/` as never-clobbered.
 
 ## Phase 2 — Absorb the 8 composites (1-2 days)
 

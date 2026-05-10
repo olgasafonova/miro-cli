@@ -14,7 +14,6 @@ func newBoardsGroupsCmd(flags *rootFlags) *cobra.Command {
 	}
 
 	cmd.AddCommand(newBoardsGroupsCreateCmd(flags))
-	cmd.AddCommand(newBoardsGroupsDeleteCmd(flags))
 	cmd.AddCommand(newBoardsGroupsGetAllCmd(flags))
 	cmd.AddCommand(newBoardsGroupsGetByIdCmd(flags))
 	cmd.AddCommand(newBoardsGroupsGetItemsByIdCmd(flags))

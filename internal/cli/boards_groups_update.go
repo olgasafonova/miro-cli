@@ -13,27 +13,21 @@ import (
 )
 
 func newBoardsGroupsUpdateCmd(flags *rootFlags) *cobra.Command {
-	var bodyDescription string
-	var bodyId string
-	var bodyName string
-	var bodyType string
+	var bodyData string
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "update <board_id> <group_id>",
-		Short: "This endpoint updates an existing group by replacing it entirely with a new group. When the update is made, the...",
-		Example: "  miro-developer-platform-pp-cli boards groups update 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --id 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "update <board_id> <group_id>",
+		Short:       "This endpoint updates an existing group by replacing it entirely with a new group. When the update is made, the...",
+		Example:     "  miro-developer-platform-pp-cli boards groups update 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.update", "pp:method": "PUT", "pp:path": "/v2/boards/{board_id}/groups/{group_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
 			if !stdinBody {
-				if !cmd.Flags().Changed("id") && !flags.dryRun {
-					return fmt.Errorf("required flag \"%s\" not set", "id")
-				}
-				if !cmd.Flags().Changed("name") && !flags.dryRun {
-					return fmt.Errorf("required flag \"%s\" not set", "name")
+				if !cmd.Flags().Changed("data") && !flags.dryRun {
+					return fmt.Errorf("required flag \"%s\" not set", "data")
 				}
 			}
 			c, err := flags.newClient()
@@ -58,17 +52,12 @@ func newBoardsGroupsUpdateCmd(flags *rootFlags) *cobra.Command {
 				}
 			} else {
 				bodyFields := map[string]any{}
-				if bodyDescription != "" {
-					bodyFields["description"] = bodyDescription
-				}
-				if bodyId != "" {
-					bodyFields["id"] = bodyId
-				}
-				if bodyName != "" {
-					bodyFields["name"] = bodyName
-				}
-				if bodyType != "" {
-					bodyFields["type"] = bodyType
+				if bodyData != "" {
+					var parsedData any
+					if err := json.Unmarshal([]byte(bodyData), &parsedData); err != nil {
+						return fmt.Errorf("parsing --data JSON: %w", err)
+					}
+					bodyFields["data"] = parsedData
 				}
 				body = bodyFields
 			}
@@ -86,7 +75,9 @@ func newBoardsGroupsUpdateCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)
@@ -137,10 +128,7 @@ func newBoardsGroupsUpdateCmd(flags *rootFlags) *cobra.Command {
 			return printOutputWithFlags(cmd.OutOrStdout(), data, flags)
 		},
 	}
-	cmd.Flags().StringVar(&bodyDescription, "description", "", "User group description")
-	cmd.Flags().StringVar(&bodyId, "id", "", "User group ID")
-	cmd.Flags().StringVar(&bodyName, "name", "", "User group name")
-	cmd.Flags().StringVar(&bodyType, "type", "user-group", "Object type")
+	cmd.Flags().StringVar(&bodyData, "data", "", "Data")
 	cmd.Flags().BoolVar(&stdinBody, "stdin", false, "Read request body as JSON from stdin")
 
 	return cmd

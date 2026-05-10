@@ -11472,7 +11472,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/GroupResponseShort"
+                        "$ref": "#/components/schemas/BoardItemGroupResponse"
                       }
                     }
                   }
@@ -11818,7 +11818,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GroupResponseShort"
+                  "$ref": "#/components/schemas/BoardItemGroupResponse"
                 }
               }
             },
@@ -12107,7 +12107,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Group"
+                "$ref": "#/components/schemas/BoardItemGroupCreateBody"
               }
             }
           },
@@ -12118,7 +12118,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GroupResponseShort"
+                  "$ref": "#/components/schemas/BoardItemGroupResponse"
                 }
               }
             },
@@ -12195,159 +12195,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Code of the error.",
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Description of the error.",
-                      "example": "Error message"
-                    },
-                    "status": {
-                      "type": "integer",
-                      "format": "int32",
-                      "description": "Status Code of the error.",
-                      "example": 429
-                    },
-                    "type": {
-                      "type": "string",
-                      "description": "Type of the error.",
-                      "example": "error"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Too many requests"
-          }
-        },
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v2/boards/{board_id}/groups/{group_id}?": {
-      "delete": {
-        "description": "Deletes a group from a board. All the items in the group are deleted along with the group.  <b>Note - this endpoint will delete items which are locked as well. </b> <br/><h3>Required scope</h3> <a target=_blank href=https://developers.miro.com/reference/scopes>boards:write</a> <br/><h3>Rate limiting</h3> <a target=_blank href=\"/reference/rate-limiting#rate-limit-tiers\">Level 3</a><br/>",
-        "operationId": "deleteGroup",
-        "summary": "Deletes the group",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "board_id",
-            "description": "Unique identifier (ID) of the board.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/BoardId"
-            }
-          },
-          {
-            "in": "path",
-            "name": "group_id",
-            "description": "Unique identifier (ID) of the group.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/GroupId"
-            }
-          },
-          {
-            "in": "query",
-            "name": "delete_items",
-            "required": true,
-            "description": "Indicates whether the items should be removed. Set to `true` to delete items in the group.",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Group deleted"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Test error object.",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Code of the error.",
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Description of the error.",
-                      "example": "Error message"
-                    },
-                    "status": {
-                      "type": "integer",
-                      "format": "int32",
-                      "description": "Status Code of the error.",
-                      "example": 400
-                    },
-                    "type": {
-                      "type": "string",
-                      "description": "Type of the error.",
-                      "example": "error"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Malformed request"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Test error object.",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Code of the error.",
-                      "example": "error"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Description of the error.",
-                      "example": "Error message"
-                    },
-                    "status": {
-                      "type": "integer",
-                      "format": "int32",
-                      "description": "Status Code of the error.",
-                      "example": 404
-                    },
-                    "type": {
-                      "type": "string",
-                      "description": "Type of the error.",
-                      "example": "error"
-                    }
-                  }
-                }
-              }
-            },
-            "description": "Not found"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "description": "Test error object.",
                   "properties": {
                     "code": {
                       "type": "string",

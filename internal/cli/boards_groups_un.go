@@ -15,9 +15,10 @@ func newBoardsGroupsUnCmd(flags *rootFlags) *cobra.Command {
 	var flagDeleteItems bool
 
 	cmd := &cobra.Command{
-		Use:   "un <board_id> <group_id>",
-		Short: "Ungroups items from a group.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards groups un 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "un <board_id> <group_id>",
+		Aliases:     []string{"delete"},
+		Short:       "Ungroups items from a group.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards groups un 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.un", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id}/groups/{group_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -48,7 +49,9 @@ func newBoardsGroupsUnCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

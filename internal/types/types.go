@@ -5,16 +5,15 @@ package types
 
 import "encoding/json"
 
-
 type Actor struct {
 	Email string `json:"email"`
-	Id string `json:"id"`
-	Name string `json:"name"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
 }
 
 type AddProjectMemberRequest struct {
 	Email string `json:"email"`
-	Role string `json:"role"`
+	Role  string `json:"role"`
 }
 
 type AdminRole struct {
@@ -23,73 +22,73 @@ type AdminRole struct {
 }
 
 type AiInteractionLog struct {
-	Actor json.RawMessage `json:"actor"`
-	AiFeatureName string `json:"aiFeatureName"`
-	CreatedAt string `json:"createdAt"`
-	Details json.RawMessage `json:"details"`
-	Id string `json:"id"`
-	LogType string `json:"logType"`
-	MessageId string `json:"messageId"`
-	Object json.RawMessage `json:"object"`
-	SessionId string `json:"sessionId"`
-	StoredAt string `json:"storedAt"`
+	Actor         json.RawMessage `json:"actor"`
+	AiFeatureName string          `json:"aiFeatureName"`
+	CreatedAt     string          `json:"createdAt"`
+	Details       json.RawMessage `json:"details"`
+	Id            string          `json:"id"`
+	LogType       string          `json:"logType"`
+	MessageId     string          `json:"messageId"`
+	Object        json.RawMessage `json:"object"`
+	SessionId     string          `json:"sessionId"`
+	StoredAt      string          `json:"storedAt"`
 }
 
 type AiInteractionLogActor struct {
 	Email string `json:"email"`
-	Id string `json:"id"`
-	Name string `json:"name"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
 }
 
 type AiInteractionLogObject struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type AppCardCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type AppCardData struct {
-	Description string `json:"description"`
-	Fields json.RawMessage `json:"fields"`
-	Owned bool `json:"owned"`
-	Status string `json:"status"`
-	Title string `json:"title"`
+	Description string          `json:"description"`
+	Fields      json.RawMessage `json:"fields"`
+	Owned       bool            `json:"owned"`
+	Status      string          `json:"status"`
+	Title       string          `json:"title"`
 }
 
 type AppCardDataChanges struct {
-	Description string `json:"description"`
-	Fields json.RawMessage `json:"fields"`
-	Status string `json:"status"`
-	Title string `json:"title"`
+	Description string          `json:"description"`
+	Fields      json.RawMessage `json:"fields"`
+	Status      string          `json:"status"`
+	Title       string          `json:"title"`
 }
 
 type AppCardDataResponse struct {
-	Description string `json:"description"`
-	Fields json.RawMessage `json:"fields"`
-	Owned bool `json:"owned"`
-	Status string `json:"status"`
-	Title string `json:"title"`
+	Description string          `json:"description"`
+	Fields      json.RawMessage `json:"fields"`
+	Owned       bool            `json:"owned"`
+	Status      string          `json:"status"`
+	Title       string          `json:"title"`
 }
 
 type AppCardItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type AppCardStyle struct {
@@ -101,136 +100,136 @@ type AppCardStylePlatformbulkcreateoperation struct {
 }
 
 type AppCardUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type AppCardsDeleteItemResponse struct {
 }
 
 type AuditContext struct {
-	Ip string `json:"ip"`
+	Ip           string          `json:"ip"`
 	Organization json.RawMessage `json:"organization"`
-	Team json.RawMessage `json:"team"`
+	Team         json.RawMessage `json:"team"`
 }
 
 type AuditCreatedBy struct {
 	Email string `json:"email"`
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
 }
 
 type AuditEvent struct {
-	Category string `json:"category"`
-	Context json.RawMessage `json:"context"`
-	CreatedAt string `json:"createdAt"`
+	Category  string          `json:"category"`
+	Context   json.RawMessage `json:"context"`
+	CreatedAt string          `json:"createdAt"`
 	CreatedBy json.RawMessage `json:"createdBy"`
-	Details json.RawMessage `json:"details"`
-	Event string `json:"event"`
-	Id string `json:"id"`
-	Object json.RawMessage `json:"object"`
+	Details   json.RawMessage `json:"details"`
+	Event     string          `json:"event"`
+	Id        string          `json:"id"`
+	Object    json.RawMessage `json:"object"`
 }
 
 type AuditObject struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type AuditOrganization struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type AuditPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type AuditTeam struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type BasicEntityInfo struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type BasicError struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type BasicErrorEnterpriseUserSessionResetEnterprisePlan struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type BasicErrorOrganizationsEnterprisePlan struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Board struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
+	CreatedAt             string          `json:"createdAt"`
+	CreatedBy             json.RawMessage `json:"createdBy"`
 	CurrentUserMembership json.RawMessage `json:"currentUserMembership"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	LastOpenedAt string `json:"lastOpenedAt"`
-	LastOpenedBy json.RawMessage `json:"lastOpenedBy"`
-	ModifiedAt string `json:"modifiedAt"`
-	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Name string `json:"name"`
-	Owner json.RawMessage `json:"owner"`
-	Picture json.RawMessage `json:"picture"`
-	Policy json.RawMessage `json:"policy"`
-	Project json.RawMessage `json:"project"`
-	Team json.RawMessage `json:"team"`
-	Type string `json:"type"`
-	ViewLink string `json:"viewLink"`
+	Description           string          `json:"description"`
+	Id                    string          `json:"id"`
+	LastOpenedAt          string          `json:"lastOpenedAt"`
+	LastOpenedBy          json.RawMessage `json:"lastOpenedBy"`
+	ModifiedAt            string          `json:"modifiedAt"`
+	ModifiedBy            json.RawMessage `json:"modifiedBy"`
+	Name                  string          `json:"name"`
+	Owner                 json.RawMessage `json:"owner"`
+	Picture               json.RawMessage `json:"picture"`
+	Policy                json.RawMessage `json:"policy"`
+	Project               json.RawMessage `json:"project"`
+	Team                  json.RawMessage `json:"team"`
+	Type                  string          `json:"type"`
+	ViewLink              string          `json:"viewLink"`
 }
 
 type BoardChanges struct {
-	Description string `json:"description"`
-	Name string `json:"name"`
-	Policy json.RawMessage `json:"policy"`
-	ProjectId string `json:"projectId"`
-	TeamId string `json:"teamId"`
+	Description string          `json:"description"`
+	Name        string          `json:"name"`
+	Policy      json.RawMessage `json:"policy"`
+	ProjectId   string          `json:"projectId"`
+	TeamId      string          `json:"teamId"`
 }
 
 type BoardDataClassificationLabel struct {
-	Color string `json:"color"`
-	Description string `json:"description"`
-	GuidelineUrl string `json:"guidelineUrl"`
-	Id string `json:"id"`
-	Name string `json:"name"`
+	Color                 string `json:"color"`
+	Description           string `json:"description"`
+	GuidelineUrl          string `json:"guidelineUrl"`
+	Id                    string `json:"id"`
+	Name                  string `json:"name"`
 	SharingRecommendation string `json:"sharingRecommendation"`
-	Type string `json:"type"`
+	Type                  string `json:"type"`
 }
 
 type BoardExportJob struct {
-	BoardFormat string `json:"boardFormat"`
-	CreatedAt string `json:"createdAt"`
-	Creator json.RawMessage `json:"creator"`
-	Id string `json:"id"`
-	ModifiedAt string `json:"modifiedAt"`
-	Name string `json:"name"`
-	Status string `json:"status"`
-	TasksCount json.RawMessage `json:"tasksCount"`
+	BoardFormat string          `json:"boardFormat"`
+	CreatedAt   string          `json:"createdAt"`
+	Creator     json.RawMessage `json:"creator"`
+	Id          string          `json:"id"`
+	ModifiedAt  string          `json:"modifiedAt"`
+	Name        string          `json:"name"`
+	Status      string          `json:"status"`
+	TasksCount  json.RawMessage `json:"tasksCount"`
 }
 
 type BoardExportJobId struct {
@@ -242,59 +241,59 @@ type BoardExportJobStatus struct {
 }
 
 type BoardExportJobTasksList struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Total  int             `json:"total"`
 }
 
 type BoardExportJobsList struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Total  int             `json:"total"`
 }
 
 type BoardExportResult struct {
-	JobId string `json:"jobId"`
+	JobId   string          `json:"jobId"`
 	Results json.RawMessage `json:"results"`
 }
 
 type BoardExportTask struct {
-	ArtifactExpiredAt string `json:"artifactExpiredAt"`
-	Board json.RawMessage `json:"board"`
-	ErrorMessage string `json:"errorMessage"`
-	ErrorType string `json:"errorType"`
-	Id string `json:"id"`
-	SizeInBytes int `json:"sizeInBytes"`
-	Status string `json:"status"`
+	ArtifactExpiredAt string          `json:"artifactExpiredAt"`
+	Board             json.RawMessage `json:"board"`
+	ErrorMessage      string          `json:"errorMessage"`
+	ErrorType         string          `json:"errorType"`
+	Id                string          `json:"id"`
+	SizeInBytes       int             `json:"sizeInBytes"`
+	Status            string          `json:"status"`
 }
 
 type BoardExportTaskExportLink struct {
 	ArtifactExpiredAt string `json:"artifactExpiredAt"`
-	ErrorMessage string `json:"errorMessage"`
-	ErrorType string `json:"errorType"`
-	ExportLink string `json:"exportLink"`
-	LinkExpiredAt string `json:"linkExpiredAt"`
-	Status string `json:"status"`
+	ErrorMessage      string `json:"errorMessage"`
+	ErrorType         string `json:"errorType"`
+	ExportLink        string `json:"exportLink"`
+	LinkExpiredAt     string `json:"linkExpiredAt"`
+	Status            string `json:"status"`
 }
 
 type BoardExportTaskResult struct {
-	BoardId string `json:"boardId"`
+	BoardId      string `json:"boardId"`
 	ErrorMessage string `json:"errorMessage"`
-	ErrorType string `json:"errorType"`
-	ExportLink string `json:"exportLink"`
-	Status string `json:"status"`
+	ErrorType    string `json:"errorType"`
+	ExportLink   string `json:"exportLink"`
+	Status       string `json:"status"`
 }
 
 type BoardItemContentLog struct {
-	ActionTime string `json:"actionTime"`
-	ActionType string `json:"actionType"`
-	Actor json.RawMessage `json:"actor"`
-	ContentId string `json:"contentId"`
-	Id string `json:"id"`
-	ItemId string `json:"itemId"`
-	ItemType string `json:"itemType"`
+	ActionTime    string          `json:"actionTime"`
+	ActionType    string          `json:"actionType"`
+	Actor         json.RawMessage `json:"actor"`
+	ContentId     string          `json:"contentId"`
+	Id            string          `json:"id"`
+	ItemId        string          `json:"itemId"`
+	ItemType      string          `json:"itemType"`
 	Relationships json.RawMessage `json:"relationships"`
-	State json.RawMessage `json:"state"`
+	State         json.RawMessage `json:"state"`
 }
 
 type BoardItemGroupCreateBody struct {
@@ -302,19 +301,19 @@ type BoardItemGroupCreateBody struct {
 }
 
 type BoardItemGroupResponse struct {
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
+	Data  json.RawMessage `json:"data"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
-	Type string `json:"type"`
+	Type  string          `json:"type"`
 }
 
 type BoardLinks struct {
 	Related string `json:"related"`
-	Self string `json:"self"`
+	Self    string `json:"self"`
 }
 
 type BoardMember struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Role string `json:"role"`
 	Type string `json:"type"`
@@ -325,43 +324,43 @@ type BoardMemberChanges struct {
 }
 
 type BoardMemberWithLinks struct {
-	Id string `json:"id"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
-	Name string `json:"name"`
-	Role string `json:"role"`
-	Type string `json:"type"`
+	Name  string          `json:"name"`
+	Role  string          `json:"role"`
+	Type  string          `json:"type"`
 }
 
 type BoardMembersInvite struct {
-	Emails json.RawMessage `json:"emails"`
-	Message string `json:"message"`
-	Role string `json:"role"`
+	Emails  json.RawMessage `json:"emails"`
+	Message string          `json:"message"`
+	Role    string          `json:"role"`
 }
 
 type BoardMembersPagedResponse struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Offset int `json:"offset"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Offset int             `json:"offset"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type BoardPermissionsPolicy struct {
 	CollaborationToolsStartAccess string `json:"collaborationToolsStartAccess"`
-	CopyAccess string `json:"copyAccess"`
-	SharingAccess string `json:"sharingAccess"`
+	CopyAccess                    string `json:"copyAccess"`
+	SharingAccess                 string `json:"sharingAccess"`
 }
 
 type BoardPolicy struct {
 	PermissionsPolicy json.RawMessage `json:"permissionsPolicy"`
-	SharingPolicy json.RawMessage `json:"sharingPolicy"`
+	SharingPolicy     json.RawMessage `json:"sharingPolicy"`
 }
 
 type BoardPolicyChange struct {
 	PermissionsPolicy json.RawMessage `json:"permissionsPolicy"`
-	SharingPolicy json.RawMessage `json:"sharingPolicy"`
+	SharingPolicy     json.RawMessage `json:"sharingPolicy"`
 }
 
 type BoardProject struct {
@@ -369,28 +368,28 @@ type BoardProject struct {
 }
 
 type BoardSharingPolicy struct {
-	Access string `json:"access"`
-	AccessPasswordRequired bool `json:"accessPasswordRequired"`
+	Access                            string `json:"access"`
+	AccessPasswordRequired            bool   `json:"accessPasswordRequired"`
 	InviteToAccountAndBoardLinkAccess string `json:"inviteToAccountAndBoardLinkAccess"`
-	OrganizationAccess string `json:"organizationAccess"`
-	TeamAccess string `json:"teamAccess"`
+	OrganizationAccess                string `json:"organizationAccess"`
+	TeamAccess                        string `json:"teamAccess"`
 }
 
 type BoardSharingPolicyChange struct {
-	Access string `json:"access"`
+	Access                            string `json:"access"`
 	InviteToAccountAndBoardLinkAccess string `json:"inviteToAccountAndBoardLinkAccess"`
-	OrganizationAccess string `json:"organizationAccess"`
-	TeamAccess string `json:"teamAccess"`
+	OrganizationAccess                string `json:"organizationAccess"`
+	TeamAccess                        string `json:"teamAccess"`
 }
 
 type BoardSubscription struct {
-	CallbackUrl string `json:"callbackUrl"`
-	CreatedAt string `json:"createdAt"`
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
-	ModifiedAt string `json:"modifiedAt"`
-	Status string `json:"status"`
-	Type string `json:"type"`
+	CallbackUrl string          `json:"callbackUrl"`
+	CreatedAt   string          `json:"createdAt"`
+	Data        json.RawMessage `json:"data"`
+	Id          string          `json:"id"`
+	ModifiedAt  string          `json:"modifiedAt"`
+	Status      string          `json:"status"`
+	Type        string          `json:"type"`
 }
 
 type BoardSubscriptionData struct {
@@ -398,75 +397,75 @@ type BoardSubscriptionData struct {
 }
 
 type BoardUserGroup struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Role string `json:"role"`
 	Type string `json:"type"`
 }
 
 type BoardUserGroupsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type BoardWithLinks struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
+	CreatedAt             string          `json:"createdAt"`
+	CreatedBy             json.RawMessage `json:"createdBy"`
 	CurrentUserMembership json.RawMessage `json:"currentUserMembership"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
-	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Name string `json:"name"`
-	Owner json.RawMessage `json:"owner"`
-	Picture json.RawMessage `json:"picture"`
-	Policy json.RawMessage `json:"policy"`
-	Project json.RawMessage `json:"project"`
-	Team json.RawMessage `json:"team"`
-	Type string `json:"type"`
-	ViewLink string `json:"viewLink"`
+	Description           string          `json:"description"`
+	Id                    string          `json:"id"`
+	Links                 json.RawMessage `json:"links"`
+	ModifiedAt            string          `json:"modifiedAt"`
+	ModifiedBy            json.RawMessage `json:"modifiedBy"`
+	Name                  string          `json:"name"`
+	Owner                 json.RawMessage `json:"owner"`
+	Picture               json.RawMessage `json:"picture"`
+	Policy                json.RawMessage `json:"policy"`
+	Project               json.RawMessage `json:"project"`
+	Team                  json.RawMessage `json:"team"`
+	Type                  string          `json:"type"`
+	ViewLink              string          `json:"viewLink"`
 }
 
 type BoardWithLinksAndLastOpened struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
+	CreatedAt             string          `json:"createdAt"`
+	CreatedBy             json.RawMessage `json:"createdBy"`
 	CurrentUserMembership json.RawMessage `json:"currentUserMembership"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	LastOpenedAt string `json:"lastOpenedAt"`
-	LastOpenedBy json.RawMessage `json:"lastOpenedBy"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
-	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Name string `json:"name"`
-	Owner json.RawMessage `json:"owner"`
-	Picture json.RawMessage `json:"picture"`
-	Policy json.RawMessage `json:"policy"`
-	Project json.RawMessage `json:"project"`
-	Team json.RawMessage `json:"team"`
-	Type string `json:"type"`
-	ViewLink string `json:"viewLink"`
+	Description           string          `json:"description"`
+	Id                    string          `json:"id"`
+	LastOpenedAt          string          `json:"lastOpenedAt"`
+	LastOpenedBy          json.RawMessage `json:"lastOpenedBy"`
+	Links                 json.RawMessage `json:"links"`
+	ModifiedAt            string          `json:"modifiedAt"`
+	ModifiedBy            json.RawMessage `json:"modifiedBy"`
+	Name                  string          `json:"name"`
+	Owner                 json.RawMessage `json:"owner"`
+	Picture               json.RawMessage `json:"picture"`
+	Policy                json.RawMessage `json:"policy"`
+	Project               json.RawMessage `json:"project"`
+	Team                  json.RawMessage `json:"team"`
+	Type                  string          `json:"type"`
+	ViewLink              string          `json:"viewLink"`
 }
 
 type BoardWithLinksAndWithoutProject struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
+	CreatedAt             string          `json:"createdAt"`
+	CreatedBy             json.RawMessage `json:"createdBy"`
 	CurrentUserMembership json.RawMessage `json:"currentUserMembership"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
-	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Name string `json:"name"`
-	Owner json.RawMessage `json:"owner"`
-	Picture json.RawMessage `json:"picture"`
-	Policy json.RawMessage `json:"policy"`
-	Team json.RawMessage `json:"team"`
-	Type string `json:"type"`
-	ViewLink string `json:"viewLink"`
+	Description           string          `json:"description"`
+	Id                    string          `json:"id"`
+	Links                 json.RawMessage `json:"links"`
+	ModifiedAt            string          `json:"modifiedAt"`
+	ModifiedBy            json.RawMessage `json:"modifiedBy"`
+	Name                  string          `json:"name"`
+	Owner                 json.RawMessage `json:"owner"`
+	Picture               json.RawMessage `json:"picture"`
+	Policy                json.RawMessage `json:"policy"`
+	Team                  json.RawMessage `json:"team"`
+	Type                  string          `json:"type"`
+	ViewLink              string          `json:"viewLink"`
 }
 
 type BoardsDeleteResponse struct {
@@ -477,70 +476,70 @@ type BoardsEnterpriseUpdateExportJobResponse struct {
 }
 
 type BoardsPagedResponse struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Offset int `json:"offset"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Offset int             `json:"offset"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type BulkOperationError struct {
-	Code string `json:"code"`
+	Code    string          `json:"code"`
 	Context json.RawMessage `json:"context"`
-	Message string `json:"message"`
-	Status int `json:"status"`
-	Type string `json:"type"`
+	Message string          `json:"message"`
+	Status  int             `json:"status"`
+	Type    string          `json:"type"`
 }
 
 type BulkSubOperationError struct {
 	Context json.RawMessage `json:"context"`
-	Field string `json:"field"`
-	Message string `json:"message"`
+	Field   string          `json:"field"`
+	Message string          `json:"message"`
 }
 
 type Caption struct {
-	Content string `json:"content"`
-	Position string `json:"position"`
+	Content           string `json:"content"`
+	Position          string `json:"position"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type CardCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type CardData struct {
-	AssigneeId string `json:"assigneeId"`
+	AssigneeId  string `json:"assigneeId"`
 	Description string `json:"description"`
-	DueDate string `json:"dueDate"`
-	Title string `json:"title"`
+	DueDate     string `json:"dueDate"`
+	Title       string `json:"title"`
 }
 
 type CardDataPlatformbulkcreateoperation struct {
-	AssigneeId string `json:"assigneeId"`
+	AssigneeId  string `json:"assigneeId"`
 	Description string `json:"description"`
-	DueDate string `json:"dueDate"`
-	Title string `json:"title"`
+	DueDate     string `json:"dueDate"`
+	Title       string `json:"title"`
 }
 
 type CardItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type CardStyle struct {
@@ -552,11 +551,11 @@ type CardStylePlatformbulkcreateoperation struct {
 }
 
 type CardUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type CardsDeleteItemResponse struct {
@@ -564,18 +563,18 @@ type CardsDeleteItemResponse struct {
 
 type CaseRequest struct {
 	Description string `json:"description"`
-	Name string `json:"name"`
+	Name        string `json:"name"`
 }
 
 type CaseResponse struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	LastModifiedAt string `json:"lastModifiedAt"`
+	CreatedAt      string          `json:"createdAt"`
+	CreatedBy      json.RawMessage `json:"createdBy"`
+	Description    string          `json:"description"`
+	Id             string          `json:"id"`
+	LastModifiedAt string          `json:"lastModifiedAt"`
 	LastModifiedBy json.RawMessage `json:"lastModifiedBy"`
-	Name string `json:"name"`
-	OrganizationId string `json:"organizationId"`
+	Name           string          `json:"name"`
+	OrganizationId string          `json:"organizationId"`
 }
 
 type CasesGetLegalHoldExportJobsItem struct {
@@ -583,123 +582,123 @@ type CasesGetLegalHoldExportJobsItem struct {
 }
 
 type CodeWidgetCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type CodeWidgetCursorPaged struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type CodeWidgetData struct {
-	Code string `json:"code"`
-	Language string `json:"language"`
-	LineNumbersVisible bool `json:"lineNumbersVisible"`
-	Title string `json:"title"`
+	Code               string `json:"code"`
+	Language           string `json:"language"`
+	LineNumbersVisible bool   `json:"lineNumbersVisible"`
+	Title              string `json:"title"`
 }
 
 type CodeWidgetItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type CodeWidgetUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type ConnectorChangesData struct {
-	Captions json.RawMessage `json:"captions"`
-	EndItem json.RawMessage `json:"endItem"`
-	Shape string `json:"shape"`
+	Captions  json.RawMessage `json:"captions"`
+	EndItem   json.RawMessage `json:"endItem"`
+	Shape     string          `json:"shape"`
 	StartItem json.RawMessage `json:"startItem"`
-	Style json.RawMessage `json:"style"`
+	Style     json.RawMessage `json:"style"`
 }
 
 type ConnectorCreationData struct {
-	Captions json.RawMessage `json:"captions"`
-	EndItem json.RawMessage `json:"endItem"`
-	Shape string `json:"shape"`
+	Captions  json.RawMessage `json:"captions"`
+	EndItem   json.RawMessage `json:"endItem"`
+	Shape     string          `json:"shape"`
 	StartItem json.RawMessage `json:"startItem"`
-	Style json.RawMessage `json:"style"`
+	Style     json.RawMessage `json:"style"`
 }
 
 type ConnectorStyle struct {
-	Color string `json:"color"`
-	EndStrokeCap string `json:"endStrokeCap"`
-	FontSize string `json:"fontSize"`
-	StartStrokeCap string `json:"startStrokeCap"`
-	StrokeColor string `json:"strokeColor"`
-	StrokeStyle string `json:"strokeStyle"`
-	StrokeWidth string `json:"strokeWidth"`
+	Color           string `json:"color"`
+	EndStrokeCap    string `json:"endStrokeCap"`
+	FontSize        string `json:"fontSize"`
+	StartStrokeCap  string `json:"startStrokeCap"`
+	StrokeColor     string `json:"strokeColor"`
+	StrokeStyle     string `json:"strokeStyle"`
+	StrokeWidth     string `json:"strokeWidth"`
 	TextOrientation string `json:"textOrientation"`
 }
 
 type ConnectorWithLinks struct {
-	Captions json.RawMessage `json:"captions"`
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	EndItem json.RawMessage `json:"endItem"`
-	Id string `json:"id"`
-	IsSupported bool `json:"isSupported"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
-	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Shape string `json:"shape"`
-	StartItem json.RawMessage `json:"startItem"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Captions    json.RawMessage `json:"captions"`
+	CreatedAt   string          `json:"createdAt"`
+	CreatedBy   json.RawMessage `json:"createdBy"`
+	EndItem     json.RawMessage `json:"endItem"`
+	Id          string          `json:"id"`
+	IsSupported bool            `json:"isSupported"`
+	Links       json.RawMessage `json:"links"`
+	ModifiedAt  string          `json:"modifiedAt"`
+	ModifiedBy  json.RawMessage `json:"modifiedBy"`
+	Shape       string          `json:"shape"`
+	StartItem   json.RawMessage `json:"startItem"`
+	Style       json.RawMessage `json:"style"`
+	Type        string          `json:"type"`
 }
 
 type ConnectorsCursorPaged struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type ConnectorsDeleteResponse struct {
 }
 
 type CopyBoardChanges struct {
-	Description string `json:"description"`
-	Name string `json:"name"`
-	Policy json.RawMessage `json:"policy"`
-	TeamId string `json:"teamId"`
+	Description string          `json:"description"`
+	Name        string          `json:"name"`
+	Policy      json.RawMessage `json:"policy"`
+	TeamId      string          `json:"teamId"`
 }
 
 type CreateBoardExportRequest struct {
-	BoardFormat string `json:"boardFormat"`
-	BoardIds json.RawMessage `json:"boardIds"`
+	BoardFormat string          `json:"boardFormat"`
+	BoardIds    json.RawMessage `json:"boardIds"`
 }
 
 type CreateBoardSubscriptionRequest struct {
-	BoardId string `json:"boardId"`
+	BoardId     string `json:"boardId"`
 	CallbackUrl string `json:"callbackUrl"`
-	Status string `json:"status"`
+	Status      string `json:"status"`
 }
 
 type CreateBoardUserGroupsRequest struct {
-	Role string `json:"role"`
+	Role         string          `json:"role"`
 	UserGroupIds json.RawMessage `json:"userGroupIds"`
 }
 
@@ -709,7 +708,7 @@ type CreateGroupMemberRequest struct {
 
 type CreateGroupRequest struct {
 	Description string `json:"description"`
-	Name string `json:"name"`
+	Name        string `json:"name"`
 }
 
 type CreateProjectRequest struct {
@@ -717,12 +716,12 @@ type CreateProjectRequest struct {
 }
 
 type CreateProjectUserGroupsRequest struct {
-	Role string `json:"role"`
+	Role         string          `json:"role"`
 	UserGroupIds json.RawMessage `json:"userGroupIds"`
 }
 
 type CreateTeamGroupRequest struct {
-	Role string `json:"role"`
+	Role        string `json:"role"`
 	UserGroupId string `json:"userGroupId"`
 }
 
@@ -731,87 +730,87 @@ type CreateTeamRequest struct {
 }
 
 type CreateUserResource struct {
-	Active bool `json:"active"`
-	DisplayName string `json:"displayName"`
-	Name json.RawMessage `json:"name"`
-	Photos json.RawMessage `json:"photos"`
-	PreferredLanguage string `json:"preferredLanguage"`
-	Roles json.RawMessage `json:"roles"`
-	Schemas json.RawMessage `json:"schemas"`
+	Active                                            bool            `json:"active"`
+	DisplayName                                       string          `json:"displayName"`
+	Name                                              json.RawMessage `json:"name"`
+	Photos                                            json.RawMessage `json:"photos"`
+	PreferredLanguage                                 string          `json:"preferredLanguage"`
+	Roles                                             json.RawMessage `json:"roles"`
+	Schemas                                           json.RawMessage `json:"schemas"`
 	UrnIetfParamsScimSchemasExtensionEnterprise20User json.RawMessage `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"`
-	UserName string `json:"userName"`
-	UserType string `json:"userType"`
+	UserName                                          string          `json:"userName"`
+	UserType                                          string          `json:"userType"`
 }
 
 type CreateUserResponse struct {
-	Active bool `json:"active"`
-	DisplayName string `json:"displayName"`
-	Emails json.RawMessage `json:"emails"`
-	Groups json.RawMessage `json:"groups"`
-	Id string `json:"id"`
-	Meta json.RawMessage `json:"meta"`
-	Name json.RawMessage `json:"name"`
-	Photos json.RawMessage `json:"photos"`
-	PreferredLanguage string `json:"preferredLanguage"`
-	Roles json.RawMessage `json:"roles"`
-	Schemas json.RawMessage `json:"schemas"`
+	Active                                            bool            `json:"active"`
+	DisplayName                                       string          `json:"displayName"`
+	Emails                                            json.RawMessage `json:"emails"`
+	Groups                                            json.RawMessage `json:"groups"`
+	Id                                                string          `json:"id"`
+	Meta                                              json.RawMessage `json:"meta"`
+	Name                                              json.RawMessage `json:"name"`
+	Photos                                            json.RawMessage `json:"photos"`
+	PreferredLanguage                                 string          `json:"preferredLanguage"`
+	Roles                                             json.RawMessage `json:"roles"`
+	Schemas                                           json.RawMessage `json:"schemas"`
 	UrnIetfParamsScimSchemasExtensionEnterprise20User json.RawMessage `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"`
-	UserName string `json:"userName"`
-	UserType string `json:"userType"`
+	UserName                                          string          `json:"userName"`
+	UserType                                          string          `json:"userType"`
 }
 
 type CreatedBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type CreatedByPlatformExperimentalFeatures struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type CreatedByPlatformcreateitemsinbulkusingfilefromdevice struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type CustomField struct {
 	FillColor string `json:"fillColor"`
 	IconShape string `json:"iconShape"`
-	IconUrl string `json:"iconUrl"`
+	IconUrl   string `json:"iconUrl"`
 	TextColor string `json:"textColor"`
-	Tooltip string `json:"tooltip"`
-	Value string `json:"value"`
+	Tooltip   string `json:"tooltip"`
+	Value     string `json:"value"`
 }
 
 type CustomFieldPlatformTags struct {
 	FillColor string `json:"fillColor"`
 	IconShape string `json:"iconShape"`
-	IconUrl string `json:"iconUrl"`
+	IconUrl   string `json:"iconUrl"`
 	TextColor string `json:"textColor"`
-	Tooltip string `json:"tooltip"`
-	Value string `json:"value"`
+	Tooltip   string `json:"tooltip"`
+	Value     string `json:"value"`
 }
 
 type CustomFieldPlatformbulkcreateoperation struct {
 	FillColor string `json:"fillColor"`
 	IconShape string `json:"iconShape"`
-	IconUrl string `json:"iconUrl"`
+	IconUrl   string `json:"iconUrl"`
 	TextColor string `json:"textColor"`
-	Tooltip string `json:"tooltip"`
-	Value string `json:"value"`
+	Tooltip   string `json:"tooltip"`
+	Value     string `json:"value"`
 }
 
 type DataClassificationLabel struct {
-	Color string `json:"color"`
-	Default bool `json:"default"`
-	Description string `json:"description"`
-	GuidelineUrl string `json:"guidelineUrl"`
-	Id string `json:"id"`
-	Name string `json:"name"`
-	OrderNumber int `json:"orderNumber"`
+	Color                 string `json:"color"`
+	Default               bool   `json:"default"`
+	Description           string `json:"description"`
+	GuidelineUrl          string `json:"guidelineUrl"`
+	Id                    string `json:"id"`
+	Name                  string `json:"name"`
+	OrderNumber           int    `json:"orderNumber"`
 	SharingRecommendation string `json:"sharingRecommendation"`
-	Type string `json:"type"`
+	Type                  string `json:"type"`
 }
 
 type DataClassificationLabelId struct {
@@ -819,20 +818,20 @@ type DataClassificationLabelId struct {
 }
 
 type DataClassificationOrganizationSettings struct {
-	Enabled bool `json:"enabled"`
-	Labels json.RawMessage `json:"labels"`
-	Type string `json:"type"`
+	Enabled bool            `json:"enabled"`
+	Labels  json.RawMessage `json:"labels"`
+	Type    string          `json:"type"`
 }
 
 type DataClassificationTeamSettings struct {
 	DefaultLabelId string `json:"defaultLabelId"`
-	Enabled bool `json:"enabled"`
-	Type string `json:"type"`
+	Enabled        bool   `json:"enabled"`
+	Type           string `json:"type"`
 }
 
 type DocFormatCreateRequest struct {
-	Data json.RawMessage `json:"data"`
-	Parent json.RawMessage `json:"parent"`
+	Data     json.RawMessage `json:"data"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
@@ -843,27 +842,27 @@ type DocFormatDataPlatform struct {
 }
 
 type DocFormatHtmlData struct {
-	Content string `json:"content"`
-	ContentType string `json:"contentType"`
+	Content        string  `json:"content"`
+	ContentType    string  `json:"contentType"`
 	ContentVersion float64 `json:"contentVersion"`
 }
 
 type DocFormatItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type DocFormatMarkdownData struct {
-	Content string `json:"content"`
-	ContentType string `json:"contentType"`
+	Content        string  `json:"content"`
+	ContentType    string  `json:"contentType"`
 	ContentVersion float64 `json:"contentVersion"`
 }
 
@@ -871,147 +870,147 @@ type DocsDeleteFormatItemResponse struct {
 }
 
 type DocumentCreateRequest struct {
-	Data json.RawMessage `json:"data"`
-	Parent json.RawMessage `json:"parent"`
+	Data     json.RawMessage `json:"data"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type DocumentData struct {
 	DocumentUrl string `json:"documentUrl"`
-	Title string `json:"title"`
+	Title       string `json:"title"`
 }
 
 type DocumentDataResponse struct {
 	DocumentUrl string `json:"documentUrl"`
-	Title string `json:"title"`
+	Title       string `json:"title"`
 }
 
 type DocumentDataResponsePlatformcreateitemsinbulkusingfilefromdevice struct {
 	DocumentUrl string `json:"documentUrl"`
-	Title string `json:"title"`
+	Title       string `json:"title"`
 }
 
 type DocumentItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type DocumentItemPlatformFileUpload struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type DocumentUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type DocumentUrlData struct {
 	Title string `json:"title"`
-	Url string `json:"url"`
+	Url   string `json:"url"`
 }
 
 type DocumentUrlDataChanges struct {
 	Title string `json:"title"`
-	Url string `json:"url"`
+	Url   string `json:"url"`
 }
 
 type DocumentUrlDataPlatformbulkcreateoperation struct {
 	Title string `json:"title"`
-	Url string `json:"url"`
+	Url   string `json:"url"`
 }
 
 type DocumentsDeleteItemResponse struct {
 }
 
 type EmbedCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type EmbedData struct {
-	ContentType string `json:"contentType"`
-	Description string `json:"description"`
-	Html string `json:"html"`
-	Mode string `json:"mode"`
-	PreviewUrl string `json:"previewUrl"`
+	ContentType  string `json:"contentType"`
+	Description  string `json:"description"`
+	Html         string `json:"html"`
+	Mode         string `json:"mode"`
+	PreviewUrl   string `json:"previewUrl"`
 	ProviderName string `json:"providerName"`
-	ProviderUrl string `json:"providerUrl"`
-	Title string `json:"title"`
-	Url string `json:"url"`
+	ProviderUrl  string `json:"providerUrl"`
+	Title        string `json:"title"`
+	Url          string `json:"url"`
 }
 
 type EmbedDataResponse struct {
-	ContentType string `json:"contentType"`
-	Description string `json:"description"`
-	Html string `json:"html"`
-	Mode string `json:"mode"`
-	PreviewUrl string `json:"previewUrl"`
+	ContentType  string `json:"contentType"`
+	Description  string `json:"description"`
+	Html         string `json:"html"`
+	Mode         string `json:"mode"`
+	PreviewUrl   string `json:"previewUrl"`
 	ProviderName string `json:"providerName"`
-	ProviderUrl string `json:"providerUrl"`
-	Title string `json:"title"`
-	Url string `json:"url"`
+	ProviderUrl  string `json:"providerUrl"`
+	Title        string `json:"title"`
+	Url          string `json:"url"`
 }
 
 type EmbedItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type EmbedUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type EmbedUrlData struct {
-	Mode string `json:"mode"`
+	Mode       string `json:"mode"`
 	PreviewUrl string `json:"previewUrl"`
-	Url string `json:"url"`
+	Url        string `json:"url"`
 }
 
 type EmbedUrlDataChanges struct {
-	Mode string `json:"mode"`
+	Mode       string `json:"mode"`
 	PreviewUrl string `json:"previewUrl"`
-	Url string `json:"url"`
+	Url        string `json:"url"`
 }
 
 type EmbedUrlDataPlatformbulkcreateoperation struct {
-	Mode string `json:"mode"`
+	Mode       string `json:"mode"`
 	PreviewUrl string `json:"previewUrl"`
-	Url string `json:"url"`
+	Url        string `json:"url"`
 }
 
 type EmbedsDeleteItemResponse struct {
@@ -1021,118 +1020,118 @@ type EmptyStyle struct {
 }
 
 type Error struct {
-	Code string `json:"code"`
+	Code    string          `json:"code"`
 	Context json.RawMessage `json:"context"`
-	Message string `json:"message"`
-	Status int `json:"status"`
-	Type string `json:"type"`
+	Message string          `json:"message"`
+	Status  int             `json:"status"`
+	Type    string          `json:"type"`
 }
 
 type Error400 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Error401 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Error403 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Error404 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Error409 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type Error429 struct {
-	Code string `json:"code"`
-	Message string `json:"message"`
-	Status float64 `json:"status"`
-	Type string `json:"type"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Status  float64 `json:"status"`
+	Type    string  `json:"type"`
 }
 
 type ErrorResponse struct {
-	Code string `json:"code"`
+	Code    string `json:"code"`
 	Message string `json:"message"`
-	Status int `json:"status"`
-	Type string `json:"type"`
+	Status  int    `json:"status"`
+	Type    string `json:"type"`
 }
 
 type FixedRatioGeometry struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type FixedRatioGeometryPlatformFileUpload struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type FixedRatioNoRotationGeometry struct {
 	Height float64 `json:"height"`
-	Width float64 `json:"width"`
+	Width  float64 `json:"width"`
 }
 
 type FrameChanges struct {
-	Format string `json:"format"`
-	ShowContent bool `json:"showContent"`
-	Title string `json:"title"`
-	Type string `json:"type"`
+	Format      string `json:"format"`
+	ShowContent bool   `json:"showContent"`
+	Title       string `json:"title"`
+	Type        string `json:"type"`
 }
 
 type FrameCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type FrameData struct {
 	Format string `json:"format"`
-	Title string `json:"title"`
-	Type string `json:"type"`
+	Title  string `json:"title"`
+	Type   string `json:"type"`
 }
 
 type FrameDataPlatformContainers struct {
-	Format string `json:"format"`
-	ShowContent bool `json:"showContent"`
-	Title string `json:"title"`
-	Type string `json:"type"`
+	Format      string `json:"format"`
+	ShowContent bool   `json:"showContent"`
+	Title       string `json:"title"`
+	Type        string `json:"type"`
 }
 
 type FrameItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type FrameStyle struct {
@@ -1140,153 +1139,153 @@ type FrameStyle struct {
 }
 
 type FrameUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type FramesDeleteItemResponse struct {
 }
 
 type GenericItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type GenericItemCursorPaged struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type GenericItemCursorPagedPlatformContainers struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type GenericItemPlatformTags struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type GenericItemUpdate struct {
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type GenericSubscription struct {
-	CallbackUrl string `json:"callbackUrl"`
-	CreatedAt string `json:"createdAt"`
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
-	ModifiedAt string `json:"modifiedAt"`
-	Status string `json:"status"`
-	Type string `json:"type"`
+	CallbackUrl string          `json:"callbackUrl"`
+	CreatedAt   string          `json:"createdAt"`
+	Data        json.RawMessage `json:"data"`
+	Id          string          `json:"id"`
+	ModifiedAt  string          `json:"modifiedAt"`
+	Status      string          `json:"status"`
+	Type        string          `json:"type"`
 }
 
 type GenericSubscriptionsCursorPaged struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type Geometry struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryNoRotation struct {
 	Height float64 `json:"height"`
-	Width float64 `json:"width"`
+	Width  float64 `json:"width"`
 }
 
 type GeometryPlatformContainers struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformExperimentalFeatures struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformFileUpload struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformTags struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformbulkcreateoperation struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformcreateitemsinbulkusingfilefromdevice struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GeometryPlatformgroups struct {
-	Height float64 `json:"height"`
+	Height   float64 `json:"height"`
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type GetAiInteractionLogsResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type GetBoardItemContentLogsResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type GetBoardUserInfoLastOpenedBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
@@ -1297,212 +1296,209 @@ type GetTagsResponse struct {
 
 type Group struct {
 	Description string `json:"description"`
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
 }
 
 type GroupListResponse struct {
-	Resources json.RawMessage `json:"Resources"`
-	ItemsPerPage float64 `json:"itemsPerPage"`
-	Schemas json.RawMessage `json:"schemas"`
-	StartIndex float64 `json:"startIndex"`
-	TotalResults float64 `json:"totalResults"`
+	Resources    json.RawMessage `json:"Resources"`
+	ItemsPerPage float64         `json:"itemsPerPage"`
+	Schemas      json.RawMessage `json:"schemas"`
+	StartIndex   float64         `json:"startIndex"`
+	TotalResults float64         `json:"totalResults"`
 }
 
 type GroupMember struct {
 	Email string `json:"email"`
-	Id string `json:"id"`
-	Type string `json:"type"`
+	Id    string `json:"id"`
+	Type  string `json:"type"`
 }
 
 type GroupMembersPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type GroupResource struct {
-	DisplayName string `json:"displayName"`
-	Id string `json:"id"`
-	Members json.RawMessage `json:"members"`
-	Meta json.RawMessage `json:"meta"`
-	Schemas json.RawMessage `json:"schemas"`
+	DisplayName string          `json:"displayName"`
+	Id          string          `json:"id"`
+	Members     json.RawMessage `json:"members"`
+	Meta        json.RawMessage `json:"meta"`
+	Schemas     json.RawMessage `json:"schemas"`
 }
 
 type GroupResponseShort struct {
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
+	Data  json.RawMessage `json:"data"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
-	Type string `json:"type"`
+	Type  string          `json:"type"`
 }
 
 type GroupTeam struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Role string `json:"role"`
 	Type string `json:"type"`
 }
 
 type GroupTeamsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
-}
-
-type GroupsDeleteResponse struct {
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type GroupsGetItemsByIdResponse struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Data  json.RawMessage `json:"data"`
+	Limit int             `json:"limit"`
+	Size  int             `json:"size"`
+	Total int             `json:"total"`
 }
 
 type GroupsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type GroupsUnResponse struct {
 }
 
 type ImageCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type ImageData struct {
 	ImageUrl string `json:"imageUrl"`
-	Title string `json:"title"`
+	Title    string `json:"title"`
 }
 
 type ImageDataResponse struct {
 	ImageUrl string `json:"imageUrl"`
-	Title string `json:"title"`
+	Title    string `json:"title"`
 }
 
 type ImageDataResponsePlatformcreateitemsinbulkusingfilefromdevice struct {
 	ImageUrl string `json:"imageUrl"`
-	Title string `json:"title"`
+	Title    string `json:"title"`
 }
 
 type ImageItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type ImageItemPlatformFileUpload struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type ImageUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type ImageUrlData struct {
 	Title string `json:"title"`
-	Url string `json:"url"`
+	Url   string `json:"url"`
 }
 
 type ImageUrlDataChanges struct {
 	Title string `json:"title"`
-	Url string `json:"url"`
+	Url   string `json:"url"`
 }
 
 type ImagesDeleteItemResponse struct {
 }
 
 type InvitationError struct {
-	Email string `json:"email"`
+	Email  string `json:"email"`
 	Reason string `json:"reason"`
 }
 
 type InvitationResult struct {
-	Failed json.RawMessage `json:"failed"`
+	Failed     json.RawMessage `json:"failed"`
 	Successful json.RawMessage `json:"successful"`
 }
 
 type Item struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Type       string          `json:"type"`
 }
 
 type ItemChanges struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Parent json.RawMessage `json:"parent"`
+	Id       string          `json:"id"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Style    json.RawMessage `json:"style"`
+	Type     string          `json:"type"`
 }
 
 type ItemConnectionChangesData struct {
-	Id string `json:"id"`
+	Id       string          `json:"id"`
 	Position json.RawMessage `json:"position"`
-	SnapTo string `json:"snapTo"`
+	SnapTo   string          `json:"snapTo"`
 }
 
 type ItemConnectionCreationData struct {
-	Id string `json:"id"`
+	Id       string          `json:"id"`
 	Position json.RawMessage `json:"position"`
-	SnapTo string `json:"snapTo"`
+	SnapTo   string          `json:"snapTo"`
 }
 
 type ItemConnectionWithLinks struct {
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
+	Id       string          `json:"id"`
+	Links    json.RawMessage `json:"links"`
 	Position json.RawMessage `json:"position"`
 }
 
 type ItemCreate struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Style    json.RawMessage `json:"style"`
+	Type     string          `json:"type"`
 }
 
 type ItemData struct {
@@ -1515,23 +1511,23 @@ type ItemDataCreate struct {
 }
 
 type ItemPagedResponse struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Offset int `json:"offset"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Offset int             `json:"offset"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type ItemPagedResponsePlatformTags struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Offset int `json:"offset"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Offset int             `json:"offset"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type ItemStyle struct {
@@ -1539,7 +1535,7 @@ type ItemStyle struct {
 
 type Items struct {
 	Data json.RawMessage `json:"data"`
-	Type string `json:"type"`
+	Type string          `json:"type"`
 }
 
 type ItemsAttachTagToResponse struct {
@@ -1549,12 +1545,12 @@ type ItemsDeleteResponse struct {
 }
 
 type ItemsPage struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
+	Data  json.RawMessage `json:"data"`
+	Limit int             `json:"limit"`
 	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Size  int             `json:"size"`
+	Total int             `json:"total"`
+	Type  string          `json:"type"`
 }
 
 type ItemsRemoveTagFromResponse struct {
@@ -1562,13 +1558,13 @@ type ItemsRemoveTagFromResponse struct {
 
 type LegalHoldContentItemsResponse struct {
 	ContentId string `json:"contentId"`
-	Type string `json:"type"`
+	Type      string `json:"type"`
 }
 
 type LegalHoldRequest struct {
 	Description string `json:"description"`
-	Name string `json:"name"`
-	Scope string `json:"scope"`
+	Name        string `json:"name"`
+	Scope       string `json:"scope"`
 }
 
 type LegalHoldRequestScopeUsers struct {
@@ -1576,17 +1572,17 @@ type LegalHoldRequestScopeUsers struct {
 }
 
 type LegalHoldResponse struct {
-	CaseId string `json:"caseId"`
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	LastModifiedAt string `json:"lastModifiedAt"`
+	CaseId         string          `json:"caseId"`
+	CreatedAt      string          `json:"createdAt"`
+	CreatedBy      json.RawMessage `json:"createdBy"`
+	Description    string          `json:"description"`
+	Id             string          `json:"id"`
+	LastModifiedAt string          `json:"lastModifiedAt"`
 	LastModifiedBy json.RawMessage `json:"lastModifiedBy"`
-	Name string `json:"name"`
-	OrganizationId string `json:"organizationId"`
-	Scope string `json:"scope"`
-	State string `json:"state"`
+	Name           string          `json:"name"`
+	OrganizationId string          `json:"organizationId"`
+	Scope          string          `json:"scope"`
+	State          string          `json:"state"`
 }
 
 type LegalHoldResponseScopeUsers struct {
@@ -1601,25 +1597,25 @@ type MindMapNodeGeometry struct {
 }
 
 type MindmapCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
 }
 
 type MindmapCursorPaged struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Size int `json:"size"`
-	Total int `json:"total"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
 }
 
 type MindmapData struct {
-	Direction string `json:"direction"`
-	IsRoot bool `json:"isRoot"`
-	NodeView json.RawMessage `json:"nodeView"`
+	Direction string          `json:"direction"`
+	IsRoot    bool            `json:"isRoot"`
+	NodeView  json.RawMessage `json:"nodeView"`
 }
 
 type MindmapDataForCreate struct {
@@ -1627,16 +1623,16 @@ type MindmapDataForCreate struct {
 }
 
 type MindmapItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type MindmapNode struct {
@@ -1644,40 +1640,40 @@ type MindmapNode struct {
 }
 
 type MindmapNodeStyle struct {
-	Color string `json:"color"`
+	Color       string `json:"color"`
 	FillOpacity string `json:"fillOpacity"`
-	FontSize string `json:"fontSize"`
+	FontSize    string `json:"fontSize"`
 }
 
 type MindmapNodeTextData struct {
 	Content string `json:"content"`
-	Type string `json:"type"`
+	Type    string `json:"type"`
 }
 
 type MindmapNodeView struct {
-	Data string `json:"data"`
+	Data  string          `json:"data"`
 	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Type  string          `json:"type"`
 }
 
 type MindmapStyle struct {
-	FontSize string `json:"fontSize"`
+	FontSize  string `json:"fontSize"`
 	NodeColor string `json:"nodeColor"`
-	Shape string `json:"shape"`
+	Shape     string `json:"shape"`
 }
 
 type ModifiedBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type ModifiedByPlatformExperimentalFeatures struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type ModifiedByPlatformcreateitemsinbulkusingfilefromdevice struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
@@ -1685,90 +1681,90 @@ type OpaqueData struct {
 }
 
 type Organization struct {
-	FullLicensesPurchased int `json:"fullLicensesPurchased"`
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Plan string `json:"plan"`
-	Type string `json:"type"`
+	FullLicensesPurchased int    `json:"fullLicensesPurchased"`
+	Id                    string `json:"id"`
+	Name                  string `json:"name"`
+	Plan                  string `json:"plan"`
+	Type                  string `json:"type"`
 }
 
 type OrganizationMember struct {
-	Active bool `json:"active"`
-	AdminRoles json.RawMessage `json:"adminRoles"`
-	Email string `json:"email"`
-	Id string `json:"id"`
-	LastActivityAt string `json:"lastActivityAt"`
-	License string `json:"license"`
-	LicenseAssignedAt string `json:"licenseAssignedAt"`
-	Role string `json:"role"`
-	Type string `json:"type"`
+	Active            bool            `json:"active"`
+	AdminRoles        json.RawMessage `json:"adminRoles"`
+	Email             string          `json:"email"`
+	Id                string          `json:"id"`
+	LastActivityAt    string          `json:"lastActivityAt"`
+	License           string          `json:"license"`
+	LicenseAssignedAt string          `json:"licenseAssignedAt"`
+	Role              string          `json:"role"`
+	Type              string          `json:"type"`
 }
 
 type OrganizationMembersSearchResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type PageLinks struct {
 	First string `json:"first"`
-	Last string `json:"last"`
-	Next string `json:"next"`
-	Prev string `json:"prev"`
-	Self string `json:"self"`
+	Last  string `json:"last"`
+	Next  string `json:"next"`
+	Prev  string `json:"prev"`
+	Self  string `json:"self"`
 }
 
 type PageLinksPlatformExperimentalFeatures struct {
 	First string `json:"first"`
-	Last string `json:"last"`
-	Next string `json:"next"`
-	Prev string `json:"prev"`
-	Self string `json:"self"`
+	Last  string `json:"last"`
+	Next  string `json:"next"`
+	Prev  string `json:"prev"`
+	Self  string `json:"self"`
 }
 
 type PaginatedCaseExportJobsResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type PaginatedCaseResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type PaginatedLegalHoldContentItemsResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type PaginatedLegalHoldResponse struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type Pagination struct {
 	Cursor string `json:"cursor"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Limit  int    `json:"limit"`
+	Size   int    `json:"size"`
+	Total  int    `json:"total"`
+	Type   string `json:"type"`
 }
 
 type Parent struct {
@@ -1780,47 +1776,47 @@ type ParentIdPlatformContainers struct {
 }
 
 type ParentLinksEnvelope struct {
-	Id string `json:"id"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
 }
 
 type ParentLinksEnvelopePlatformContainers struct {
-	Id string `json:"id"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
 }
 
 type ParentWithLinks struct {
-	Id string `json:"id"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
 }
 
 type ParentWithLinksPlatformcreateitemsinbulkusingfilefromdevice struct {
-	Id string `json:"id"`
+	Id    string          `json:"id"`
 	Links json.RawMessage `json:"links"`
 }
 
 type PatchGroupResource struct {
 	Operations json.RawMessage `json:"Operations"`
-	Schemas json.RawMessage `json:"schemas"`
+	Schemas    json.RawMessage `json:"schemas"`
 }
 
 type PatchUserResource struct {
 	Operations json.RawMessage `json:"Operations"`
-	Schemas json.RawMessage `json:"schemas"`
+	Schemas    json.RawMessage `json:"schemas"`
 }
 
 type Picture struct {
-	Id float64 `json:"id"`
-	ImageURL string `json:"imageURL"`
-	OriginalUrl string `json:"originalUrl"`
-	Type string `json:"type"`
+	Id          float64 `json:"id"`
+	ImageURL    string  `json:"imageURL"`
+	OriginalUrl string  `json:"originalUrl"`
+	Type        string  `json:"type"`
 }
 
 type Position struct {
-	Origin string `json:"origin"`
-	RelativeTo string `json:"relativeTo"`
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	Origin     string  `json:"origin"`
+	RelativeTo string  `json:"relativeTo"`
+	X          float64 `json:"x"`
+	Y          float64 `json:"y"`
 }
 
 type PositionChange struct {
@@ -1829,57 +1825,57 @@ type PositionChange struct {
 }
 
 type Project struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
 
 type ProjectMember struct {
 	Email string `json:"email"`
-	Id string `json:"id"`
-	Role string `json:"role"`
-	Type string `json:"type"`
+	Id    string `json:"id"`
+	Role  string `json:"role"`
+	Type  string `json:"type"`
 }
 
 type ProjectMemberPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type ProjectPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type ProjectSettings struct {
 	SharingPolicySettings json.RawMessage `json:"sharingPolicySettings"`
-	Type string `json:"type"`
+	Type                  string          `json:"type"`
 }
 
 type ProjectUserGroup struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Role string `json:"role"`
 	Type string `json:"type"`
 }
 
 type ProjectUserGroupsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type Relationship struct {
-	ItemId string `json:"itemId"`
+	ItemId   string `json:"itemId"`
 	ItemType string `json:"itemType"`
-	Type string `json:"type"`
+	Type     string `json:"type"`
 }
 
 type RelativeOffset struct {
@@ -1888,53 +1884,53 @@ type RelativeOffset struct {
 }
 
 type ResourceType struct {
-	Description string `json:"description"`
-	Endpoint string `json:"endpoint"`
-	Id string `json:"id"`
-	Name string `json:"name"`
-	Schema string `json:"schema"`
+	Description      string          `json:"description"`
+	Endpoint         string          `json:"endpoint"`
+	Id               string          `json:"id"`
+	Name             string          `json:"name"`
+	Schema           string          `json:"schema"`
 	SchemaExtensions json.RawMessage `json:"schemaExtensions"`
-	Schemas json.RawMessage `json:"schemas"`
+	Schemas          json.RawMessage `json:"schemas"`
 }
 
 type ResourceTypeListResponse struct {
-	Resources json.RawMessage `json:"Resources"`
-	Schemas json.RawMessage `json:"schemas"`
-	TotalResults float64 `json:"totalResults"`
+	Resources    json.RawMessage `json:"Resources"`
+	Schemas      json.RawMessage `json:"schemas"`
+	TotalResults float64         `json:"totalResults"`
 }
 
 type RevokeTokenRequest struct {
-	AccessToken string `json:"accessToken"`
-	ClientId string `json:"clientId"`
+	AccessToken  string `json:"accessToken"`
+	ClientId     string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"`
 }
 
 type SchemaAttribute struct {
-	CaseExact bool `json:"caseExact"`
-	Description string `json:"description"`
-	MultiValued bool `json:"multiValued"`
-	Mutability string `json:"mutability"`
-	Name string `json:"name"`
-	Required bool `json:"required"`
-	Returned string `json:"returned"`
-	Schemas json.RawMessage `json:"schemas"`
+	CaseExact     bool            `json:"caseExact"`
+	Description   string          `json:"description"`
+	MultiValued   bool            `json:"multiValued"`
+	Mutability    string          `json:"mutability"`
+	Name          string          `json:"name"`
+	Required      bool            `json:"required"`
+	Returned      string          `json:"returned"`
+	Schemas       json.RawMessage `json:"schemas"`
 	SubAttributes json.RawMessage `json:"subAttributes"`
-	Type string `json:"type"`
-	Uniqueness string `json:"uniqueness"`
+	Type          string          `json:"type"`
+	Uniqueness    string          `json:"uniqueness"`
 }
 
 type SchemaListResponse struct {
-	Resources json.RawMessage `json:"Resources"`
-	Schemas json.RawMessage `json:"schemas"`
-	TotalResults float64 `json:"totalResults"`
+	Resources    json.RawMessage `json:"Resources"`
+	Schemas      json.RawMessage `json:"schemas"`
+	TotalResults float64         `json:"totalResults"`
 }
 
 type SchemaResource struct {
-	Attributes json.RawMessage `json:"attributes"`
-	Description string `json:"description"`
-	Id string `json:"id"`
-	Meta json.RawMessage `json:"meta"`
-	Name string `json:"name"`
+	Attributes  json.RawMessage `json:"attributes"`
+	Description string          `json:"description"`
+	Id          string          `json:"id"`
+	Meta        json.RawMessage `json:"meta"`
+	Name        string          `json:"name"`
 }
 
 type SelfLink struct {
@@ -1951,107 +1947,107 @@ type SelfLinkPlatformTags struct {
 
 type ServiceProviderConfigResponse struct {
 	AuthenticationSchemes json.RawMessage `json:"authenticationSchemes"`
-	Bulk json.RawMessage `json:"bulk"`
-	ChangePassword json.RawMessage `json:"changePassword"`
-	DocumentationUri string `json:"documentationUri"`
-	Etag json.RawMessage `json:"etag"`
-	Filter json.RawMessage `json:"filter"`
-	Patch json.RawMessage `json:"patch"`
-	Schemas json.RawMessage `json:"schemas"`
-	Sort json.RawMessage `json:"sort"`
+	Bulk                  json.RawMessage `json:"bulk"`
+	ChangePassword        json.RawMessage `json:"changePassword"`
+	DocumentationUri      string          `json:"documentationUri"`
+	Etag                  json.RawMessage `json:"etag"`
+	Filter                json.RawMessage `json:"filter"`
+	Patch                 json.RawMessage `json:"patch"`
+	Schemas               json.RawMessage `json:"schemas"`
+	Sort                  json.RawMessage `json:"sort"`
 }
 
 type ShapeCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type ShapeData struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type ShapeDataForCreate struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type ShapeDataForUpdate struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type ShapeDataPlatformTags struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type ShapeItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type ShapeStyle struct {
-	BorderColor string `json:"borderColor"`
-	BorderOpacity string `json:"borderOpacity"`
-	BorderStyle string `json:"borderStyle"`
-	BorderWidth string `json:"borderWidth"`
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
-	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	BorderColor       string `json:"borderColor"`
+	BorderOpacity     string `json:"borderOpacity"`
+	BorderStyle       string `json:"borderStyle"`
+	BorderWidth       string `json:"borderWidth"`
+	Color             string `json:"color"`
+	FillColor         string `json:"fillColor"`
+	FillOpacity       string `json:"fillOpacity"`
+	FontFamily        string `json:"fontFamily"`
+	FontSize          string `json:"fontSize"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type ShapeStyleForCreate struct {
-	BorderColor string `json:"borderColor"`
-	BorderOpacity string `json:"borderOpacity"`
-	BorderStyle string `json:"borderStyle"`
-	BorderWidth string `json:"borderWidth"`
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
-	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	BorderColor       string `json:"borderColor"`
+	BorderOpacity     string `json:"borderOpacity"`
+	BorderStyle       string `json:"borderStyle"`
+	BorderWidth       string `json:"borderWidth"`
+	Color             string `json:"color"`
+	FillColor         string `json:"fillColor"`
+	FillOpacity       string `json:"fillOpacity"`
+	FontFamily        string `json:"fontFamily"`
+	FontSize          string `json:"fontSize"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type ShapeStyleForUpdate struct {
-	BorderColor string `json:"borderColor"`
-	BorderOpacity string `json:"borderOpacity"`
-	BorderStyle string `json:"borderStyle"`
-	BorderWidth string `json:"borderWidth"`
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
-	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	BorderColor       string `json:"borderColor"`
+	BorderOpacity     string `json:"borderOpacity"`
+	BorderStyle       string `json:"borderStyle"`
+	BorderWidth       string `json:"borderWidth"`
+	Color             string `json:"color"`
+	FillColor         string `json:"fillColor"`
+	FillOpacity       string `json:"fillOpacity"`
+	FontFamily        string `json:"fontFamily"`
+	FontSize          string `json:"fontSize"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type ShapeUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type ShapesDeleteItemResponse struct {
@@ -2065,61 +2061,61 @@ type State struct {
 }
 
 type StickyNoteCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type StickyNoteData struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type StickyNoteDataPlatformTags struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type StickyNoteDataPlatformbulkcreateoperation struct {
 	Content string `json:"content"`
-	Shape string `json:"shape"`
+	Shape   string `json:"shape"`
 }
 
 type StickyNoteItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type StickyNoteStyle struct {
-	FillColor string `json:"fillColor"`
-	TextAlign string `json:"textAlign"`
+	FillColor         string `json:"fillColor"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type StickyNoteStylePlatformbulkcreateoperation struct {
-	FillColor string `json:"fillColor"`
-	TextAlign string `json:"textAlign"`
+	FillColor         string `json:"fillColor"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type StickyNoteUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type StickyNotesDeleteItemResponse struct {
@@ -2130,47 +2126,47 @@ type SubscriptionData struct {
 
 type Tag struct {
 	FillColor string `json:"fillColor"`
-	Id string `json:"id"`
-	Title string `json:"title"`
-	Type string `json:"type"`
+	Id        string `json:"id"`
+	Title     string `json:"title"`
+	Type      string `json:"type"`
 }
 
 type TagCreateRequest struct {
 	FillColor string `json:"fillColor"`
-	Title string `json:"title"`
+	Title     string `json:"title"`
 }
 
 type TagUpdateRequest struct {
 	FillColor string `json:"fillColor"`
-	Title string `json:"title"`
+	Title     string `json:"title"`
 }
 
 type TagWithLinks struct {
-	FillColor string `json:"fillColor"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	Title string `json:"title"`
-	Type string `json:"type"`
+	FillColor string          `json:"fillColor"`
+	Id        string          `json:"id"`
+	Links     json.RawMessage `json:"links"`
+	Title     string          `json:"title"`
+	Type      string          `json:"type"`
 }
 
 type TagsDeleteResponse struct {
 }
 
 type TagsPagedResponse struct {
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Links json.RawMessage `json:"links"`
-	Offset int `json:"offset"`
-	Size int `json:"size"`
-	Total int `json:"total"`
-	Type string `json:"type"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Links  json.RawMessage `json:"links"`
+	Offset int             `json:"offset"`
+	Size   int             `json:"size"`
+	Total  int             `json:"total"`
+	Type   string          `json:"type"`
 }
 
 type Team struct {
-	Id string `json:"id"`
-	Name string `json:"name"`
+	Id      string          `json:"id"`
+	Name    string          `json:"name"`
 	Picture json.RawMessage `json:"picture"`
-	Type string `json:"type"`
+	Type    string          `json:"type"`
 }
 
 type TeamAccountDiscoverySettings struct {
@@ -2194,48 +2190,48 @@ type TeamCollaborationSettingsChanges struct {
 }
 
 type TeamCopyAccessLevelSettings struct {
-	CopyAccessLevel string `json:"copyAccessLevel"`
+	CopyAccessLevel           string `json:"copyAccessLevel"`
 	CopyAccessLevelLimitation string `json:"copyAccessLevelLimitation"`
 }
 
 type TeamCopyAccessLevelSettingsChanges struct {
-	CopyAccessLevel string `json:"copyAccessLevel"`
+	CopyAccessLevel           string `json:"copyAccessLevel"`
 	CopyAccessLevelLimitation string `json:"copyAccessLevelLimitation"`
 }
 
 type TeamGroup struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Role string `json:"role"`
 	Type string `json:"type"`
 }
 
 type TeamGroupsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type TeamInvitationSettings struct {
 	InviteExternalUsers string `json:"inviteExternalUsers"`
-	WhoCanInvite string `json:"whoCanInvite"`
+	WhoCanInvite        string `json:"whoCanInvite"`
 }
 
 type TeamInvitationSettingsChanges struct {
 	InviteExternalUsers string `json:"inviteExternalUsers"`
-	WhoCanInvite string `json:"whoCanInvite"`
+	WhoCanInvite        string `json:"whoCanInvite"`
 }
 
 type TeamMember struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy string `json:"createdBy"`
-	Id string `json:"id"`
+	CreatedAt  string `json:"createdAt"`
+	CreatedBy  string `json:"createdBy"`
+	Id         string `json:"id"`
 	ModifiedAt string `json:"modifiedAt"`
 	ModifiedBy string `json:"modifiedBy"`
-	Role string `json:"role"`
-	TeamId string `json:"teamId"`
-	Type string `json:"type"`
+	Role       string `json:"role"`
+	TeamId     string `json:"teamId"`
+	Type       string `json:"type"`
 }
 
 type TeamMemberChanges struct {
@@ -2244,78 +2240,78 @@ type TeamMemberChanges struct {
 
 type TeamMemberInvite struct {
 	Email string `json:"email"`
-	Role string `json:"role"`
+	Role  string `json:"role"`
 }
 
 type TeamMembersPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type TeamSettings struct {
-	OrganizationId string `json:"organizationId"`
+	OrganizationId               string          `json:"organizationId"`
 	TeamAccountDiscoverySettings json.RawMessage `json:"teamAccountDiscoverySettings"`
-	TeamCollaborationSettings json.RawMessage `json:"teamCollaborationSettings"`
-	TeamCopyAccessLevelSettings json.RawMessage `json:"teamCopyAccessLevelSettings"`
-	TeamId string `json:"teamId"`
-	TeamInvitationSettings json.RawMessage `json:"teamInvitationSettings"`
-	TeamSharingPolicySettings json.RawMessage `json:"teamSharingPolicySettings"`
-	Type string `json:"type"`
+	TeamCollaborationSettings    json.RawMessage `json:"teamCollaborationSettings"`
+	TeamCopyAccessLevelSettings  json.RawMessage `json:"teamCopyAccessLevelSettings"`
+	TeamId                       string          `json:"teamId"`
+	TeamInvitationSettings       json.RawMessage `json:"teamInvitationSettings"`
+	TeamSharingPolicySettings    json.RawMessage `json:"teamSharingPolicySettings"`
+	Type                         string          `json:"type"`
 }
 
 type TeamSettingsChanges struct {
 	TeamAccountDiscoverySettings json.RawMessage `json:"teamAccountDiscoverySettings"`
-	TeamCollaborationSettings json.RawMessage `json:"teamCollaborationSettings"`
-	TeamCopyAccessLevelSettings json.RawMessage `json:"teamCopyAccessLevelSettings"`
-	TeamInvitationSettings json.RawMessage `json:"teamInvitationSettings"`
-	TeamSharingPolicySettings json.RawMessage `json:"teamSharingPolicySettings"`
+	TeamCollaborationSettings    json.RawMessage `json:"teamCollaborationSettings"`
+	TeamCopyAccessLevelSettings  json.RawMessage `json:"teamCopyAccessLevelSettings"`
+	TeamInvitationSettings       json.RawMessage `json:"teamInvitationSettings"`
+	TeamSharingPolicySettings    json.RawMessage `json:"teamSharingPolicySettings"`
 }
 
 type TeamSharingPolicySettings struct {
-	AllowListedDomains json.RawMessage `json:"allowListedDomains"`
-	CreateAssetAccessLevel string `json:"createAssetAccessLevel"`
-	DefaultBoardAccess string `json:"defaultBoardAccess"`
-	DefaultBoardSharingAccess string `json:"defaultBoardSharingAccess"`
-	DefaultOrganizationAccess string `json:"defaultOrganizationAccess"`
-	DefaultProjectAccess string `json:"defaultProjectAccess"`
-	MoveBoardToAccount string `json:"moveBoardToAccount"`
-	RestrictAllowedDomains string `json:"restrictAllowedDomains"`
-	SharingOnAccount string `json:"sharingOnAccount"`
-	SharingOnOrganization string `json:"sharingOnOrganization"`
-	SharingViaPublicLink string `json:"sharingViaPublicLink"`
+	AllowListedDomains        json.RawMessage `json:"allowListedDomains"`
+	CreateAssetAccessLevel    string          `json:"createAssetAccessLevel"`
+	DefaultBoardAccess        string          `json:"defaultBoardAccess"`
+	DefaultBoardSharingAccess string          `json:"defaultBoardSharingAccess"`
+	DefaultOrganizationAccess string          `json:"defaultOrganizationAccess"`
+	DefaultProjectAccess      string          `json:"defaultProjectAccess"`
+	MoveBoardToAccount        string          `json:"moveBoardToAccount"`
+	RestrictAllowedDomains    string          `json:"restrictAllowedDomains"`
+	SharingOnAccount          string          `json:"sharingOnAccount"`
+	SharingOnOrganization     string          `json:"sharingOnOrganization"`
+	SharingViaPublicLink      string          `json:"sharingViaPublicLink"`
 }
 
 type TeamSharingPolicySettingsChanges struct {
-	AllowListedDomains json.RawMessage `json:"allowListedDomains"`
-	CreateAssetAccessLevel string `json:"createAssetAccessLevel"`
-	DefaultBoardAccess string `json:"defaultBoardAccess"`
-	DefaultBoardSharingAccess string `json:"defaultBoardSharingAccess"`
-	DefaultOrganizationAccess string `json:"defaultOrganizationAccess"`
-	DefaultProjectAccess string `json:"defaultProjectAccess"`
-	MoveBoardToAccount string `json:"moveBoardToAccount"`
-	RestrictAllowedDomains string `json:"restrictAllowedDomains"`
-	SharingOnAccount string `json:"sharingOnAccount"`
-	SharingOnOrganization string `json:"sharingOnOrganization"`
-	SharingViaPublicLink string `json:"sharingViaPublicLink"`
+	AllowListedDomains        json.RawMessage `json:"allowListedDomains"`
+	CreateAssetAccessLevel    string          `json:"createAssetAccessLevel"`
+	DefaultBoardAccess        string          `json:"defaultBoardAccess"`
+	DefaultBoardSharingAccess string          `json:"defaultBoardSharingAccess"`
+	DefaultOrganizationAccess string          `json:"defaultOrganizationAccess"`
+	DefaultProjectAccess      string          `json:"defaultProjectAccess"`
+	MoveBoardToAccount        string          `json:"moveBoardToAccount"`
+	RestrictAllowedDomains    string          `json:"restrictAllowedDomains"`
+	SharingOnAccount          string          `json:"sharingOnAccount"`
+	SharingOnOrganization     string          `json:"sharingOnOrganization"`
+	SharingViaPublicLink      string          `json:"sharingViaPublicLink"`
 }
 
 type TeamsPage struct {
-	Cursor string `json:"cursor"`
-	Data json.RawMessage `json:"data"`
-	Limit int `json:"limit"`
-	Size int `json:"size"`
-	Type string `json:"type"`
+	Cursor string          `json:"cursor"`
+	Data   json.RawMessage `json:"data"`
+	Limit  int             `json:"limit"`
+	Size   int             `json:"size"`
+	Type   string          `json:"type"`
 }
 
 type TextCreateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type TextData struct {
@@ -2331,47 +2327,47 @@ type TextDataPlatformbulkcreateoperation struct {
 }
 
 type TextItem struct {
-	CreatedAt string `json:"createdAt"`
-	CreatedBy json.RawMessage `json:"createdBy"`
-	Data json.RawMessage `json:"data"`
-	Geometry json.RawMessage `json:"geometry"`
-	Id string `json:"id"`
-	Links json.RawMessage `json:"links"`
-	ModifiedAt string `json:"modifiedAt"`
+	CreatedAt  string          `json:"createdAt"`
+	CreatedBy  json.RawMessage `json:"createdBy"`
+	Data       json.RawMessage `json:"data"`
+	Geometry   json.RawMessage `json:"geometry"`
+	Id         string          `json:"id"`
+	Links      json.RawMessage `json:"links"`
+	ModifiedAt string          `json:"modifiedAt"`
 	ModifiedBy json.RawMessage `json:"modifiedBy"`
-	Parent json.RawMessage `json:"parent"`
-	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
-	Type string `json:"type"`
+	Parent     json.RawMessage `json:"parent"`
+	Position   json.RawMessage `json:"position"`
+	Style      json.RawMessage `json:"style"`
+	Type       string          `json:"type"`
 }
 
 type TextStyle struct {
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
+	Color       string `json:"color"`
+	FillColor   string `json:"fillColor"`
 	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	FontFamily  string `json:"fontFamily"`
+	FontSize    string `json:"fontSize"`
+	TextAlign   string `json:"textAlign"`
 }
 
 type TextUpdateRequest struct {
-	Data json.RawMessage `json:"data"`
+	Data     json.RawMessage `json:"data"`
 	Geometry json.RawMessage `json:"geometry"`
-	Parent json.RawMessage `json:"parent"`
+	Parent   json.RawMessage `json:"parent"`
 	Position json.RawMessage `json:"position"`
-	Style json.RawMessage `json:"style"`
+	Style    json.RawMessage `json:"style"`
 }
 
 type TextsDeleteItemResponse struct {
 }
 
 type TokenInformation struct {
-	CreatedBy json.RawMessage `json:"createdBy"`
+	CreatedBy    json.RawMessage `json:"createdBy"`
 	Organization json.RawMessage `json:"organization"`
-	Scopes json.RawMessage `json:"scopes"`
-	Team json.RawMessage `json:"team"`
-	Type string `json:"type"`
-	User json.RawMessage `json:"user"`
+	Scopes       json.RawMessage `json:"scopes"`
+	Team         json.RawMessage `json:"team"`
+	Type         string          `json:"type"`
+	User         json.RawMessage `json:"user"`
 }
 
 type UpdateAppCardStyle struct {
@@ -2380,16 +2376,16 @@ type UpdateAppCardStyle struct {
 
 type UpdateBoardSubscriptionRequest struct {
 	CallbackUrl string `json:"callbackUrl"`
-	Status string `json:"status"`
+	Status      string `json:"status"`
 }
 
 type UpdateBoardsDataClassificationLabel struct {
-	NumberUpdatedBoards int `json:"numberUpdatedBoards"`
-	Type string `json:"type"`
+	NumberUpdatedBoards int    `json:"numberUpdatedBoards"`
+	Type                string `json:"type"`
 }
 
 type UpdateBoardsDataClassificationLabelRequest struct {
-	LabelId int `json:"labelId"`
+	LabelId           int  `json:"labelId"`
 	NotClassifiedOnly bool `json:"notClassifiedOnly"`
 }
 
@@ -2398,13 +2394,13 @@ type UpdateCardStyle struct {
 }
 
 type UpdateConnectorStyle struct {
-	Color string `json:"color"`
-	EndStrokeCap string `json:"endStrokeCap"`
-	FontSize string `json:"fontSize"`
-	StartStrokeCap string `json:"startStrokeCap"`
-	StrokeColor string `json:"strokeColor"`
-	StrokeStyle string `json:"strokeStyle"`
-	StrokeWidth string `json:"strokeWidth"`
+	Color           string `json:"color"`
+	EndStrokeCap    string `json:"endStrokeCap"`
+	FontSize        string `json:"fontSize"`
+	StartStrokeCap  string `json:"startStrokeCap"`
+	StrokeColor     string `json:"strokeColor"`
+	StrokeStyle     string `json:"strokeStyle"`
+	StrokeWidth     string `json:"strokeWidth"`
 	TextOrientation string `json:"textOrientation"`
 }
 
@@ -2414,7 +2410,7 @@ type UpdateFrameStyle struct {
 
 type UpdateGroupRequest struct {
 	Description string `json:"description"`
-	Name string `json:"name"`
+	Name        string `json:"name"`
 }
 
 type UpdateProjectMemberRequest struct {
@@ -2430,103 +2426,103 @@ type UpdateProjectSettingsRequest struct {
 }
 
 type UpdateShapeStyle struct {
-	BorderColor string `json:"borderColor"`
-	BorderOpacity string `json:"borderOpacity"`
-	BorderStyle string `json:"borderStyle"`
-	BorderWidth string `json:"borderWidth"`
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
-	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	BorderColor       string `json:"borderColor"`
+	BorderOpacity     string `json:"borderOpacity"`
+	BorderStyle       string `json:"borderStyle"`
+	BorderWidth       string `json:"borderWidth"`
+	Color             string `json:"color"`
+	FillColor         string `json:"fillColor"`
+	FillOpacity       string `json:"fillOpacity"`
+	FontFamily        string `json:"fontFamily"`
+	FontSize          string `json:"fontSize"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type UpdateStickyNoteStyle struct {
-	FillColor string `json:"fillColor"`
-	TextAlign string `json:"textAlign"`
+	FillColor         string `json:"fillColor"`
+	TextAlign         string `json:"textAlign"`
 	TextAlignVertical string `json:"textAlignVertical"`
 }
 
 type UpdateTeamSettingsRequest struct {
-	DefaultLabelId int `json:"defaultLabelId"`
-	Enabled bool `json:"enabled"`
+	DefaultLabelId int  `json:"defaultLabelId"`
+	Enabled        bool `json:"enabled"`
 }
 
 type UpdateTextStyle struct {
-	Color string `json:"color"`
-	FillColor string `json:"fillColor"`
+	Color       string `json:"color"`
+	FillColor   string `json:"fillColor"`
 	FillOpacity string `json:"fillOpacity"`
-	FontFamily string `json:"fontFamily"`
-	FontSize string `json:"fontSize"`
-	TextAlign string `json:"textAlign"`
+	FontFamily  string `json:"fontFamily"`
+	FontSize    string `json:"fontSize"`
+	TextAlign   string `json:"textAlign"`
 }
 
 type UpdateUserGroupMembersRequest struct {
-	MembersToAdd json.RawMessage `json:"membersToAdd"`
+	MembersToAdd    json.RawMessage `json:"membersToAdd"`
 	MembersToRemove json.RawMessage `json:"membersToRemove"`
 }
 
 type UpdateUserGroupMembersResultError struct {
-	Error string `json:"error"`
+	Error     string `json:"error"`
 	Operation string `json:"operation"`
-	Status int `json:"status"`
+	Status    int    `json:"status"`
 }
 
 type UpdateUserGroupMembersResultSuccess struct {
 	AffectedUsers json.RawMessage `json:"affectedUsers"`
-	Operation string `json:"operation"`
-	Status int `json:"status"`
+	Operation     string          `json:"operation"`
+	Status        int             `json:"status"`
 }
 
 type UploadFileFromDevice struct {
-	Data json.RawMessage `json:"data"`
-	Resource string `json:"resource"`
+	Data     json.RawMessage `json:"data"`
+	Resource string          `json:"resource"`
 }
 
 type User struct {
-	Email string `json:"email"`
+	Email     string `json:"email"`
 	FirstName string `json:"firstName"`
-	Id string `json:"id"`
-	LastName string `json:"lastName"`
+	Id        string `json:"id"`
+	LastName  string `json:"lastName"`
 }
 
 type UserInfoLastOpenedBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
 
 type UserInfoShort struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
 
 type UserListResponse struct {
-	Resources json.RawMessage `json:"Resources"`
-	ItemsPerPage float64 `json:"itemsPerPage"`
-	Schemas json.RawMessage `json:"schemas"`
-	StartIndex float64 `json:"startIndex"`
-	TotalResults float64 `json:"totalResults"`
+	Resources    json.RawMessage `json:"Resources"`
+	ItemsPerPage float64         `json:"itemsPerPage"`
+	Schemas      json.RawMessage `json:"schemas"`
+	StartIndex   float64         `json:"startIndex"`
+	TotalResults float64         `json:"totalResults"`
 }
 
 type UserResource struct {
-	Active bool `json:"active"`
-	DisplayName string `json:"displayName"`
-	Emails json.RawMessage `json:"emails"`
-	Groups json.RawMessage `json:"groups"`
-	Id string `json:"id"`
-	Meta json.RawMessage `json:"meta"`
-	Name json.RawMessage `json:"name"`
-	Photos json.RawMessage `json:"photos"`
-	PreferredLanguage string `json:"preferredLanguage"`
-	Roles json.RawMessage `json:"roles"`
-	Schemas json.RawMessage `json:"schemas"`
+	Active                                            bool            `json:"active"`
+	DisplayName                                       string          `json:"displayName"`
+	Emails                                            json.RawMessage `json:"emails"`
+	Groups                                            json.RawMessage `json:"groups"`
+	Id                                                string          `json:"id"`
+	Meta                                              json.RawMessage `json:"meta"`
+	Name                                              json.RawMessage `json:"name"`
+	Photos                                            json.RawMessage `json:"photos"`
+	PreferredLanguage                                 string          `json:"preferredLanguage"`
+	Roles                                             json.RawMessage `json:"roles"`
+	Schemas                                           json.RawMessage `json:"schemas"`
 	UrnIetfParamsScimSchemasExtensionEnterprise20User json.RawMessage `json:"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"`
-	UserName string `json:"userName"`
-	UserType string `json:"userType"`
+	UserName                                          string          `json:"userName"`
+	UserType                                          string          `json:"userType"`
 }
 
 type V2ExperimentalDeleteCodeWidgetItemResponse struct {
@@ -2542,20 +2538,20 @@ type V2ExperimentalDeleteShapeItemFlowchartResponse struct {
 }
 
 type V2ExperimentalGetMetricsItem struct {
-	Installations int `json:"installations"`
-	PeriodStart string `json:"periodStart"`
-	Uninstallations int `json:"uninstallations"`
-	UniqueOrganizations int `json:"uniqueOrganizations"`
-	UniqueRecurringUsers int `json:"uniqueRecurringUsers"`
-	UniqueUsers int `json:"uniqueUsers"`
+	Installations        int    `json:"installations"`
+	PeriodStart          string `json:"periodStart"`
+	Uninstallations      int    `json:"uninstallations"`
+	UniqueOrganizations  int    `json:"uniqueOrganizations"`
+	UniqueRecurringUsers int    `json:"uniqueRecurringUsers"`
+	UniqueUsers          int    `json:"uniqueUsers"`
 }
 
 type V2ExperimentalGetMetricsTotalResponse struct {
-	Installations int `json:"installations"`
-	Uninstallations int `json:"uninstallations"`
-	UniqueOrganizations int `json:"uniqueOrganizations"`
+	Installations        int `json:"installations"`
+	Uninstallations      int `json:"uninstallations"`
+	UniqueOrganizations  int `json:"uniqueOrganizations"`
 	UniqueRecurringUsers int `json:"uniqueRecurringUsers"`
-	UniqueUsers int `json:"uniqueUsers"`
+	UniqueUsers          int `json:"uniqueUsers"`
 }
 
 type WidgetDataOutput struct {
@@ -2563,75 +2559,75 @@ type WidgetDataOutput struct {
 
 type WidgetLinks struct {
 	Related string `json:"related"`
-	Self string `json:"self"`
+	Self    string `json:"self"`
 }
 
 type WidgetLinksPlatformContainers struct {
 	Related string `json:"related"`
-	Self string `json:"self"`
+	Self    string `json:"self"`
 }
 
 type WidgetLinksPlatformExperimentalFeatures struct {
 	Related string `json:"related"`
-	Self string `json:"self"`
+	Self    string `json:"self"`
 }
 
 type WidgetLinksPlatformFileUpload struct {
 	Related string `json:"related"`
-	Self string `json:"self"`
+	Self    string `json:"self"`
 }
 
 type WidthOnlyAdjustableGeometry struct {
 	Rotation float64 `json:"rotation"`
-	Width float64 `json:"width"`
+	Width    float64 `json:"width"`
 }
 
 type createdBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type createdByPlatformContainers struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type createdByPlatformFileUpload struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type createdByPlatformTags struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type createdByPlatformgroups struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type modifiedBy struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type modifiedByPlatformContainers struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type modifiedByPlatformFileUpload struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type modifiedByPlatformTags struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }
 
 type modifiedByPlatformgroups struct {
-	Id string `json:"id"`
+	Id   string `json:"id"`
 	Type string `json:"type"`
 }

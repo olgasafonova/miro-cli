@@ -17,29 +17,46 @@ The Miro public OpenAPI spec ships with several inaccuracies that produce broken
 
 **Verified live:** `boards groups create uXjVG34x8Cg= --data '{"items":[id1,id2]}'` returns HTTP 201 with the correct response shape. Test group cleaned up afterward.
 
-## Tangents — same class of bug, NOT yet patched
+## Applied — board-item-group ref repointings (Phase 1 follow-up)
 
-These remain broken in the current spec. Tracked in `HANDOFF.md` Phase 1.
+Three more endpoints in the same family had the same SCIM-vs-board-group schema confusion as bug #2. All four `GroupResponseShort` references that affected board-item-group endpoints, plus the one stray `Group` reference in the `PUT` body, have been re-pointed at the correct schemas.
 
 ### `GET /v2/boards/{board_id}/groups` (get-all)
 
-`responses.200.content.application/json.schema.$ref` likely points to a paginated wrapper around SCIM `Group`. The actual Miro response is paginated board-item-groups. Need to verify shape with a live call (use the AnalyticsDev Demo board which has at least one item-group from earlier testing) and patch accordingly.
+The 200 response embeds an inline paginated wrapper. Its `data.items.$ref` was `GroupResponseShort`. Re-pointed to `BoardItemGroupResponse`.
 
 ### `GET /v2/boards/{board_id}/groups/{group_id}` (get-by-id)
 
-`responses.200.content.application/json.schema.$ref` → `GroupResponseShort` (SCIM-shaped). Same fix as the create endpoint's response: re-point to `BoardItemGroupResponse`.
+`responses.200.content.application/json.schema.$ref` was `GroupResponseShort`. Re-pointed to `BoardItemGroupResponse`.
 
-### `PATCH /v2/boards/{board_id}/groups/{group_id}` (update)
+### `PUT /v2/boards/{board_id}/groups/{group_id}` (update)
 
-Both `requestBody` and `responses.200` likely reference the wrong schemas. Same patch shape as create: re-point to `BoardItemGroupCreateBody` (request) and `BoardItemGroupResponse` (response).
+Note: this endpoint is `PUT`, not `PATCH` as HANDOFF originally listed. Two refs fixed:
+- `requestBody.content.application/json.schema.$ref`: `Group` → `BoardItemGroupCreateBody`.
+- `responses.200.content.application/json.schema.$ref`: `GroupResponseShort` → `BoardItemGroupResponse`.
+
+After these patches, `GroupResponseShort` has zero references in the spec. The schema definition still exists under `components.schemas` and can stay; leaving it keeps the SCIM-shape available if a real consumer surfaces. Safe to delete on a future cleanup pass.
+
+## Applied — trailing `?` typo on `/v2/boards/{board_id}/groups/{group_id}?`
+
+The Miro spec used a trailing `?` on the path key as a workaround for OpenAPI's "one operation per verb per path" rule. Two HTTP-level identical operations were split across two path entries:
+
+- `unGroup` at `/v2/boards/{board_id}/groups/{group_id}` — `delete_items` query param `required=false`
+- `deleteGroup` at `/v2/boards/{board_id}/groups/{group_id}?` — same path, `delete_items` `required=true`
+
+**Patch:** removed the `/v2/boards/{board_id}/groups/{group_id}?` path entry entirely. `unGroup` covers both behaviors via its `delete_items` query param. After regen, `boards groups delete` no longer exists as a CLI subcommand — users perform "delete the group and its items" via `boards groups un <board_id> <group_id> --delete-items`.
+
+## Tangents — NOT yet patched
 
 ### `GET /v2/boards/{board_id}/groups/items` (get-items-by-id)
 
-Path is suspicious — it doesn't include `{group_id}` in the path but the operation suggests it should be group-specific. May be a Miro spec bug, may be a curated-spec typo. Investigate before patching.
+The 200 response is an inline shape: `{limit, size, total, data: {id, type, data: [ItemPagedResponse]}}`. The double-`data` nesting is unusual but not obviously wrong; the inner array uses `ItemPagedResponse` which IS the right Miro item shape (this endpoint returns items, not groups, despite the path family). The `group_item_id` query param is required, so the operation is "given a group's item ID, return the items in that group."
 
-### `DELETE /v2/boards/{board_id}/groups/{group_id}?` (line 12232)
+Two open questions:
+1. Is the double-`data` envelope what Miro really returns, or should the outer object collapse so the array sits at top-level `data`?
+2. Why is the path `/v2/boards/{board_id}/groups/items` rather than `/v2/boards/{board_id}/groups/{group_id}/items`? The query-param-as-identifier shape is unusual for a REST list-children endpoint.
 
-Path has a trailing `?` which is invalid OpenAPI syntax. Almost certainly a typo in the upstream Miro spec. Strip the `?`.
+Verify both with a live call before patching.
 
 ## Patch convention
 

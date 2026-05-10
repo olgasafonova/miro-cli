@@ -15,8 +15,8 @@ import (
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"miro-developer-platform-pp-cli/internal/cli"
-	"miro-developer-platform-pp-cli/internal/cliutil"
 	"miro-developer-platform-pp-cli/internal/client"
+	"miro-developer-platform-pp-cli/internal/cliutil"
 	"miro-developer-platform-pp-cli/internal/config"
 	"miro-developer-platform-pp-cli/internal/mcp/cobratree"
 	"miro-developer-platform-pp-cli/internal/store"
@@ -223,6 +223,7 @@ func dbPath() string {
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, ".local", "share", "miro-developer-platform-pp-cli", "data.db")
 }
+
 // Note: MCP tools use their own dbPath() because they are in a separate package (main, not cli).
 // The CLI's defaultDBPath() in the cli package uses the same canonical path.
 
@@ -355,96 +356,96 @@ func handleContext(_ context.Context, _ mcplib.CallToolRequest) (*mcplib.CallToo
 		"api":         "miro-developer-platform",
 		"description": "<img src=\"https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n\" width=\"1685\" height=\"593\"> ###...",
 		"archetype":   "project-management",
-		"tool_count":  197,
+		"tool_count":  196,
 		// tool_surface tells agents which surface a capability lives on.
 		"tool_surface": "MCP exposes typed endpoint tools plus a runtime mirror of user-facing CLI commands. Endpoint tools keep typed schemas; command-mirror tools shell out to the companion miro-developer-platform-pp-cli binary.",
 		"auth": map[string]any{
 			"type": "bearer_token",
 			"env_vars": []map[string]any{
 				{
-					"name": "MIRO_ACCESS_TOKEN",
-					"kind": "per_call",
-					"required": true,
-					"sensitive": true,
+					"name":        "MIRO_ACCESS_TOKEN",
+					"kind":        "per_call",
+					"required":    true,
+					"sensitive":   true,
 					"description": "Set to your API credential.",
 				},
 			},
 		},
 		"resources": []map[string]any{
 			{
-				"name": "audit",
+				"name":        "audit",
 				"description": "Manage audit",
-				"endpoints": []string{"enterprise-get-logs",  },
-				"searchable": true,
+				"endpoints":   []string{"enterprise-get-logs"},
+				"searchable":  true,
 			},
 			{
-				"name": "boards",
+				"name":        "boards",
 				"description": "Manage boards",
-				"endpoints": []string{"copy", "create", "delete", "get", "get-specific", "update",  },
-				"syncable": true,
-				"searchable": true,
+				"endpoints":   []string{"copy", "create", "delete", "get", "get-specific", "update"},
+				"syncable":    true,
+				"searchable":  true,
 			},
 			{
-				"name": "groups",
+				"name":        "groups",
 				"description": "Manage groups",
-				"endpoints": []string{"get", "list", "patch",  },
-				"syncable": true,
-				"searchable": true,
+				"endpoints":   []string{"get", "list", "patch"},
+				"syncable":    true,
+				"searchable":  true,
 			},
 			{
-				"name": "oauth",
+				"name":        "oauth",
 				"description": "Manage oauth",
-				"endpoints": []string{"revoke-token", "revoke-token-v2",  },
-				"searchable": true,
+				"endpoints":   []string{"revoke-token", "revoke-token-v2"},
+				"searchable":  true,
 			},
 			{
-				"name": "oauth-token",
+				"name":        "oauth-token",
 				"description": "Manage oauth token",
-				"endpoints": []string{"token-info",  },
+				"endpoints":   []string{"token-info"},
 			},
 			{
-				"name": "orgs",
+				"name":        "orgs",
 				"description": "Manage orgs",
-				"endpoints": []string{"enterprise-get-organization",  },
-				"searchable": true,
+				"endpoints":   []string{"enterprise-get-organization"},
+				"searchable":  true,
 			},
 			{
-				"name": "resource-types",
+				"name":        "resource-types",
 				"description": "Manage resource types",
-				"endpoints": []string{"get", "list",  },
-				"syncable": true,
-				"searchable": true,
+				"endpoints":   []string{"get", "list"},
+				"syncable":    true,
+				"searchable":  true,
 			},
 			{
-				"name": "schemas",
+				"name":        "schemas",
 				"description": "Manage schemas",
-				"endpoints": []string{"get", "list",  },
-				"syncable": true,
-				"searchable": true,
+				"endpoints":   []string{"get", "list"},
+				"syncable":    true,
+				"searchable":  true,
 			},
 			{
-				"name": "service-provider-config",
+				"name":        "service-provider-config",
 				"description": "Manage service provider config",
-				"endpoints": []string{"list",  },
-				"syncable": true,
+				"endpoints":   []string{"list"},
+				"syncable":    true,
 			},
 			{
-				"name": "sessions",
+				"name":        "sessions",
 				"description": "Manage sessions",
-				"endpoints": []string{"enterprise-post-user-reset",  },
+				"endpoints":   []string{"enterprise-post-user-reset"},
 			},
 			{
-				"name": "users",
+				"name":        "users",
 				"description": "Manage users",
-				"endpoints": []string{"create", "delete", "get", "list", "patch", "replace",  },
-				"syncable": true,
-				"searchable": true,
+				"endpoints":   []string{"create", "delete", "get", "list", "patch", "replace"},
+				"syncable":    true,
+				"searchable":  true,
 			},
 			{
-				"name": "v2-experimental",
+				"name":        "v2-experimental",
 				"description": "Manage v2 experimental",
-				"endpoints": []string{"create-code-widget-item", "create-mindmap-nodes-experimental", "create-shape-item-flowchart", "delete-code-widget-item", "delete-item-experimental", "delete-mindmap-node-experimental", "delete-shape-item-flowchart", "get-code-widget-item", "get-code-widget-items", "get-items-experimental", "get-metrics", "get-metrics-total", "get-mindmap-node-experimental", "get-mindmap-nodes-experimental", "get-shape-item-flowchart", "get-specific-item-experimental", "move-code-widget-item", "update-code-widget-item", "update-shape-item-flowchart",  },
-				"searchable": true,
+				"endpoints":   []string{"create-code-widget-item", "create-mindmap-nodes-experimental", "create-shape-item-flowchart", "delete-code-widget-item", "delete-item-experimental", "delete-mindmap-node-experimental", "delete-shape-item-flowchart", "get-code-widget-item", "get-code-widget-items", "get-items-experimental", "get-metrics", "get-metrics-total", "get-mindmap-node-experimental", "get-mindmap-nodes-experimental", "get-shape-item-flowchart", "get-specific-item-experimental", "move-code-widget-item", "update-code-widget-item", "update-shape-item-flowchart"},
+				"searchable":  true,
 			},
 		},
 		"query_tips": []string{
