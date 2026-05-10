@@ -18,9 +18,9 @@ func newBoardsTagsCreateCmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "create <board_id>",
-		Short: "Creates a tag on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards tags create 550e8400-e29b-41d4-a716-446655440000 --title example-resource",
+		Use:         "create <board_id>",
+		Short:       "Creates a tag on a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards tags create 550e8400-e29b-41d4-a716-446655440000 --title example-resource",
 		Annotations: map[string]string{"pp:endpoint": "tags.create", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/tags"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -71,7 +71,9 @@ func newBoardsTagsCreateCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

@@ -14,9 +14,9 @@ import (
 func newOrgsBoardsEnterpriseExportJobStatusCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-export-job-status <org_id> <job_id>",
-		Short: "Retrieves the status of the board export job.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs boards enterprise-export-job-status 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-export-job-status <org_id> <job_id>",
+		Short:       "Retrieves the status of the board export job.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-export-job-status 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-export-job-status", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

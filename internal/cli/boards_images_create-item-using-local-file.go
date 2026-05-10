@@ -18,10 +18,10 @@ func newBoardsImagesCreateItemUsingLocalFileCmd(flags *rootFlags) *cobra.Command
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "create-item-using-local-file <board_id_PlatformFileUpload>",
-		Aliases: []string{"create"},
-		Short: "Adds an image item to a board by specifying a file from device.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards images create-item-using-local-file example-value --resource example-value",
+		Use:         "create-item-using-local-file <board_id_PlatformFileUpload>",
+		Aliases:     []string{"create"},
+		Short:       "Adds an image item to a board by specifying a file from device.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards images create-item-using-local-file example-value --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "images.create-item-using-local-file", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/images"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -76,7 +76,9 @@ func newBoardsImagesCreateItemUsingLocalFileCmd(flags *rootFlags) *cobra.Command
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

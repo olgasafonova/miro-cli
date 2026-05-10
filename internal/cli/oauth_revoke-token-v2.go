@@ -19,9 +19,9 @@ func newOauthRevokeTokenV2Cmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "revoke-token-v2",
-		Short: "Revoke the current access token. Revoking an access token means that the access token will no longer work. When an...",
-		Example: "  miro-developer-platform-pp-cli oauth revoke-token-v2 --access-token your-token-here",
+		Use:         "revoke-token-v2",
+		Short:       "Revoke the current access token. Revoking an access token means that the access token will no longer work. When an...",
+		Example:     "  miro-developer-platform-pp-cli oauth revoke-token-v2 --access-token your-token-here",
 		Annotations: map[string]string{"pp:endpoint": "oauth.revoke-token-v2", "pp:method": "POST", "pp:path": "/v2/oauth/revoke"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !stdinBody {
@@ -77,7 +77,9 @@ func newOauthRevokeTokenV2Cmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

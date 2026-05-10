@@ -1004,6 +1004,7 @@ func sqliteFieldValue(v any) any {
 func lookupFieldValue(obj map[string]any, snakeKey string) any {
 	return LookupFieldValue(obj, snakeKey)
 }
+
 // upsertAuditTx writes the typed-table portion of a audit upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1056,6 +1057,7 @@ func (s *Store) UpsertAudit(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertBoardsTx writes the typed-table portion of a boards upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1112,6 +1114,7 @@ func (s *Store) UpsertBoards(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertAppCardsTx writes the typed-table portion of a app_cards upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1162,6 +1165,7 @@ func (s *Store) UpsertAppCards(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertCardsTx writes the typed-table portion of a cards upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1212,6 +1216,7 @@ func (s *Store) UpsertCards(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertConnectorsTx writes the typed-table portion of a connectors upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1263,6 +1268,7 @@ func (s *Store) UpsertConnectors(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertDocsTx writes the typed-table portion of a docs upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1313,6 +1319,7 @@ func (s *Store) UpsertDocs(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertDocumentsTx writes the typed-table portion of a documents upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1363,6 +1370,7 @@ func (s *Store) UpsertDocuments(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertEmbedsTx writes the typed-table portion of a embeds upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1413,6 +1421,7 @@ func (s *Store) UpsertEmbeds(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertFramesTx writes the typed-table portion of a frames upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1463,6 +1472,7 @@ func (s *Store) UpsertFrames(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertBoardsGroupsTx writes the typed-table portion of a boards_groups upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1514,6 +1524,7 @@ func (s *Store) UpsertBoardsGroups(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertImagesTx writes the typed-table portion of a images upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1564,6 +1575,7 @@ func (s *Store) UpsertImages(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertItemsTx writes the typed-table portion of a items upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1615,6 +1627,7 @@ func (s *Store) UpsertItems(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertBoardsMembersTx writes the typed-table portion of a boards_members upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1666,6 +1679,7 @@ func (s *Store) UpsertBoardsMembers(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertShapesTx writes the typed-table portion of a shapes upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1716,6 +1730,7 @@ func (s *Store) UpsertShapes(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertStickyNotesTx writes the typed-table portion of a sticky_notes upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1766,6 +1781,7 @@ func (s *Store) UpsertStickyNotes(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertTagsTx writes the typed-table portion of a tags upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1817,6 +1833,7 @@ func (s *Store) UpsertTags(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertTextsTx writes the typed-table portion of a texts upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1867,6 +1884,7 @@ func (s *Store) UpsertTexts(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertGroupsTx writes the typed-table portion of a groups upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1920,6 +1938,7 @@ func (s *Store) UpsertGroups(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertOauthTokenTx writes the typed-table portion of a oauth_token upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -1970,6 +1989,7 @@ func (s *Store) UpsertOauthToken(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertOrgsTx writes the typed-table portion of a orgs upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2023,6 +2043,7 @@ func (s *Store) UpsertOrgs(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertAiInteractionLogsTx writes the typed-table portion of a ai_interaction_logs upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2073,6 +2094,7 @@ func (s *Store) UpsertAiInteractionLogs(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertOrgsBoardsTx writes the typed-table portion of a orgs_boards upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2123,6 +2145,7 @@ func (s *Store) UpsertOrgsBoards(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertCasesTx writes the typed-table portion of a cases upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2173,6 +2196,7 @@ func (s *Store) UpsertCases(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertContentLogsTx writes the typed-table portion of a content_logs upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2223,6 +2247,7 @@ func (s *Store) UpsertContentLogs(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertDataClassificationSettingsTx writes the typed-table portion of a data_classification_settings upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2273,6 +2298,7 @@ func (s *Store) UpsertDataClassificationSettings(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertDefaultTeamsSettingsTx writes the typed-table portion of a default_teams_settings upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2323,6 +2349,7 @@ func (s *Store) UpsertDefaultTeamsSettings(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertOrgsGroupsTx writes the typed-table portion of a orgs_groups upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2373,6 +2400,7 @@ func (s *Store) UpsertOrgsGroups(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertOrgsMembersTx writes the typed-table portion of a orgs_members upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2423,6 +2451,7 @@ func (s *Store) UpsertOrgsMembers(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertProjectsTx writes the typed-table portion of a projects upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2473,6 +2502,7 @@ func (s *Store) UpsertProjects(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertTeamsTx writes the typed-table portion of a teams upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2523,6 +2553,7 @@ func (s *Store) UpsertTeams(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertResourceTypesTx writes the typed-table portion of a resource_types upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2577,6 +2608,7 @@ func (s *Store) UpsertResourceTypes(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertSchemasTx writes the typed-table portion of a schemas upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2629,6 +2661,7 @@ func (s *Store) UpsertSchemas(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertServiceProviderConfigTx writes the typed-table portion of a service_provider_config upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2679,6 +2712,7 @@ func (s *Store) UpsertServiceProviderConfig(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertUsersTx writes the typed-table portion of a users upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2736,6 +2770,7 @@ func (s *Store) UpsertUsers(data json.RawMessage) error {
 
 	return tx.Commit()
 }
+
 // upsertV2ExperimentalTx writes the typed-table portion of a v2_experimental upsert
 // inside an existing transaction. The caller is responsible for the generic
 // resources insert (via upsertGenericResourceTx) and for committing the tx.
@@ -2806,12 +2841,12 @@ func (s *Store) UpsertV2Experimental(data json.RawMessage) error {
 // child path-item annotated with x-resource-id resolves the same as a flat
 // path-item.
 var resourceIDFieldOverrides = map[string]string{
-	"boards": "id",
-	"boards_groups": "id",
-	"boards_members": "id",
-	"connectors": "id",
-	"items": "id",
-	"tags": "id",
+	"boards":          "id",
+	"boards_groups":   "id",
+	"boards_members":  "id",
+	"connectors":      "id",
+	"items":           "id",
+	"tags":            "id",
 	"v2_experimental": "id",
 }
 
@@ -3039,6 +3074,7 @@ func (s *Store) UpsertBatch(resourceType string, items []json.RawMessage) (int, 
 	}
 	return stored, extractFailures, nil
 }
+
 // SearchBoards searches the boards_fts index with optional filters.
 func (s *Store) SearchBoards(query string, limit int) ([]json.RawMessage, error) {
 	if limit <= 0 {
@@ -3066,6 +3102,7 @@ func (s *Store) SearchBoards(query string, limit int) ([]json.RawMessage, error)
 	}
 	return results, rows.Err()
 }
+
 // SearchResourceTypes searches the resource_types_fts index with optional filters.
 func (s *Store) SearchResourceTypes(query string, limit int) ([]json.RawMessage, error) {
 	if limit <= 0 {
@@ -3093,6 +3130,7 @@ func (s *Store) SearchResourceTypes(query string, limit int) ([]json.RawMessage,
 	}
 	return results, rows.Err()
 }
+
 // SearchSchemas searches the schemas_fts index with optional filters.
 func (s *Store) SearchSchemas(query string, limit int) ([]json.RawMessage, error) {
 	if limit <= 0 {

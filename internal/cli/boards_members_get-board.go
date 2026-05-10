@@ -17,10 +17,10 @@ func newBoardsMembersGetBoardCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-board <board_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves a pageable list of members for a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards members get-board 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-board <board_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves a pageable list of members for a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards members get-board 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.get-board", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/members", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -34,7 +34,7 @@ func newBoardsMembersGetBoardCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/boards/{board_id}/members"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "members", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"offset": fmt.Sprintf("%v", flagOffset),
 			}, nil, flagAll, "offset", "", "")
 			if err != nil {

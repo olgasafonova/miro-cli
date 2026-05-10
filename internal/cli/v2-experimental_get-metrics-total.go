@@ -14,9 +14,9 @@ import (
 func newV2ExperimentalGetMetricsTotalCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "get-metrics-total <app_id>",
-		Short: "Returns total usage metrics for a specific app since the app was created. This endpoint requires an app management...",
-		Example: "  miro-developer-platform-pp-cli v2-experimental get-metrics-total 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-metrics-total <app_id>",
+		Short:       "Returns total usage metrics for a specific app since the app was created. This endpoint requires an app management...",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental get-metrics-total 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-metrics-total", "pp:method": "GET", "pp:path": "/v2-experimental/apps/{app_id}/metrics-total", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -15,9 +15,9 @@ func newGroupsGetCmd(flags *rootFlags) *cobra.Command {
 	var flagAttributes string
 
 	cmd := &cobra.Command{
-		Use:   "get <id>",
-		Short: "Retrieves a single Group resource.<br><b> Note</b>: Along with groups (teams), the users that are part of those...",
-		Example: "  miro-developer-platform-pp-cli groups get 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get <id>",
+		Short:       "Retrieves a single Group resource.<br><b> Note</b>: Along with groups (teams), the users that are part of those...",
+		Example:     "  miro-developer-platform-pp-cli groups get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.get", "pp:method": "GET", "pp:path": "/Groups/{id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

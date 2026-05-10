@@ -18,10 +18,10 @@ func newBoardsImagesUpdateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra.Co
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "update-item-using-file-from-device <board_id_PlatformFileUpload> <item_id>",
-		Aliases: []string{"update"},
-		Short: "Updates an image item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards images update-item-using-file-from-device example-value 550e8400-e29b-41d4-a716-446655440000 --resource example-value",
+		Use:         "update-item-using-file-from-device <board_id_PlatformFileUpload> <item_id>",
+		Aliases:     []string{"update"},
+		Short:       "Updates an image item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards images update-item-using-file-from-device example-value 550e8400-e29b-41d4-a716-446655440000 --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "images.update-item-using-file-from-device", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/images/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -80,7 +80,9 @@ func newBoardsImagesUpdateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra.Co
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

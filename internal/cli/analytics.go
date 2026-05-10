@@ -9,8 +9,8 @@ import (
 	"os"
 	"sort"
 
-	"miro-developer-platform-pp-cli/internal/store"
 	"github.com/spf13/cobra"
+	"miro-developer-platform-pp-cli/internal/store"
 )
 
 func newAnalyticsCmd(flags *rootFlags) *cobra.Command {

@@ -22,10 +22,10 @@ func newOrgsAiInteractionLogsEnterpriseGetCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get <org_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves AI interaction logs for your organization. AI interaction logs capture user interactions with AI features...",
-		Example: "  miro-developer-platform-pp-cli orgs ai-interaction-logs enterprise-get 550e8400-e29b-41d4-a716-446655440000 --from 2026-01-15T09:00:00Z --to 2026-01-15T09:00:00Z",
+		Use:         "enterprise-get <org_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves AI interaction logs for your organization. AI interaction logs capture user interactions with AI features...",
+		Example:     "  miro-developer-platform-pp-cli orgs ai-interaction-logs enterprise-get 550e8400-e29b-41d4-a716-446655440000 --from 2026-01-15T09:00:00Z --to 2026-01-15T09:00:00Z",
 		Annotations: map[string]string{"pp:endpoint": "ai-interaction-logs.enterprise-get", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/ai-interaction-logs", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -38,7 +38,7 @@ func newOrgsAiInteractionLogsEnterpriseGetCmd(flags *rootFlags) *cobra.Command {
 				return fmt.Errorf("required flag \"%s\" not set", "to")
 			}
 			if cmd.Flags().Changed("sorting") {
-				allowedSorting := []string{ "asc", "desc" }
+				allowedSorting := []string{"asc", "desc"}
 				validSorting := false
 				for _, v := range allowedSorting {
 					if flagSorting == v {
@@ -59,12 +59,12 @@ func newOrgsAiInteractionLogsEnterpriseGetCmd(flags *rootFlags) *cobra.Command {
 			path = replacePathParam(path, "org_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "ai-interaction-logs", path, map[string]string{
 				"object_ids": fmt.Sprintf("%v", flagObjectIds),
-				"emails": fmt.Sprintf("%v", flagEmails),
-				"from": fmt.Sprintf("%v", flagFrom),
-				"to": fmt.Sprintf("%v", flagTo),
-				"cursor": fmt.Sprintf("%v", flagCursor),
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"sorting": fmt.Sprintf("%v", flagSorting),
+				"emails":     fmt.Sprintf("%v", flagEmails),
+				"from":       fmt.Sprintf("%v", flagFrom),
+				"to":         fmt.Sprintf("%v", flagTo),
+				"cursor":     fmt.Sprintf("%v", flagCursor),
+				"limit":      fmt.Sprintf("%v", flagLimit),
+				"sorting":    fmt.Sprintf("%v", flagSorting),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

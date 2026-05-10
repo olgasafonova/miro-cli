@@ -20,13 +20,13 @@ func newGroupsListCmd(flags *rootFlags) *cobra.Command {
 	var flagSortOrder string
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Retrieves the list of groups (teams) in the organization.<br><br> Note: Along with groups (teams), the users that...",
-		Example: "  miro-developer-platform-pp-cli groups list",
+		Use:         "list",
+		Short:       "Retrieves the list of groups (teams) in the organization.<br><br> Note: Along with groups (teams), the users that...",
+		Example:     "  miro-developer-platform-pp-cli groups list",
 		Annotations: map[string]string{"pp:endpoint": "groups.list", "pp:method": "GET", "pp:path": "/Groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("sort-order") {
-				allowedSortOrder := []string{ "ascending", "descending" }
+				allowedSortOrder := []string{"ascending", "descending"}
 				validSortOrder := false
 				for _, v := range allowedSortOrder {
 					if flagSortOrder == v {

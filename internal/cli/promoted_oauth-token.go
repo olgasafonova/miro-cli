@@ -14,10 +14,10 @@ import (
 func newOauthTokenPromotedCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "oauth-token",
-		Short: "Get information about an access token, such as the token type, scopes, team, user, token creation date and time, and...",
-		Long:  "Shortcut for 'oauth-token token-info'. Get information about an access token, such as the token type, scopes, team, user, token creation date and time, and...",
-		Example: "  miro-developer-platform-pp-cli oauth-token",
+		Use:         "oauth-token",
+		Short:       "Get information about an access token, such as the token type, scopes, team, user, token creation date and time, and...",
+		Long:        "Shortcut for 'oauth-token token-info'. Get information about an access token, such as the token type, scopes, team, user, token creation date and time, and...",
+		Example:     "  miro-developer-platform-pp-cli oauth-token",
 		Annotations: map[string]string{"pp:endpoint": "oauth-token.token-info", "pp:method": "GET", "pp:path": "/v1/oauth-token", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := flags.newClient()

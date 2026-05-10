@@ -21,17 +21,17 @@ func newOrgsMembersEnterpriseGetOrganizationCmd(flags *rootFlags) *cobra.Command
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get-organization <org_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves organization members based on the organization ID and the cursor, or based on the user emails provided in...",
-		Example: "  miro-developer-platform-pp-cli orgs members enterprise-get-organization 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get-organization <org_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves organization members based on the organization ID and the cursor, or based on the user emails provided in...",
+		Example:     "  miro-developer-platform-pp-cli orgs members enterprise-get-organization 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.enterprise-get-organization", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/members", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
 			if cmd.Flags().Changed("role") {
-				allowedRole := []string{ "organization_internal_admin", "organization_internal_user", "organization_external_user", "organization_team_guest_user", "unknown" }
+				allowedRole := []string{"organization_internal_admin", "organization_internal_user", "organization_external_user", "organization_team_guest_user", "unknown"}
 				validRole := false
 				for _, v := range allowedRole {
 					if flagRole == v {
@@ -44,7 +44,7 @@ func newOrgsMembersEnterpriseGetOrganizationCmd(flags *rootFlags) *cobra.Command
 				}
 			}
 			if cmd.Flags().Changed("license") {
-				allowedLicense := []string{ "advanced", "standard", "basic", "full", "occasional", "free", "free_restricted", "full_trial", "unknown" }
+				allowedLicense := []string{"advanced", "standard", "basic", "full", "occasional", "free", "free_restricted", "full_trial", "unknown"}
 				validLicense := false
 				for _, v := range allowedLicense {
 					if flagLicense == v {
@@ -64,12 +64,12 @@ func newOrgsMembersEnterpriseGetOrganizationCmd(flags *rootFlags) *cobra.Command
 			path := "/v2/orgs/{org_id}/members"
 			path = replacePathParam(path, "org_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "members", path, map[string]string{
-				"emails": fmt.Sprintf("%v", flagEmails),
-				"role": fmt.Sprintf("%v", flagRole),
+				"emails":  fmt.Sprintf("%v", flagEmails),
+				"role":    fmt.Sprintf("%v", flagRole),
 				"license": fmt.Sprintf("%v", flagLicense),
-				"active": fmt.Sprintf("%v", flagActive),
-				"cursor": fmt.Sprintf("%v", flagCursor),
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"active":  fmt.Sprintf("%v", flagActive),
+				"cursor":  fmt.Sprintf("%v", flagCursor),
+				"limit":   fmt.Sprintf("%v", flagLimit),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

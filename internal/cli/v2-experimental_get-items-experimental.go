@@ -18,16 +18,16 @@ func newV2ExperimentalGetItemsExperimentalCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-items-experimental <board_id>",
-		Short: "Retrieves a list of items for a specific board. You can retrieve all items on the board, a list of child items...",
-		Example: "  miro-developer-platform-pp-cli v2-experimental get-items-experimental 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-items-experimental <board_id>",
+		Short:       "Retrieves a list of items for a specific board. You can retrieve all items on the board, a list of child items...",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental get-items-experimental 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-items-experimental", "pp:method": "GET", "pp:path": "/v2-experimental/boards/{board_id}/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
 			if cmd.Flags().Changed("type") {
-				allowedType := []string{ "shape" }
+				allowedType := []string{"shape"}
 				validType := false
 				for _, v := range allowedType {
 					if flagType == v {
@@ -47,8 +47,8 @@ func newV2ExperimentalGetItemsExperimentalCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2-experimental/boards/{board_id}/items"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "v2-experimental", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"type": fmt.Sprintf("%v", flagType),
+				"limit":  fmt.Sprintf("%v", flagLimit),
+				"type":   fmt.Sprintf("%v", flagType),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

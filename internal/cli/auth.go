@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"miro-developer-platform-pp-cli/internal/config"
 	"github.com/spf13/cobra"
+	"miro-developer-platform-pp-cli/internal/config"
 )
 
 func newAuthCmd(flags *rootFlags) *cobra.Command {
@@ -76,7 +76,7 @@ func newAuthLoginCmd(flags *rootFlags) *cobra.Command {
 				"access_type":   {"offline"},
 				"prompt":        {"consent"},
 			}
-			scopes := []string{"boards:read", "boards:write", "microphone:listen", "organizations:read", "organizations:teams:read", "organizations:teams:write", "screen:record", "webcam:record",  }
+			scopes := []string{"boards:read", "boards:write", "microphone:listen", "organizations:read", "organizations:teams:read", "organizations:teams:write", "screen:record", "webcam:record"}
 			if len(scopes) > 0 {
 				params.Set("scope", strings.Join(scopes, " "))
 			}

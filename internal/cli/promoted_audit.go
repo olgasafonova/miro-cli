@@ -20,10 +20,10 @@ func newAuditPromotedCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "audit",
-		Short: "Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
-		Long:  "Shortcut for 'audit enterprise-get-logs'. Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
-		Example: "  miro-developer-platform-pp-cli audit --created-after example-value --created-before example-value",
+		Use:         "audit",
+		Short:       "Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
+		Long:        "Shortcut for 'audit enterprise-get-logs'. Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
+		Example:     "  miro-developer-platform-pp-cli audit --created-after example-value --created-before example-value",
 		Annotations: map[string]string{"pp:endpoint": "audit.enterprise-get-logs", "pp:method": "GET", "pp:path": "/v2/audit/logs", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cmd.Flags().Changed("created-after") && !flags.dryRun {
@@ -33,7 +33,7 @@ func newAuditPromotedCmd(flags *rootFlags) *cobra.Command {
 				return fmt.Errorf("required flag \"%s\" not set", "created-before")
 			}
 			if cmd.Flags().Changed("sorting") {
-				allowedSorting := []string{ "ASC", "DESC" }
+				allowedSorting := []string{"ASC", "DESC"}
 				validSorting := false
 				for _, v := range allowedSorting {
 					if flagSorting == v {
@@ -52,11 +52,11 @@ func newAuditPromotedCmd(flags *rootFlags) *cobra.Command {
 
 			path := "/v2/audit/logs"
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "audit", path, map[string]string{
-				"createdAfter": fmt.Sprintf("%v", flagCreatedAfter),
+				"createdAfter":  fmt.Sprintf("%v", flagCreatedAfter),
 				"createdBefore": fmt.Sprintf("%v", flagCreatedBefore),
-				"cursor": fmt.Sprintf("%v", flagCursor),
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"sorting": fmt.Sprintf("%v", flagSorting),
+				"cursor":        fmt.Sprintf("%v", flagCursor),
+				"limit":         fmt.Sprintf("%v", flagLimit),
+				"sorting":       fmt.Sprintf("%v", flagSorting),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

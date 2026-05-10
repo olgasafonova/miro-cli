@@ -18,9 +18,9 @@ func newOrgsTeamsEnterpriseGetCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get <org_id>",
-		Short: "Retrieves list of teams in an existing organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-get 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get <org_id>",
+		Short:       "Retrieves list of teams in an existing organization.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -34,9 +34,9 @@ func newOrgsTeamsEnterpriseGetCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/orgs/{org_id}/teams"
 			path = replacePathParam(path, "org_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "teams", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
-				"name": fmt.Sprintf("%v", flagName),
+				"name":   fmt.Sprintf("%v", flagName),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

@@ -17,9 +17,9 @@ func newOrgsCasesGetAllCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-all <org_id>",
-		Short: "Retrieves the list of eDiscovery cases in an organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs cases get-all 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-all <org_id>",
+		Short:       "Retrieves the list of eDiscovery cases in an organization.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs cases get-all 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "cases.get-all", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/cases", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -33,7 +33,7 @@ func newOrgsCasesGetAllCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/orgs/{org_id}/cases"
 			path = replacePathParam(path, "org_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "cases", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

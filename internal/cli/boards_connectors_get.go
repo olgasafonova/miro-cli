@@ -17,9 +17,9 @@ func newBoardsConnectorsGetCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get <board_id>",
-		Short: "Retrieves a list of connectors for a specific board. This method returns results using a cursor-based approach. A...",
-		Example: "  miro-developer-platform-pp-cli boards connectors get 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get <board_id>",
+		Short:       "Retrieves a list of connectors for a specific board. This method returns results using a cursor-based approach. A...",
+		Example:     "  miro-developer-platform-pp-cli boards connectors get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "connectors.get", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/connectors", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -33,7 +33,7 @@ func newBoardsConnectorsGetCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/boards/{board_id}/connectors"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "connectors", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

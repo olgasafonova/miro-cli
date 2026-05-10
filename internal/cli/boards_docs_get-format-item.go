@@ -15,17 +15,17 @@ func newBoardsDocsGetFormatItemCmd(flags *rootFlags) *cobra.Command {
 	var flagTextContentType string
 
 	cmd := &cobra.Command{
-		Use:   "get-format-item <board_id> <item_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves information for a specific doc format item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards docs get-format-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-format-item <board_id> <item_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves information for a specific doc format item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards docs get-format-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "docs.get-format-item", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/docs/{item_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
 			if cmd.Flags().Changed("text-content-type") {
-				allowedTextContentType := []string{ "html", "markdown" }
+				allowedTextContentType := []string{"html", "markdown"}
 				validTextContentType := false
 				for _, v := range allowedTextContentType {
 					if flagTextContentType == v {

@@ -14,9 +14,9 @@ import (
 func newV2ExperimentalGetSpecificItemExperimentalCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "get-specific-item-experimental <board_id> <item_id>",
-		Short: "Retrieves information for a specific item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli v2-experimental get-specific-item-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-specific-item-experimental <board_id> <item_id>",
+		Short:       "Retrieves information for a specific item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental get-specific-item-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-specific-item-experimental", "pp:method": "GET", "pp:path": "/v2-experimental/boards/{board_id}/items/{item_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -14,9 +14,9 @@ import (
 func newResourceTypesListCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Retrieve information about which SCIM resources are supported. <br><br> Currently, Miro supports Users and Groups as...",
-		Example: "  miro-developer-platform-pp-cli resource-types list",
+		Use:         "list",
+		Short:       "Retrieve information about which SCIM resources are supported. <br><br> Currently, Miro supports Users and Groups as...",
+		Example:     "  miro-developer-platform-pp-cli resource-types list",
 		Annotations: map[string]string{"pp:endpoint": "resource-types.list", "pp:method": "GET", "pp:path": "/ResourceTypes", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := flags.newClient()

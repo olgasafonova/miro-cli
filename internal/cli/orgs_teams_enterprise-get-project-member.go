@@ -14,9 +14,9 @@ import (
 func newOrgsTeamsEnterpriseGetProjectMemberCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get-project-member <org_id> <team_id> <project_id> <member_id>",
-		Short: "Retrieves information for a specific project member.<h4>Note</h4> <em>Projects</em> have been renamed...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-get-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get-project-member <org_id> <team_id> <project_id> <member_id>",
+		Short:       "Retrieves information for a specific project member.<h4>Note</h4> <em>Projects</em> have been renamed...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get-project-member", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

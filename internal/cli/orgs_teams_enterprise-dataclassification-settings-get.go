@@ -14,9 +14,9 @@ import (
 func newOrgsTeamsEnterpriseDataclassificationSettingsGetCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-dataclassification-settings-get <org_id> <team_id>",
-		Short: "Retrieves board classification settings for an existing team.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-dataclassification-settings-get 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-dataclassification-settings-get <org_id> <team_id>",
+		Short:       "Retrieves board classification settings for an existing team.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-dataclassification-settings-get 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-dataclassification-settings-get", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/data-classification-settings", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -14,9 +14,9 @@ import (
 func newSchemasListCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Retrieve metadata about Users, Groups, and extension attributes that are currently supported.",
-		Example: "  miro-developer-platform-pp-cli schemas list",
+		Use:         "list",
+		Short:       "Retrieve metadata about Users, Groups, and extension attributes that are currently supported.",
+		Example:     "  miro-developer-platform-pp-cli schemas list",
 		Annotations: map[string]string{"pp:endpoint": "schemas.list", "pp:method": "GET", "pp:path": "/Schemas", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := flags.newClient()

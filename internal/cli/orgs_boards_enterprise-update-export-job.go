@@ -17,10 +17,10 @@ func newOrgsBoardsEnterpriseUpdateExportJobCmd(flags *rootFlags) *cobra.Command 
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-update-export-job <org_id> <job_id>",
-		Aliases: []string{"update"},
-		Short: "Updates the status of the board export job.<br/>Currently, only the cancellation of an ongoing export job is...",
-		Example: "  miro-developer-platform-pp-cli orgs boards enterprise-update-export-job 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --status example-value",
+		Use:         "enterprise-update-export-job <org_id> <job_id>",
+		Aliases:     []string{"update"},
+		Short:       "Updates the status of the board export job.<br/>Currently, only the cancellation of an ongoing export job is...",
+		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-update-export-job 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --status example-value",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-update-export-job", "pp:method": "PUT", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}/status"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -72,7 +72,9 @@ func newOrgsBoardsEnterpriseUpdateExportJobCmd(flags *rootFlags) *cobra.Command 
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

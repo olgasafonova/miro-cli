@@ -22,10 +22,10 @@ func newOrgsContentLogsEnterpriseBoardContentItemLogsFetchCmd(flags *rootFlags) 
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-board-content-item-logs-fetch <org_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves content changes for board items within your organization. Content changes are actions that users can...",
-		Example: "  miro-developer-platform-pp-cli orgs content-logs enterprise-board-content-item-logs-fetch 550e8400-e29b-41d4-a716-446655440000 --from 2026-01-15T09:00:00Z --to 2026-01-15T09:00:00Z",
+		Use:         "enterprise-board-content-item-logs-fetch <org_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves content changes for board items within your organization. Content changes are actions that users can...",
+		Example:     "  miro-developer-platform-pp-cli orgs content-logs enterprise-board-content-item-logs-fetch 550e8400-e29b-41d4-a716-446655440000 --from 2026-01-15T09:00:00Z --to 2026-01-15T09:00:00Z",
 		Annotations: map[string]string{"pp:endpoint": "content-logs.enterprise-board-content-item-logs-fetch", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/content-logs/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -38,7 +38,7 @@ func newOrgsContentLogsEnterpriseBoardContentItemLogsFetchCmd(flags *rootFlags) 
 				return fmt.Errorf("required flag \"%s\" not set", "to")
 			}
 			if cmd.Flags().Changed("sorting") {
-				allowedSorting := []string{ "asc", "desc" }
+				allowedSorting := []string{"asc", "desc"}
 				validSorting := false
 				for _, v := range allowedSorting {
 					if flagSorting == v {
@@ -59,12 +59,12 @@ func newOrgsContentLogsEnterpriseBoardContentItemLogsFetchCmd(flags *rootFlags) 
 			path = replacePathParam(path, "org_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "content-logs", path, map[string]string{
 				"board_ids": fmt.Sprintf("%v", flagBoardIds),
-				"emails": fmt.Sprintf("%v", flagEmails),
-				"from": fmt.Sprintf("%v", flagFrom),
-				"to": fmt.Sprintf("%v", flagTo),
-				"cursor": fmt.Sprintf("%v", flagCursor),
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"sorting": fmt.Sprintf("%v", flagSorting),
+				"emails":    fmt.Sprintf("%v", flagEmails),
+				"from":      fmt.Sprintf("%v", flagFrom),
+				"to":        fmt.Sprintf("%v", flagTo),
+				"cursor":    fmt.Sprintf("%v", flagCursor),
+				"limit":     fmt.Sprintf("%v", flagLimit),
+				"sorting":   fmt.Sprintf("%v", flagSorting),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

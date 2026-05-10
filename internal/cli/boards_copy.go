@@ -21,9 +21,9 @@ func newBoardsCopyCmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "copy",
-		Short: "Creates a copy of an existing board. You can also update the name, description, sharing policy, and permissions...",
-		Example: "  miro-developer-platform-pp-cli boards copy --copy-from example-value",
+		Use:         "copy",
+		Short:       "Creates a copy of an existing board. You can also update the name, description, sharing policy, and permissions...",
+		Example:     "  miro-developer-platform-pp-cli boards copy --copy-from example-value",
 		Annotations: map[string]string{"pp:endpoint": "boards.copy", "pp:method": "PUT", "pp:path": "/v2/boards"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cmd.Flags().Changed("copy-from") && !flags.dryRun {
@@ -84,7 +84,9 @@ func newBoardsCopyCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

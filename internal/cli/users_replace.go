@@ -29,9 +29,9 @@ func newUsersReplaceCmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "replace <id>",
-		Short: "Updates an existing user resource. This is the easiest way to replace user information. <br><br> If the user is...",
-		Example: "  miro-developer-platform-pp-cli users replace 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "replace <id>",
+		Short:       "Updates an existing user resource. This is the easiest way to replace user information. <br><br> If the user is...",
+		Example:     "  miro-developer-platform-pp-cli users replace 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "users.replace", "pp:method": "PUT", "pp:path": "/Users/{id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -144,7 +144,9 @@ func newUsersReplaceCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

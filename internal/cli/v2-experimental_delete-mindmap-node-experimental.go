@@ -14,9 +14,9 @@ import (
 func newV2ExperimentalDeleteMindmapNodeExperimentalCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "delete-mindmap-node-experimental <board_id> <item_id>",
-		Short: "Deletes a mind map node item and its child nodes from the board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli v2-experimental delete-mindmap-node-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "delete-mindmap-node-experimental <board_id> <item_id>",
+		Short:       "Deletes a mind map node item and its child nodes from the board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental delete-mindmap-node-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.delete-mindmap-node-experimental", "pp:method": "DELETE", "pp:path": "/v2-experimental/boards/{board_id}/mindmap_nodes/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -47,7 +47,9 @@ func newV2ExperimentalDeleteMindmapNodeExperimentalCmd(flags *rootFlags) *cobra.
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

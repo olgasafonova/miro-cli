@@ -26,9 +26,9 @@ func newUsersCreateCmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "create",
-		Short: "Creates a new user in the organization. <br><br> <br>Note</b>: All newly provisioned users are added to the default...",
-		Example: "  miro-developer-platform-pp-cli users create --user-name example-resource",
+		Use:         "create",
+		Short:       "Creates a new user in the organization. <br><br> <br>Note</b>: All newly provisioned users are added to the default...",
+		Example:     "  miro-developer-platform-pp-cli users create --user-name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "users.create", "pp:method": "POST", "pp:path": "/Users"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !stdinBody {
@@ -119,7 +119,9 @@ func newUsersCreateCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

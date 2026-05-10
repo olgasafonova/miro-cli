@@ -19,10 +19,10 @@ func newBoardsMembersShareBoardCmd(flags *rootFlags) *cobra.Command {
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "share-board <board_id>",
-		Aliases: []string{"create"},
-		Short: "Shares the board and Invites new members to collaborate on a board by sending an invitation email. Depending on the...",
-		Example: "  miro-developer-platform-pp-cli boards members share-board 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "share-board <board_id>",
+		Aliases:     []string{"create"},
+		Short:       "Shares the board and Invites new members to collaborate on a board by sending an invitation email. Depending on the...",
+		Example:     "  miro-developer-platform-pp-cli boards members share-board 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.share-board", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/members"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -80,7 +80,9 @@ func newBoardsMembersShareBoardCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

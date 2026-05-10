@@ -15,13 +15,13 @@ func newSchemasGetCmd(flags *rootFlags) *cobra.Command {
 	var flagUri string
 
 	cmd := &cobra.Command{
-		Use:   "get",
-		Short: "Retrieve information about how users, groups, and enterprise-user attributes URIs that are formatted.",
-		Example: "  miro-developer-platform-pp-cli schemas get",
+		Use:         "get",
+		Short:       "Retrieve information about how users, groups, and enterprise-user attributes URIs that are formatted.",
+		Example:     "  miro-developer-platform-pp-cli schemas get",
 		Annotations: map[string]string{"pp:endpoint": "schemas.get", "pp:method": "GET", "pp:path": "/Schemas/{uri}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("uri") {
-				allowedUri := []string{ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User" }
+				allowedUri := []string{"urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"}
 				validUri := false
 				for _, v := range allowedUri {
 					if flagUri == v {

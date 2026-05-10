@@ -22,14 +22,14 @@ func newBoardsGetCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get",
-		Aliases: []string{"list"},
-		Short: "Retrieves a list of boards accessible to the user associated with the provided access token. This endpoint supports...",
-		Example: "  miro-developer-platform-pp-cli boards get",
+		Use:         "get",
+		Aliases:     []string{"list"},
+		Short:       "Retrieves a list of boards accessible to the user associated with the provided access token. This endpoint supports...",
+		Example:     "  miro-developer-platform-pp-cli boards get",
 		Annotations: map[string]string{"pp:endpoint": "boards.get", "pp:method": "GET", "pp:path": "/v2/boards", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("sort") {
-				allowedSort := []string{ "default", "last_modified", "last_opened", "last_created", "alphabetically" }
+				allowedSort := []string{"default", "last_modified", "last_opened", "last_created", "alphabetically"}
 				validSort := false
 				for _, v := range allowedSort {
 					if flagSort == v {
@@ -48,13 +48,13 @@ func newBoardsGetCmd(flags *rootFlags) *cobra.Command {
 
 			path := "/v2/boards"
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "boards", path, map[string]string{
-				"team_id": fmt.Sprintf("%v", flagTeamId),
+				"team_id":    fmt.Sprintf("%v", flagTeamId),
 				"project_id": fmt.Sprintf("%v", flagProjectId),
-				"query": fmt.Sprintf("%v", flagQuery),
-				"owner": fmt.Sprintf("%v", flagOwner),
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"offset": fmt.Sprintf("%v", flagOffset),
-				"sort": fmt.Sprintf("%v", flagSort),
+				"query":      fmt.Sprintf("%v", flagQuery),
+				"owner":      fmt.Sprintf("%v", flagOwner),
+				"limit":      fmt.Sprintf("%v", flagLimit),
+				"offset":     fmt.Sprintf("%v", flagOffset),
+				"sort":       fmt.Sprintf("%v", flagSort),
 			}, nil, flagAll, "offset", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

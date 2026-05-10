@@ -14,9 +14,9 @@ import (
 func newV2ExperimentalDeleteItemExperimentalCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "delete-item-experimental <board_id> <item_id>",
-		Short: "Deletes an item from a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli v2-experimental delete-item-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "delete-item-experimental <board_id> <item_id>",
+		Short:       "Deletes an item from a board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental delete-item-experimental 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.delete-item-experimental", "pp:method": "DELETE", "pp:path": "/v2-experimental/boards/{board_id}/items/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -47,7 +47,9 @@ func newV2ExperimentalDeleteItemExperimentalCmd(flags *rootFlags) *cobra.Command
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

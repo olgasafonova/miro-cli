@@ -17,9 +17,9 @@ func newOrgsTeamsEnterpriseUpdateProjectMemberCmd(flags *rootFlags) *cobra.Comma
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-update-project-member <org_id> <team_id> <project_id> <member_id>",
-		Short: "Updates details of a project member, such as the member's role.<h4>Note</h4> <em>Projects</em> have been renamed...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-update-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-update-project-member <org_id> <team_id> <project_id> <member_id>",
+		Short:       "Updates details of a project member, such as the member's role.<h4>Note</h4> <em>Projects</em> have been renamed...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-update-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-update-project-member", "pp:method": "PATCH", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -76,7 +76,9 @@ func newOrgsTeamsEnterpriseUpdateProjectMemberCmd(flags *rootFlags) *cobra.Comma
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

@@ -17,9 +17,9 @@ func newV2ExperimentalGetMindmapNodesExperimentalCmd(flags *rootFlags) *cobra.Co
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-mindmap-nodes-experimental <board_id>",
-		Short: "Retrieves a list of mind map nodes for a specific board. This method returns results using a cursor-based approach....",
-		Example: "  miro-developer-platform-pp-cli v2-experimental get-mindmap-nodes-experimental 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-mindmap-nodes-experimental <board_id>",
+		Short:       "Retrieves a list of mind map nodes for a specific board. This method returns results using a cursor-based approach....",
+		Example:     "  miro-developer-platform-pp-cli v2-experimental get-mindmap-nodes-experimental 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-mindmap-nodes-experimental", "pp:method": "GET", "pp:path": "/v2-experimental/boards/{board_id}/mindmap_nodes", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -33,7 +33,7 @@ func newV2ExperimentalGetMindmapNodesExperimentalCmd(flags *rootFlags) *cobra.Co
 			path := "/v2-experimental/boards/{board_id}/mindmap_nodes"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "v2-experimental", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

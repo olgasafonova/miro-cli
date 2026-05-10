@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"miro-developer-platform-pp-cli/internal/store"
 	"github.com/spf13/cobra"
+	"miro-developer-platform-pp-cli/internal/store"
 )
 
 func newWorkflowCmd(flags *rootFlags) *cobra.Command {
@@ -55,7 +55,7 @@ and full resync. After archiving, use 'search' for instant full-text search.`,
 			}
 			defer s.Close()
 
-			resources := []string{"boards", "groups", "resource-types", "schemas", "service-provider-config", "users",  }
+			resources := []string{"boards", "groups", "resource-types", "schemas", "service-provider-config", "users"}
 			totalSynced := 0
 
 			for _, resource := range resources {
@@ -94,7 +94,9 @@ and full resync. After archiving, use 'search' for instant full-text search.`,
 						break
 					}
 					for _, item := range items {
-						var obj struct{ ID string `json:"id"` }
+						var obj struct {
+							ID string `json:"id"`
+						}
 						json.Unmarshal(item, &obj)
 						id := obj.ID
 						if id == "" {

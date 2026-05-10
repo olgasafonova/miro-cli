@@ -15,10 +15,10 @@ func newSessionsPromotedCmd(flags *rootFlags) *cobra.Command {
 	var flagEmail string
 
 	cmd := &cobra.Command{
-		Use:   "sessions",
-		Short: "Reset all sessions of a user. Admins can now take immediate action to restrict user access to company data in case...",
-		Long:  "Shortcut for 'sessions enterprise-post-user-reset'. Reset all sessions of a user. Admins can now take immediate action to restrict user access to company data in case...",
-		Example: "  miro-developer-platform-pp-cli sessions --email user@example.com",
+		Use:         "sessions",
+		Short:       "Reset all sessions of a user. Admins can now take immediate action to restrict user access to company data in case...",
+		Long:        "Shortcut for 'sessions enterprise-post-user-reset'. Reset all sessions of a user. Admins can now take immediate action to restrict user access to company data in case...",
+		Example:     "  miro-developer-platform-pp-cli sessions --email user@example.com",
 		Annotations: map[string]string{"pp:endpoint": "sessions.enterprise-post-user-reset", "pp:method": "POST", "pp:path": "/v2/sessions/reset_all"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cmd.Flags().Changed("email") && !flags.dryRun {

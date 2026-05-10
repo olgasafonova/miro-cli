@@ -17,9 +17,9 @@ func newOrgsGroupsEnterpriseGetMembersCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get-members <org_id> <group_id>",
-		Short: "Retrieves the list of members who are part of a team in an existing organization.<br/> <h3>Required scope</h3> <a...",
-		Example: "  miro-developer-platform-pp-cli orgs groups enterprise-get-members 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get-members <org_id> <group_id>",
+		Short:       "Retrieves the list of members who are part of a team in an existing organization.<br/> <h3>Required scope</h3> <a...",
+		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-get-members 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-get-members", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/groups/{group_id}/members", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -37,7 +37,7 @@ func newOrgsGroupsEnterpriseGetMembersCmd(flags *rootFlags) *cobra.Command {
 			}
 			path = replacePathParam(path, "group_id", args[1])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "groups", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

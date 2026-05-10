@@ -18,10 +18,10 @@ func newBoardsDocumentsCreateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra
 	var stdinBody bool
 
 	cmd := &cobra.Command{
-		Use:   "create-item-using-file-from-device <board_id_PlatformFileUpload>",
-		Aliases: []string{"create"},
-		Short: "Adds a document item to a board by selecting file from device.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards documents create-item-using-file-from-device example-value --resource example-value",
+		Use:         "create-item-using-file-from-device <board_id_PlatformFileUpload>",
+		Aliases:     []string{"create"},
+		Short:       "Adds a document item to a board by selecting file from device.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards documents create-item-using-file-from-device example-value --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "documents.create-item-using-file-from-device", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/documents"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -76,7 +76,9 @@ func newBoardsDocumentsCreateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

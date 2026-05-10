@@ -17,10 +17,10 @@ func newOrgsProjectsEnterpriseGetGroupsCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get-groups <org_id> <project_id>",
-		Aliases: []string{"get"},
-		Short: "Retrieves information about user groups invited to the specified project.<br/> <h3>Required scope</h3> <a...",
-		Example: "  miro-developer-platform-pp-cli orgs projects enterprise-get-groups 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get-groups <org_id> <project_id>",
+		Aliases:     []string{"get"},
+		Short:       "Retrieves information about user groups invited to the specified project.<br/> <h3>Required scope</h3> <a...",
+		Example:     "  miro-developer-platform-pp-cli orgs projects enterprise-get-groups 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "projects.enterprise-get-groups", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/projects/{project_id}/groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -38,7 +38,7 @@ func newOrgsProjectsEnterpriseGetGroupsCmd(flags *rootFlags) *cobra.Command {
 			}
 			path = replacePathParam(path, "project_id", args[1])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "projects", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

@@ -18,9 +18,9 @@ func newOrgsBoardsEnterpriseExportJobTasksCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-export-job-tasks <org_id> <job_id>",
-		Short: "Retrieves the list of tasks for the board export job.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs boards enterprise-export-job-tasks 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-export-job-tasks <org_id> <job_id>",
+		Short:       "Retrieves the list of tasks for the board export job.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-export-job-tasks 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-export-job-tasks", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}/tasks", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -40,7 +40,7 @@ func newOrgsBoardsEnterpriseExportJobTasksCmd(flags *rootFlags) *cobra.Command {
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "boards", path, map[string]string{
 				"status": fmt.Sprintf("%v", flagStatus),
 				"cursor": fmt.Sprintf("%v", flagCursor),
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
 				return classifyAPIError(err, flags)

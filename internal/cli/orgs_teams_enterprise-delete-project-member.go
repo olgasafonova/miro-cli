@@ -14,9 +14,9 @@ import (
 func newOrgsTeamsEnterpriseDeleteProjectMemberCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-delete-project-member <org_id> <team_id> <project_id> <member_id>",
-		Short: "Remove a member from a project. The user remains in the team even after the member is removed from a...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-delete-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-delete-project-member <org_id> <team_id> <project_id> <member_id>",
+		Short:       "Remove a member from a project. The user remains in the team even after the member is removed from a...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-delete-project-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-delete-project-member", "pp:method": "DELETE", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/members/{member_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -55,7 +55,9 @@ func newOrgsTeamsEnterpriseDeleteProjectMemberCmd(flags *rootFlags) *cobra.Comma
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

@@ -17,9 +17,9 @@ func newBoardsTagsGetFromBoardCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-from-board <board_id>",
-		Short: "Retrieves all the tags from the specified board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli boards tags get-from-board 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-from-board <board_id>",
+		Short:       "Retrieves all the tags from the specified board.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli boards tags get-from-board 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "tags.get-from-board", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/tags", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -33,7 +33,7 @@ func newBoardsTagsGetFromBoardCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/boards/{board_id}/tags"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "tags", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"offset": fmt.Sprintf("%v", flagOffset),
 			}, nil, flagAll, "offset", "", "")
 			if err != nil {

@@ -14,9 +14,9 @@ import (
 func newOrgsCasesDeleteLegalHoldCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "delete-legal-hold <org_id> <case_id> <legal_hold_id>",
-		Short: "Closing a legal hold is one of the final steps in the eDiscovery process once the litigation or investigation has...",
-		Example: "  miro-developer-platform-pp-cli orgs cases delete-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "delete-legal-hold <org_id> <case_id> <legal_hold_id>",
+		Short:       "Closing a legal hold is one of the final steps in the eDiscovery process once the litigation or investigation has...",
+		Example:     "  miro-developer-platform-pp-cli orgs cases delete-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "cases.delete-legal-hold", "pp:method": "DELETE", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -51,7 +51,9 @@ func newOrgsCasesDeleteLegalHoldCmd(flags *rootFlags) *cobra.Command {
 						return nil
 					}
 				} else {
-					var wrapped struct{ Data []map[string]any `json:"data"` }
+					var wrapped struct {
+						Data []map[string]any `json:"data"`
+					}
 					if json.Unmarshal(data, &wrapped) == nil && len(wrapped.Data) > 0 {
 						if err := printAutoTable(cmd.OutOrStdout(), wrapped.Data); err != nil {
 							fmt.Fprintf(os.Stderr, "warning: table rendering failed, falling back to JSON: %v\n", err)

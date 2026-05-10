@@ -14,9 +14,9 @@ import (
 func newOrgsTeamsEnterpriseGetOrgsCmd(flags *rootFlags) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "enterprise-get-orgs <org_id> <team_id>",
-		Short: "Retrieves team information for an existing team.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example: "  miro-developer-platform-pp-cli orgs teams enterprise-get-orgs 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "enterprise-get-orgs <org_id> <team_id>",
+		Short:       "Retrieves team information for an existing team.<br/><h3>Required scope</h3> <a target=_blank...",
+		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get-orgs 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get-orgs", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

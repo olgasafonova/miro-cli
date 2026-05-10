@@ -17,10 +17,10 @@ func newBoardsGroupsGetAllCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-all <board_id>",
-		Aliases: []string{"get"},
-		Short: "Returns all the groups and the items of the respective groups within a specific board.<br/> This method returns...",
-		Example: "  miro-developer-platform-pp-cli boards groups get-all 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-all <board_id>",
+		Aliases:     []string{"get"},
+		Short:       "Returns all the groups and the items of the respective groups within a specific board.<br/> This method returns...",
+		Example:     "  miro-developer-platform-pp-cli boards groups get-all 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.get-all", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -34,7 +34,7 @@ func newBoardsGroupsGetAllCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/boards/{board_id}/groups"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "groups", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
+				"limit":  fmt.Sprintf("%v", flagLimit),
 				"cursor": fmt.Sprintf("%v", flagCursor),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {

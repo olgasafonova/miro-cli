@@ -18,9 +18,9 @@ func newBoardsGroupsGetItemsByIdCmd(flags *rootFlags) *cobra.Command {
 	var flagAll bool
 
 	cmd := &cobra.Command{
-		Use:   "get-items-by-id <board_id>",
-		Short: "Returns a list of items that are a part of any group, within a specific board.<br/> This method returns results...",
-		Example: "  miro-developer-platform-pp-cli boards groups get-items-by-id 550e8400-e29b-41d4-a716-446655440000 --group-item-id 550e8400-e29b-41d4-a716-446655440000",
+		Use:         "get-items-by-id <board_id>",
+		Short:       "Returns a list of items that are a part of any group, within a specific board.<br/> This method returns results...",
+		Example:     "  miro-developer-platform-pp-cli boards groups get-items-by-id 550e8400-e29b-41d4-a716-446655440000 --group-item-id 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.get-items-by-id", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/groups/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -37,8 +37,8 @@ func newBoardsGroupsGetItemsByIdCmd(flags *rootFlags) *cobra.Command {
 			path := "/v2/boards/{board_id}/groups/items"
 			path = replacePathParam(path, "board_id", args[0])
 			data, prov, err := resolvePaginatedRead(cmd.Context(), c, flags, "groups", path, map[string]string{
-				"limit": fmt.Sprintf("%v", flagLimit),
-				"cursor": fmt.Sprintf("%v", flagCursor),
+				"limit":         fmt.Sprintf("%v", flagLimit),
+				"cursor":        fmt.Sprintf("%v", flagCursor),
 				"group_item_id": fmt.Sprintf("%v", flagGroupItemId),
 			}, nil, flagAll, "cursor", "", "")
 			if err != nil {
