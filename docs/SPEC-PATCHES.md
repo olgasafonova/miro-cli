@@ -75,17 +75,23 @@ The Miro spec used a trailing `?` on the path key as a workaround for OpenAPI's 
 
 **Patch:** removed the `/v2/boards/{board_id}/groups/{group_id}?` path entry entirely. `unGroup` covers both behaviors via its `delete_items` query param. After regen, `boards groups delete` no longer exists as a CLI subcommand — users perform "delete the group and its items" via `boards groups un <board_id> <group_id> --delete-items`.
 
-## Tangents — NOT yet patched
+## Verified live, no patch needed — `GET /v2/boards/{board_id}/groups/items` (get-items-by-id)
 
-### `GET /v2/boards/{board_id}/groups/items` (get-items-by-id)
+Tested 10-05-2026 against AnalyticsDev Demo board with the live group `3458764671234034807` (containing 2 sticky notes). The 200 response shape from Miro matches the spec's inline definition: outer object has `size` + `limit`, then `data` (single object, not array) with `id` (group id) and `data` (array of items). Each item is a full `ItemPagedResponse` shape.
 
-The 200 response is an inline shape: `{limit, size, total, data: {id, type, data: [ItemPagedResponse]}}`. The double-`data` nesting is unusual but not obviously wrong; the inner array uses `ItemPagedResponse` which IS the right Miro item shape (this endpoint returns items, not groups, despite the path family). The `group_item_id` query param is required, so the operation is "given a group's item ID, return the items in that group."
+Two cosmetic discrepancies, neither blocking:
 
-Two open questions:
-1. Is the double-`data` envelope what Miro really returns, or should the outer object collapse so the array sits at top-level `data`?
-2. Why is the path `/v2/boards/{board_id}/groups/items` rather than `/v2/boards/{board_id}/groups/{group_id}/items`? The query-param-as-identifier shape is unusual for a REST list-children endpoint.
+- The spec lists `total` and an explicit `type: "group"` discriminator under the inner object; live responses for our test only had `id` + nested `data`. Could be Miro API drift, or `total` only appears under specific conditions (multi-group results). Not worth patching speculatively.
+- `id` is returned as an unquoted integer (`3458764671234034807`) rather than a string. The spec says string. This is a known Miro quirk for ids beyond 2^53; the generated client tolerates either.
 
-Verify both with a live call before patching.
+The unusual path (`/groups/items` with `group_item_id` query param rather than `/groups/{group_id}/items`) is actually how Miro modeled this endpoint. Strange but legitimate.
+
+Invocation example:
+
+```bash
+miro-developer-platform-pp-cli boards groups get-items-by-id uXjVG34x8Cg= \
+  --group-item-id 3458764671234034807 --json
+```
 
 ## Patch convention
 

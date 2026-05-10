@@ -12,7 +12,7 @@ Remaining for Phase 1:
 
 | Item | Status | Notes |
 |---|---|---|
-| `GET /v2/boards/{board_id}/groups/items` (get-items-by-id) | not patched | Inline shape with double-`data` envelope is suspicious but uses the right item schema (`ItemPagedResponse`). Path is also unusual. Verify with a live call before patching. See `docs/SPEC-PATCHES.md`. |
+| `GET /v2/boards/{board_id}/groups/items` (get-items-by-id) | verified — no patch needed (10-05-2026) | Live response shape matches the spec's inline definition: `{size, limit, data: {id, data: [Item]}}`. Outer `data` is a single group object; inner `data` is the items array. The unusual path (no `{group_id}`, query param `group_item_id`) is genuinely how the Miro API works. Two minor cosmetic discrepancies noted in `docs/SPEC-PATCHES.md` but neither is blocking. |
 | Live-call verification of the four patched endpoints | done (10-05-2026) | All four return shapes that match `BoardItemGroupResponse`. PUT update returns a new `id` per spec. The `delete` alias on the merged `un` command routes through to `DELETE /v2/boards/{board_id}/groups/{group_id}`. Test board (`uXjVG34x8Cg=`) returned to its pre-test 1-group state. See `docs/SPEC-PATCHES.md` for invocation examples. |
 
 ## Phase 1 incident (10-05-2026): regenerate.sh `--force` is destructive
