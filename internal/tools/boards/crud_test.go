@@ -293,7 +293,7 @@ func TestNewCmdRegistersAllCRUDVerbs(t *testing.T) {
 	want := map[string]bool{
 		"list": false, "get": false, "create": false, "copy": false,
 		"update": false, "delete": false, "share": false, "find": false,
-		"picture": false,
+		"picture": false, "search": false,
 	}
 	for _, sub := range cmd.Commands() {
 		// sub.Use may be "list" or "get <board_id>" — use Name() which

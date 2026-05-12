@@ -8,6 +8,7 @@ import (
 
 	"miro-cli/internal/tools/boards"
 	"miro-cli/internal/tools/clictx"
+	"miro-cli/internal/tools/items"
 )
 
 // newRootCmd builds the root *cobra.Command and the Globals it backs.
@@ -36,5 +37,6 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	pf.StringVar(&g.Select, "select", "", "Comma-separated list of top-level fields to keep in JSON output")
 
 	cmd.AddCommand(boards.NewCmd(g))
+	cmd.AddCommand(items.NewCmd(g))
 	return cmd, g
 }
