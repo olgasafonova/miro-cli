@@ -12,7 +12,70 @@ The printing-press-generated MCP surface (`cmd/miro-developer-platform-pp-mcp/`,
 
 This repo is now CLI + skill only. `scripts/regenerate.sh` strips `cmd/miro-developer-platform-pp-mcp/`, `internal/mcp/`, and `manifest.json` after each generator run, so the MCP wrapper stays gone without any upstream printing-press change. No fork, no PR, no dependency on `cli-printing-press` adding an `Enabled` toggle.
 
-Phases 2 and 6 below were edited to reflect this; Phase 3 (client-pattern backport into `miro-mcp-server`) is unchanged but newly higher-priority — see bead `claude-code-config-27e`.
+## Scope pivot 2 (12-05-2026): off printing-press, hand-authored CLI
+
+User direction: stop being a printing-press downstream. The generated 262-file CLI surface gets replaced with hand-authored Cobra commands that mirror `miro-mcp-server`'s 91 tools as CLI verbs. The deslop scan made it concrete — the file-health score is gated entirely on generator output (`internal/store/store.go` 3,340 LOC, `internal/types/types.go` 2,633 LOC, etc.), and adding tests where it matters means the code being tested has to survive regen, which generated files don't.
+
+### Target architecture
+
+```
+cmd/
+  miro/main.go                 # NEW entry point, replaces miro-developer-platform-pp-cli
+internal/
+  miro/                        # NEW foundation: HTTP client, auth, config, errors, ratelimit, redact, cache
+    client.go
+    config.go
+    auth.go
+    errors.go
+    ratelimit.go
+    redact.go
+    cache.go
+  tools/                       # NEW per-resource subcommands; one subdir per category
+    boards/                    # boards CRUD + special verbs (find, search, share, copy, content, summary, picture, audit, diagram)
+    items/                     # generic items + bulk_create/bulk_update/bulk_delete
+    stickies/  shapes/  texts/  cards/  connectors/  frames/  images/  docs/  embeds/  app_cards/
+    tags/      groups/  mindmap/  tables/  exports/  members/  misc/
+```
+
+Old `internal/cli/` (262 generated files), `internal/store/`, `internal/types/`, `internal/client/`, `internal/config/`, `internal/cache/`, `internal/cliutil/`, `cmd/miro-developer-platform-pp-cli/` get deleted as the new code reaches feature parity, not before. While migrating, both binaries coexist; once `cmd/miro/` covers everything the old binary did, the old tree is removed in one commit and `goreleaser`, `Makefile`, `README`, `SKILL.md`, `.printing-press.json`, `scripts/regenerate.sh`, `specs/`, `docs/SPEC-PATCHES.md`, `docs/BUGFIXES.md`, `docs/GENERATED-README.md` all go with it.
+
+### Phasing
+
+| Phase | Bead | Scope |
+|---|---|---|
+| 1 | `miro-cli-fnd` | Foundation packages (`internal/miro/`) — client, config, auth, errors, ratelimit, redact, cache — with tests. Done iteratively; first slice in this session. |
+| 2 | `miro-cli-cmd` | New entry point `cmd/miro/main.go` + Cobra root + global flags (--token, --json, --dry-run, --agent, --yes, --idempotent). Reference tool: `miro list-boards`. |
+| 3a-3j | `miro-cli-boards`, `miro-cli-items`, `miro-cli-stickies`, `miro-cli-typed-items`, `miro-cli-tags`, `miro-cli-groups`, `miro-cli-mindmap`, `miro-cli-tables`, `miro-cli-exports`, `miro-cli-misc` | One bead per resource category. Each ports the 4-12 tools in that category as hand-authored subcommands with table-driven tests. Spawnable in parallel waves of 3-4 once Phase 2 lands. |
+| 4 | `miro-cli-perf` | Performance pass: connection pooling, response caching for read-heavy endpoints, bounded-concurrency bulk-op fan-out, optional local SQLite sync (port miro-cli's old `store.go` if useful). |
+| 5 | `miro-cli-sec` | Security pass: token redaction in logs/errors, input validation, share-board allowlist (per `code-review-prompts.md` HG-3), destructive-op confirmation gating, panic recovery, `go mod verify` + `govulncheck` + `gosec` in CI per `rules/mcp-server-patterns.md`. |
+| 6 | `miro-cli-clean` | Delete printing-press infrastructure: `cmd/miro-developer-platform-pp-cli/`, `internal/{cli,store,types,client,config,cache,cliutil}/`, `scripts/regenerate.sh`, `scripts/printing-press-version.txt`, `specs/`, `.printing-press.json`, `docs/{SPEC-PATCHES,BUGFIXES,GENERATED-README}.md`, `composites/` (its work is now Phase 3), `manifest.json` references in README. Update `.goreleaser.yaml`, `Makefile`, `README.md`, `SKILL.md`, `HANDOFF.md`. |
+
+### Tool count by category (from `miro-mcp-server/tools/definitions.go`)
+
+| Category | Tools | Examples |
+|---|---|---|
+| boards | 12 | list/get/create/copy/update/delete/find/search/share/get_content/get_summary/get_picture/get_audit_log/generate_diagram |
+| typed items | 40+ | sticky/shape/text/card/app_card/connector/frame/image/doc/embed × {create,get,update,delete} |
+| items (generic + bulk) | 9 | list_all/list/get/update/delete + bulk_create/bulk_update/bulk_delete + get_items_by_tag |
+| tags | 8 | list/create/get/update/delete + attach/detach + get_item_tags |
+| groups | 6 | list/create/get/update/delete/get_group_items |
+| board_members | 4 | list/get/update/remove |
+| mindmap | 4 | list/create/get/delete |
+| exports | 3 | create_export_job/get_export_job_status/get_export_job_results |
+| tables | 2 | list/get |
+| misc | 3 | get_desire_paths/get_audit_log/(generate_diagram is under boards) |
+
+### Properties the CLI must hold
+
+- **Fast.** HTTP keep-alive, connection pool, response caching with TTL for read-heavy GETs, bounded concurrency for bulk ops (default 8, configurable).
+- **Comprehensive.** Coverage parity with `miro-mcp-server` (91 verbs).
+- **Secure.** Tokens never on argv, never in logs, never in errors. Redaction in all output paths. `gosec` + `govulncheck` + `go mod verify` in CI. Destructive ops gated by `--yes` or explicit confirmation. Share-board (and any "grant access to third party" op) gated by allowlist. Inputs validated at the boundary. Panic recovery at handler entry.
+
+### Phases 2-6 from the original HANDOFF (pre-pivot) are SUPERSEDED
+
+The original Phases 1-6 below were planned around the generated CLI surface. They are kept for reference but no longer reflect the active plan; the table above is the active roadmap.
+
+Phase 3 (client-pattern backport into `miro-mcp-server`) — see bead `claude-code-config-27e` — is unchanged. Independent of this repo's pivot.
 
 ## Phase 1 — Finish the spec patches (mostly done)
 
