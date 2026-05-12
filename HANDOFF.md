@@ -2,6 +2,16 @@
 
 Roadmap from current state (initial demo build, 10-05-2026) to "ready to reveal" (either as a public repo flip or as a merge into `miro-mcp-server`). Items are roughly ordered by dependency + value.
 
+## Phase 6 complete (12-05-2026): printing-press infrastructure deleted
+
+Closed `miro-cli-rpk`. The new hand-authored CLI now stands alone:
+
+- Deleted: `cmd/miro-developer-platform-pp-cli/`, `internal/{cli,store,types,client,config,cache,cliutil}/`, `composites/`, `specs/`, `scripts/regenerate.sh`, `scripts/printing-press-version.txt`, `.printing-press.json`, `docs/SPEC-PATCHES.md`, `docs/BUGFIXES.md`, `docs/GENERATED-README.md`.
+- Renamed: `cmd/miro/` → `cmd/miro-cli/` so `go install` produces a `miro-cli` binary by default.
+- Updated: `.goreleaser.yaml` (id/main/binary + ldflags), `Makefile` (build target + race-failfast tests), `.gitignore`, `README.md` (install + quick start rewritten — printing-press npx flow gone), `SKILL.md` (prereqs section rewritten + frontmatter renamed `pp-miro-developer-platform` → `miro-cli`).
+
+The new CLI surface (~127 verbs across 19 resource trees) is the entire repo now. Phases 4 (perf), 5 (security + CI), and 3a-remainder (Mermaid diagram port) are the remaining open beads.
+
 ## Scope pivot (12-05-2026): MCP wrapper dropped from this repo
 
 The printing-press-generated MCP surface (`cmd/miro-developer-platform-pp-mcp/`, `internal/mcp/`, `manifest.json`) was removed. Rationale:
@@ -20,7 +30,7 @@ User direction: stop being a printing-press downstream. The generated 262-file C
 
 ```
 cmd/
-  miro/main.go                 # NEW entry point, replaces miro-developer-platform-pp-cli
+  miro/main.go                 # NEW entry point, replaces miro-cli
 internal/
   miro/                        # NEW foundation: HTTP client, auth, config, errors, ratelimit, redact, cache
     client.go
@@ -37,7 +47,7 @@ internal/
     tags/      groups/  mindmap/  tables/  exports/  members/  misc/
 ```
 
-Old `internal/cli/` (262 generated files), `internal/store/`, `internal/types/`, `internal/client/`, `internal/config/`, `internal/cache/`, `internal/cliutil/`, `cmd/miro-developer-platform-pp-cli/` get deleted as the new code reaches feature parity, not before. While migrating, both binaries coexist; once `cmd/miro/` covers everything the old binary did, the old tree is removed in one commit and `goreleaser`, `Makefile`, `README`, `SKILL.md`, `.printing-press.json`, `scripts/regenerate.sh`, `specs/`, `docs/SPEC-PATCHES.md`, `docs/BUGFIXES.md`, `docs/GENERATED-README.md` all go with it.
+Old `internal/cli/` (262 generated files), `internal/store/`, `internal/types/`, `internal/client/`, `internal/config/`, `internal/cache/`, `internal/cliutil/`, `cmd/miro-cli/` get deleted as the new code reaches feature parity, not before. While migrating, both binaries coexist; once `cmd/miro/` covers everything the old binary did, the old tree is removed in one commit and `goreleaser`, `Makefile`, `README`, `SKILL.md`, `.printing-press.json`, `scripts/regenerate.sh`, `specs/`, `docs/SPEC-PATCHES.md`, `docs/BUGFIXES.md`, `docs/GENERATED-README.md` all go with it.
 
 ### Phasing
 
@@ -48,7 +58,7 @@ Old `internal/cli/` (262 generated files), `internal/store/`, `internal/types/`,
 | 3a-3j | `miro-cli-boards`, `miro-cli-items`, `miro-cli-stickies`, `miro-cli-typed-items`, `miro-cli-tags`, `miro-cli-groups`, `miro-cli-mindmap`, `miro-cli-tables`, `miro-cli-exports`, `miro-cli-misc` | One bead per resource category. Each ports the 4-12 tools in that category as hand-authored subcommands with table-driven tests. Spawnable in parallel waves of 3-4 once Phase 2 lands. |
 | 4 | `miro-cli-perf` | Performance pass: connection pooling, response caching for read-heavy endpoints, bounded-concurrency bulk-op fan-out, optional local SQLite sync (port miro-cli's old `store.go` if useful). |
 | 5 | `miro-cli-sec` | Security pass: token redaction in logs/errors, input validation, share-board allowlist (per `code-review-prompts.md` HG-3), destructive-op confirmation gating, panic recovery, `go mod verify` + `govulncheck` + `gosec` in CI per `rules/mcp-server-patterns.md`. |
-| 6 | `miro-cli-clean` | Delete printing-press infrastructure: `cmd/miro-developer-platform-pp-cli/`, `internal/{cli,store,types,client,config,cache,cliutil}/`, `scripts/regenerate.sh`, `scripts/printing-press-version.txt`, `specs/`, `.printing-press.json`, `docs/{SPEC-PATCHES,BUGFIXES,GENERATED-README}.md`, `composites/` (its work is now Phase 3), `manifest.json` references in README. Update `.goreleaser.yaml`, `Makefile`, `README.md`, `SKILL.md`, `HANDOFF.md`. |
+| 6 | `miro-cli-clean` | Delete printing-press infrastructure: `cmd/miro-cli/`, `internal/{cli,store,types,client,config,cache,cliutil}/`, `scripts/regenerate.sh`, `scripts/printing-press-version.txt`, `specs/`, `.printing-press.json`, `docs/{SPEC-PATCHES,BUGFIXES,GENERATED-README}.md`, `composites/` (its work is now Phase 3), `manifest.json` references in README. Update `.goreleaser.yaml`, `Makefile`, `README.md`, `SKILL.md`, `HANDOFF.md`. |
 
 ### Tool count by category (from `miro-mcp-server/tools/definitions.go`)
 
@@ -162,7 +172,7 @@ Don't delete the current README until reveal is confirmed; the internal framing 
 
 Two paths from `README.md`:
 
-1. **Merge into `miro-mcp-server`.** Move `cmd/miro-developer-platform-pp-cli/` into the existing public repo as a new sibling binary. Existing 91 hand-built tools coexist on the MCP side. One repo, one auth, one release. (The MCP-wrapper half is no longer in this repo — see Scope pivot — so the merge is CLI-only.)
+1. **Merge into `miro-mcp-server`.** Move `cmd/miro-cli/` into the existing public repo as a new sibling binary. Existing 91 hand-built tools coexist on the MCP side. One repo, one auth, one release. (The MCP-wrapper half is no longer in this repo — see Scope pivot — so the merge is CLI-only.)
 2. **Flip this repo public.** Rename to `miro-cli` or `miro-toolkit` (final name TBD), `gh repo edit --visibility public`. Standalone identity. Easier for Miro to absorb upstream if cooperation goes that direction.
 
 Defer until Phases 1-5 are done and the Miro conversation has firmed up.

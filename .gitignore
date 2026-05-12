@@ -1,12 +1,11 @@
 # Build artifacts
 build/
 
-# Generator runtime state
-.runstate/
+# Claude Code agent worktrees
+.claude/worktrees/
 
 # Go binaries (root-level standalones from `go build`)
-/printing-press
-/miro-developer-platform-pp-cli
+/miro-cli
 
 # OS / editor noise
 .DS_Store

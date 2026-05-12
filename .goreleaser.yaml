@@ -9,7 +9,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X miro-cli/internal/cli.version={{ .Version }}
+      - -s -w
     targets:
       - darwin_amd64
       - darwin_arm64
@@ -31,6 +31,6 @@ brews:
       owner: olga-safonova
       name: homebrew-tap
     homepage: "https://github.com/olga-safonova/miro-cli"
-    description: "<img src=\"https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n\" width=\"1685\" height=\"593\"> ###..."
+    description: "Hand-authored Cobra CLI for the Miro REST API."
     install: |
       bin.install "miro-cli"

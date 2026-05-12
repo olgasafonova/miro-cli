@@ -4,7 +4,7 @@ build:
 	go build -o bin/miro-cli ./cmd/miro-cli
 
 test:
-	go test ./...
+	go test -race -failfast ./...
 
 lint:
 	golangci-lint run
