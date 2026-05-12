@@ -10,8 +10,10 @@ import (
 	"miro-cli/internal/tools/boards"
 	"miro-cli/internal/tools/cards"
 	"miro-cli/internal/tools/clictx"
+	"miro-cli/internal/tools/documents"
 	"miro-cli/internal/tools/embeds"
 	"miro-cli/internal/tools/frames"
+	"miro-cli/internal/tools/images"
 	"miro-cli/internal/tools/items"
 	"miro-cli/internal/tools/shapes"
 	"miro-cli/internal/tools/stickies"
@@ -46,8 +48,10 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd.AddCommand(appcards.NewCmd(g))
 	cmd.AddCommand(boards.NewCmd(g))
 	cmd.AddCommand(cards.NewCmd(g))
+	cmd.AddCommand(documents.NewCmd(g))
 	cmd.AddCommand(embeds.NewCmd(g))
 	cmd.AddCommand(frames.NewCmd(g))
+	cmd.AddCommand(images.NewCmd(g))
 	cmd.AddCommand(items.NewCmd(g))
 	cmd.AddCommand(shapes.NewCmd(g))
 	cmd.AddCommand(stickies.NewCmd(g))
