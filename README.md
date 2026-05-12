@@ -280,60 +280,9 @@ Install the focused skill — it auto-installs the CLI on first invocation:
 npx skills add mvanhorn/printing-press-library/cli-skills/pp-miro-developer-platform -g
 ```
 
-Then invoke `/pp-miro-developer-platform <query>` in Claude Code. The skill is the most efficient path — Claude Code drives the CLI directly without an MCP server in the middle.
+Then invoke `/pp-miro-developer-platform <query>` in Claude Code. The skill drives the CLI directly.
 
-<details>
-<summary>Use as an MCP server in Claude Code (advanced)</summary>
-
-If you'd rather register this CLI as an MCP server in Claude Code, install the MCP binary first:
-
-
-Install the MCP binary from this CLI's published public-library entry or pre-built release.
-
-Then register it:
-
-```bash
-claude mcp add miro-developer-platform miro-developer-platform-pp-mcp -e MIRO_ACCESS_TOKEN=<your-token>
-```
-
-</details>
-
-## Use with Claude Desktop
-
-This CLI ships an [MCPB](https://github.com/modelcontextprotocol/mcpb) bundle — Claude Desktop's standard format for one-click MCP extension installs (no JSON config required).
-
-To install:
-
-1. Download the `.mcpb` for your platform from the [latest release](https://github.com/mvanhorn/printing-press-library/releases/tag/miro-developer-platform-current).
-2. Double-click the `.mcpb` file. Claude Desktop opens and walks you through the install.
-3. Fill in `MIRO_ACCESS_TOKEN` when Claude Desktop prompts you.
-
-Requires Claude Desktop 1.0.0 or later. Pre-built bundles ship for macOS Apple Silicon (`darwin-arm64`) and Windows (`amd64`, `arm64`); for other platforms, use the manual config below.
-
-<details>
-<summary>Manual JSON config (advanced)</summary>
-
-If you can't use the MCPB bundle (older Claude Desktop, unsupported platform), install the MCP binary and configure it manually.
-
-
-Install the MCP binary from this CLI's published public-library entry or pre-built release.
-
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "miro-developer-platform": {
-      "command": "miro-developer-platform-pp-mcp",
-      "env": {
-        "MIRO_ACCESS_TOKEN": "<your-key>"
-      }
-    }
-  }
-}
-```
-
-</details>
+For Miro MCP tools (board operations, stickies, frames, diagrams), use the separate [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) project instead. This CLI is shell + skill only.
 
 ## Health Check
 

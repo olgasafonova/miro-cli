@@ -2,6 +2,18 @@
 
 Roadmap from current state (initial demo build, 10-05-2026) to "ready to reveal" (either as a public repo flip or as a merge into `miro-mcp-server`). Items are roughly ordered by dependency + value.
 
+## Scope pivot (12-05-2026): MCP wrapper dropped from this repo
+
+The printing-press-generated MCP surface (`cmd/miro-developer-platform-pp-mcp/`, `internal/mcp/`, `manifest.json`) was removed. Rationale:
+
+- The `miro-mcp-server` repo already ships 91 hand-curated tools with workshop/retro semantics; shipping a second Miro MCP from this repo created user confusion ("which do I install?").
+- This repo's MCP surface was generator-default, not deliberately designed — the README already de-emphasized it as "advanced".
+- The unique MCP value here (local SQL/FTS over synced data via `search`/`sql`/`context` tools) is real but belongs as features inside `miro-mcp-server`, not as a parallel server.
+
+This repo is now CLI + skill only. The generator-side follow-up — adding `mcp.enabled: false` support to `MCPConfig` in `cli-printing-press` — is open; until that lands, the next `scripts/regenerate.sh` will reintroduce the MCP artifacts and they must be deleted post-regen. The destructive `--force` already requires a clean working tree (`scripts/regenerate.sh` guard), so post-regen the deletion is a single commit. See `cli-printing-press/internal/spec/spec.go:799` (`MCPConfig`) for the upstream edit point.
+
+Phases 2 and 6 below were edited to reflect this; Phase 3 (client-pattern backport into `miro-mcp-server`) is unchanged but newly higher-priority — see bead `claude-code-config-27e`.
+
 ## Phase 1 — Finish the spec patches (mostly done)
 
 Bug #2 (the SCIM-vs-board-item-group schema confusion) was patched only for `POST /v2/boards/{board_id}/groups`. Three more endpoints in the same family had the same broken refs.
@@ -49,7 +61,7 @@ The 8 hand-built tools in `~/Projects/miro-mcp-server/miro/` need to be moved in
 
 Each lands as a hand-authored file under `internal/cli/`. The generator's `--force` semantics preserve hand-authored `internal/cli/*.go` files on regen, so they survive future regenerations.
 
-Also needed for each composite: register as an MCP tool in `internal/mcp/cobratree/` so the agent surface gets them too. The runtime walker mirrors the Cobra tree at server start; adding the Cobra command should make it auto-register, but verify per `composites/README.md` checklist.
+The MCP-side registration step that used to live here is gone (see Scope pivot above). When each composite is ready, the equivalent MCP tool needs to land in `miro-mcp-server/tools/definitions.go` and `handlers.go` as a hand-authored entry — track that as a sibling task in `miro-mcp-server`, not here.
 
 **Bug fix during absorption:** `boards items frame` 404 → empty list (4-line patch on the generated handler per the original handoff). Trivial.
 
@@ -87,7 +99,7 @@ Don't delete the current README until reveal is confirmed; the internal framing 
 
 Two paths from `README.md`:
 
-1. **Merge into `miro-mcp-server`.** Move `cmd/miro-developer-platform-pp-cli/` and `cmd/miro-developer-platform-pp-mcp/` into the existing public repo as new sibling binaries. Existing 91 hand-built tools coexist. One repo, one auth, one release.
+1. **Merge into `miro-mcp-server`.** Move `cmd/miro-developer-platform-pp-cli/` into the existing public repo as a new sibling binary. Existing 91 hand-built tools coexist on the MCP side. One repo, one auth, one release. (The MCP-wrapper half is no longer in this repo — see Scope pivot — so the merge is CLI-only.)
 2. **Flip this repo public.** Rename to `miro-cli` or `miro-toolkit` (final name TBD), `gh repo edit --visibility public`. Standalone identity. Easier for Miro to absorb upstream if cooperation goes that direction.
 
 Defer until Phases 1-5 are done and the Miro conversation has firmed up.

@@ -17,20 +17,6 @@ builds:
       - linux_arm64
       - windows_amd64
       - windows_arm64
-  - id: miro-developer-platform-pp-mcp
-    main: ./cmd/miro-developer-platform-pp-mcp
-    binary: miro-developer-platform-pp-mcp
-    env:
-      - CGO_ENABLED=0
-    ldflags:
-      - -s -w
-    targets:
-      - darwin_amd64
-      - darwin_arm64
-      - linux_amd64
-      - linux_arm64
-      - windows_amd64
-      - windows_arm64
 archives:
   - formats: [tar.gz]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
@@ -48,4 +34,3 @@ brews:
     description: "<img src=\"https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n\" width=\"1685\" height=\"593\"> ###..."
     install: |
       bin.install "miro-developer-platform-pp-cli"
-      bin.install "miro-developer-platform-pp-mcp"

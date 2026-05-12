@@ -1,6 +1,5 @@
 # Build artifacts
 build/
-*.mcpb
 
 # Generator runtime state
 .runstate/
@@ -8,7 +7,6 @@ build/
 # Go binaries (root-level standalones from `go build`)
 /printing-press
 /miro-developer-platform-pp-cli
-/miro-developer-platform-pp-mcp
 
 # OS / editor noise
 .DS_Store

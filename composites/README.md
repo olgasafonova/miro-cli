@@ -24,11 +24,10 @@ For each one:
 1. Read the source in `miro-mcp-server/miro/<composite>.go` to understand the logic
 2. Create `internal/cli/boards_<resource>_<verb>.go` (or appropriate path) as a hand-authored Cobra subcommand
 3. Use the generated client in `internal/client/` (don't import `miro-mcp-server`'s client; use the in-repo one for consistency)
-4. Add `cmd.Annotations["mcp:read-only"] = "true"` for read-only composites; omit for mutating ones
-5. Add to the parent command's command tree (probably already wired by the runtime walker, but verify)
-6. Test live against the AnalyticsDev Demo board
-7. Run `./scripts/regenerate.sh` to confirm the file is preserved by the generator's `--force` flag
-8. Move on to the next one
+4. Add to the parent command's command tree (probably already wired by the runtime walker, but verify)
+5. Test live against the AnalyticsDev Demo board
+6. Run `./scripts/regenerate.sh` to confirm the file is preserved by the generator's `--force` flag
+7. Move on to the next one
 
 ## Bug fix during absorption
 

@@ -3,7 +3,7 @@ name: pp-miro-developer-platform
 description: "Printing Press CLI for Miro Developer Platform. <img src=\"https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n\" width=\"1685\" height=\"593\"> ###..."
 author: "Olga Safonova"
 license: "Apache-2.0"
-argument-hint: "<command> [args] | install cli|mcp"
+argument-hint: "<command> [args] | install"
 allowed-tools: "Read Bash"
 metadata:
   openclaw:
@@ -245,18 +245,8 @@ Explicit flags always win over profile values; profile values win over defaults.
 Parse `$ARGUMENTS`:
 
 1. **Empty, `help`, or `--help`** → show `miro-developer-platform-pp-cli --help` output
-2. **Starts with `install`** → ends with `mcp` → MCP installation; otherwise → see Prerequisites above
+2. **Starts with `install`** → see Prerequisites above
 3. **Anything else** → Direct Use (execute as CLI command with `--agent`)
-
-## MCP Server Installation
-
-Install the MCP binary from this CLI's published public-library entry or pre-built release, then register it:
-
-```bash
-claude mcp add miro-developer-platform-pp-mcp -- miro-developer-platform-pp-mcp
-```
-
-Verify: `claude mcp list`
 
 ## Direct Use
 
