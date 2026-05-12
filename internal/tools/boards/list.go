@@ -27,6 +27,8 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 		newUpdateCmd(g),
 		newDeleteCmd(g),
 		newShareCmd(g),
+		newFindCmd(g),
+		newPictureCmd(g),
 	)
 	return cmd
 }
