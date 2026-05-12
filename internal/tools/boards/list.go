@@ -10,14 +10,22 @@ import (
 	"miro-cli/internal/tools/clictx"
 )
 
-// NewCmd returns the `boards` parent command. Phase 2 only adds `list`;
-// Phase 3a wires the rest of the boards verbs as siblings.
+// NewCmd returns the `boards` parent command. Phase 2 shipped `list`;
+// Phase 3a layers in the CRUD verbs. The rest of the boards surface
+// (find/search/share/content/summary/picture/audit/diagram) lands in
+// follow-up commits — see bead miro-cli-8fq.
 func NewCmd(g *clictx.Globals) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "boards",
 		Short: "Manage Miro boards",
 	}
-	cmd.AddCommand(newListCmd(g))
+	cmd.AddCommand(
+		newListCmd(g),
+		newGetCmd(g),
+		newCreateCmd(g),
+		newUpdateCmd(g),
+		newDeleteCmd(g),
+	)
 	return cmd
 }
 
