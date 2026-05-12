@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-12T00:00:00Z",
+  "deslop_version": "2.1.0",
+  "scores": {
+    "file_health": 65.0,
+    "test_coverage": 0.4,
+    "secret_detection": 100.0,
+    "todo_debt": 100.0,
+    "dependency_health": 100.0,
+    "structural_quality": 90.0,
+    "overall": 75.9
+  },
+  "findings": [
+    {
+      "detector": "file_health",
+      "severity": "critical",
+      "key": "internal/store/store.go",
+      "summary": "internal/store/store.go (3,340 LOC, generated)"
+    },
+    {
+      "detector": "file_health",
+      "severity": "high",
+      "key": "internal/cli/sync.go",
+      "summary": "internal/cli/sync.go (1,193 LOC, generated)"
+    },
+    {
+      "detector": "file_health",
+      "severity": "warning",
+      "key": "internal/cli/helpers.go",
+      "summary": "internal/cli/helpers.go (528 LOC, generated)"
+    },
+    {
+      "detector": "structural_quality",
+      "severity": "warning",
+      "key": "god_package:internal/cli",
+      "summary": "internal/cli has 253 files (one-per-endpoint generator output; by design)"
+    },
+    {
+      "detector": "test_coverage",
+      "severity": "info",
+      "key": "internal/cli/*",
+      "summary": "0.4% coverage across 262 generated files; tests live upstream in cli-printing-press templates"
+    }
+  ]
+}
