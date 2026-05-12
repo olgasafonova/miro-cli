@@ -2,6 +2,12 @@
 dolt/
 embeddeddolt/
 
+# Interactions log (runtime, not versioned)
+# Per beads-tooling.md: interactions.jsonl is local-only event telemetry.
+# The durable record is issues.jsonl. Tracking interactions.jsonl churns
+# the working tree on every bd invocation.
+interactions.jsonl
+
 # Runtime files
 bd.sock
 bd.sock.startlock
