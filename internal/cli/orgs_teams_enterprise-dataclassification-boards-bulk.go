@@ -21,7 +21,7 @@ func newOrgsTeamsEnterpriseDataclassificationBoardsBulkCmd(flags *rootFlags) *co
 		Use:         "enterprise-dataclassification-boards-bulk <org_id> <team_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates board classification for not-classified only or all boards in an existing team.<br/><h3>Required scope</h3>...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-dataclassification-boards-bulk 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-dataclassification-boards-bulk 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-dataclassification-boards-bulk", "pp:method": "PATCH", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/data-classification"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

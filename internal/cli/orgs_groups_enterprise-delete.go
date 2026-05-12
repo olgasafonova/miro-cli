@@ -17,7 +17,7 @@ func newOrgsGroupsEnterpriseDeleteCmd(flags *rootFlags) *cobra.Command {
 		Use:         "enterprise-delete <org_id> <group_id>",
 		Aliases:     []string{"delete"},
 		Short:       "Deletes a user group from an organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs groups enterprise-delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-delete", "pp:method": "DELETE", "pp:path": "/v2/orgs/{org_id}/groups/{group_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -25,7 +25,7 @@ func newBoardsGetCmd(flags *rootFlags) *cobra.Command {
 		Use:         "get",
 		Aliases:     []string{"list"},
 		Short:       "Retrieves a list of boards accessible to the user associated with the provided access token. This endpoint supports...",
-		Example:     "  miro-developer-platform-pp-cli boards get",
+		Example:     "  miro-cli boards get",
 		Annotations: map[string]string{"pp:endpoint": "boards.get", "pp:method": "GET", "pp:path": "/v2/boards", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("sort") {

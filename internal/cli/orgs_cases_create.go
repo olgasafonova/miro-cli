@@ -20,7 +20,7 @@ func newOrgsCasesCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create <org_id>",
 		Short:       "Creating a case for legal hold is the first critical step in the eDiscovery process when litigation or an...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases create 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs cases create 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "cases.create", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/cases"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -23,7 +23,7 @@ func newBoardsCopyCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "copy",
 		Short:       "Creates a copy of an existing board. You can also update the name, description, sharing policy, and permissions...",
-		Example:     "  miro-developer-platform-pp-cli boards copy --copy-from example-value",
+		Example:     "  miro-cli boards copy --copy-from example-value",
 		Annotations: map[string]string{"pp:endpoint": "boards.copy", "pp:method": "PUT", "pp:path": "/v2/boards"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cmd.Flags().Changed("copy-from") && !flags.dryRun {

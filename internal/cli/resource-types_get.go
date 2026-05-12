@@ -17,7 +17,7 @@ func newResourceTypesGetCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get",
 		Short:       "Retrieve metadata for the available resource types (User and Group) that are supported.",
-		Example:     "  miro-developer-platform-pp-cli resource-types get",
+		Example:     "  miro-cli resource-types get",
 		Annotations: map[string]string{"pp:endpoint": "resource-types.get", "pp:method": "GET", "pp:path": "/ResourceTypes/{resource}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("resource") {

@@ -21,7 +21,7 @@ func newBoardsImagesCreateItemUsingLocalFileCmd(flags *rootFlags) *cobra.Command
 		Use:         "create-item-using-local-file <board_id_PlatformFileUpload>",
 		Aliases:     []string{"create"},
 		Short:       "Adds an image item to a board by specifying a file from device.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards images create-item-using-local-file example-value --resource example-value",
+		Example:     "  miro-cli boards images create-item-using-local-file example-value --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "images.create-item-using-local-file", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/images"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

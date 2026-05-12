@@ -23,7 +23,7 @@ func newBoardsCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create",
 		Short:       "Creates a board with the specified name and sharing policies.<br/><h4>Note</h4> You can only create up to 3 team...",
-		Example:     "  miro-developer-platform-pp-cli boards create",
+		Example:     "  miro-cli boards create",
 		Annotations: map[string]string{"pp:endpoint": "boards.create", "pp:method": "POST", "pp:path": "/v2/boards"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !stdinBody {

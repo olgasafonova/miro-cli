@@ -1,4 +1,4 @@
-module miro-developer-platform-pp-cli
+module miro-cli
 
 go 1.26.3
 

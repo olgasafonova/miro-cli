@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseUpdateMemberCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-update-member <org_id> <team_id> <member_id>",
 		Short:       "Updates team member role in team by id.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-update-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-update-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-update-member", "pp:method": "PATCH", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/members/{member_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

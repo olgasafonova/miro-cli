@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseUpdateProjectCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-update-project <org_id> <team_id> <project_id>",
 		Short:       "Update information about a project, such as the project name.<h4>Note</h4> <em>Projects</em> have been renamed...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-update-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs teams enterprise-update-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-update-project", "pp:method": "PATCH", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

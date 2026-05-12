@@ -28,7 +28,7 @@ func newUsersCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create",
 		Short:       "Creates a new user in the organization. <br><br> <br>Note</b>: All newly provisioned users are added to the default...",
-		Example:     "  miro-developer-platform-pp-cli users create --user-name example-resource",
+		Example:     "  miro-cli users create --user-name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "users.create", "pp:method": "POST", "pp:path": "/Users"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !stdinBody {

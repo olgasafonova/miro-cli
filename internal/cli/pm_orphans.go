@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 )
 
 func newOrphansCmd(flags *rootFlags) *cobra.Command {
@@ -22,19 +22,19 @@ func newOrphansCmd(flags *rootFlags) *cobra.Command {
 		Long: `Scan locally synced data for items that are missing important fields
 such as assignee, project, priority, or labels. Useful for triaging unowned work.`,
 		Example: `  # Find orphaned items
-  miro-developer-platform-pp-cli orphans
+  miro-cli orphans
 
   # Output as JSON
-  miro-developer-platform-pp-cli orphans --json`,
+  miro-cli orphans --json`,
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'miro-developer-platform-pp-cli sync' first.", err)
+				return fmt.Errorf("opening local database: %w\nRun 'miro-cli sync' first.", err)
 			}
 			defer db.Close()
 
@@ -152,7 +152,7 @@ such as assignee, project, priority, or labels. Useful for triaging unowned work
 		},
 	}
 
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-developer-platform-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-cli/data.db)")
 	cmd.Flags().IntVar(&limit, "limit", 50, "Maximum items to show")
 
 	return cmd

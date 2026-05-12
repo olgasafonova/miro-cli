@@ -35,7 +35,7 @@ func feedbackFilePath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolving home dir: %w", err)
 	}
-	dir := filepath.Join(home, ".miro-developer-platform-pp-cli")
+	dir := filepath.Join(home, ".miro-cli")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return "", fmt.Errorf("creating state dir: %w", err)
 	}
@@ -81,7 +81,7 @@ func postFeedback(url string, entry FeedbackEntry) error {
 		return fmt.Errorf("building feedback request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "miro-developer-platform-pp-cli/feedback")
+	req.Header.Set("User-Agent", "miro-cli/feedback")
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -100,7 +100,7 @@ func newFeedbackCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "feedback [text]",
 		Short: "Record feedback about this CLI (local by default; upstream opt-in)",
-		Long: `Feedback is captured locally first at ~/.miro-developer-platform-pp-cli/feedback.jsonl.
+		Long: `Feedback is captured locally first at ~/.miro-cli/feedback.jsonl.
 When ` + "`MIRO_DEVELOPER_PLATFORM_FEEDBACK_ENDPOINT`" + ` is set and either --send is
 passed or ` + "`MIRO_DEVELOPER_PLATFORM_FEEDBACK_AUTO_SEND=true`" + `, the entry is
 POSTed as JSON after the local write.
@@ -131,7 +131,7 @@ maintainer sees it.`,
 
 			entry := FeedbackEntry{
 				Text:      text,
-				CLI:       "miro-developer-platform-pp-cli",
+				CLI:       "miro-cli",
 				Version:   version,
 				AgentID:   os.Getenv("AGENT_ID"),
 				Timestamp: time.Now().UTC(),
@@ -184,9 +184,9 @@ func newFeedbackListCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List recent feedback entries",
-		Example: `  miro-developer-platform-pp-cli feedback list
-  miro-developer-platform-pp-cli feedback list --limit 5
-  miro-developer-platform-pp-cli feedback list --json`,
+		Example: `  miro-cli feedback list
+  miro-cli feedback list --limit 5
+  miro-cli feedback list --json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			p, err := feedbackFilePath()
 			if err != nil {

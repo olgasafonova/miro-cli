@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 	"net/url"
 	"os"
 	"regexp"
@@ -58,22 +58,22 @@ Exit codes & warnings:
   --strict to exit non-zero on any per-resource failure. Exit is always
   non-zero when every selected resource failed, regardless of --strict.`,
 		Example: `  # Sync all resources
-  miro-developer-platform-pp-cli sync
+  miro-cli sync
 
   # Sync specific resources only
-  miro-developer-platform-pp-cli sync --resources channels,messages
+  miro-cli sync --resources channels,messages
 
   # Full resync (ignore previous checkpoint)
-  miro-developer-platform-pp-cli sync --full
+  miro-cli sync --full
 
   # Incremental sync: only records from the last 7 days
-  miro-developer-platform-pp-cli sync --since 7d
+  miro-cli sync --since 7d
 
   # Parallel sync with 8 workers
-  miro-developer-platform-pp-cli sync --concurrency 8
+  miro-cli sync --concurrency 8
 
   # Latest-only: refresh head of each resource, no historical backfill
-  miro-developer-platform-pp-cli sync --latest-only`,
+  miro-cli sync --latest-only`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := flags.newClient()
 			if err != nil {
@@ -82,7 +82,7 @@ Exit codes & warnings:
 			c.NoCache = true
 
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
@@ -276,7 +276,7 @@ Exit codes & warnings:
 	cmd.Flags().BoolVar(&full, "full", false, "Full resync (ignore previous checkpoint)")
 	cmd.Flags().StringVar(&since, "since", "", "Incremental sync duration (e.g. 7d, 24h, 1w, 30m)")
 	cmd.Flags().IntVar(&concurrency, "concurrency", 4, "Number of parallel sync workers")
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-developer-platform-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-cli/data.db)")
 	cmd.Flags().IntVar(&maxPages, "max-pages", 100, "Maximum pages to fetch per resource (0 = unlimited; cap-hit emits a sync_warning event)")
 	cmd.Flags().BoolVar(&latestOnly, "latest-only", false, "Refresh head of each resource only; clears resume cursor and caps pages at 1. Mutually exclusive with --since (--since wins).")
 	cmd.Flags().BoolVar(&strict, "strict", false, "Exit non-zero on any per-resource failure (default: only critical failures or all-resource failure exit non-zero).")

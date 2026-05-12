@@ -22,7 +22,7 @@ func newBoardsImagesUpdateItemUsingUrlCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "update-item-using-url <board_id> <item_id>",
 		Short:       "Updates an image item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards images update-item-using-url 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards images update-item-using-url 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "images.update-item-using-url", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id}/images/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -17,7 +17,7 @@ func newOrgsDataClassificationSettingsEnterpriseDataclassificationOrganizationSe
 		Use:         "enterprise-dataclassification-organization-settings-get <org_id>",
 		Aliases:     []string{"get"},
 		Short:       "Retrieves board classification settings for an existing organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs data-classification-settings enterprise-dataclassification-organization-settings-get 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs data-classification-settings enterprise-dataclassification-organization-settings-get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "data-classification-settings.enterprise-dataclassification-organization-settings-get", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/data-classification-settings", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

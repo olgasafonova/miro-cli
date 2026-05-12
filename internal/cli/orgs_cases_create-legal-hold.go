@@ -21,7 +21,7 @@ func newOrgsCasesCreateLegalHoldCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create-legal-hold <org_id> <case_id>",
 		Short:       "After creating a case it is possible to add one or multiple legal holds to the case. Creating a legal hold involves...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases create-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs cases create-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "cases.create-legal-hold", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}/legal-holds"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

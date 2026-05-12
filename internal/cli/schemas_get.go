@@ -17,7 +17,7 @@ func newSchemasGetCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get",
 		Short:       "Retrieve information about how users, groups, and enterprise-user attributes URIs that are formatted.",
-		Example:     "  miro-developer-platform-pp-cli schemas get",
+		Example:     "  miro-cli schemas get",
 		Annotations: map[string]string{"pp:endpoint": "schemas.get", "pp:method": "GET", "pp:path": "/Schemas/{uri}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("uri") {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"miro-developer-platform-pp-cli/internal/cli"
+	"miro-cli/internal/cli"
 )
 
 func main() {

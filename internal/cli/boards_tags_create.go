@@ -20,7 +20,7 @@ func newBoardsTagsCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create <board_id>",
 		Short:       "Creates a tag on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards tags create 550e8400-e29b-41d4-a716-446655440000 --title example-resource",
+		Example:     "  miro-cli boards tags create 550e8400-e29b-41d4-a716-446655440000 --title example-resource",
 		Annotations: map[string]string{"pp:endpoint": "tags.create", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/tags"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -16,7 +16,7 @@ func newBoardsTagsDeleteCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "delete <board_id> <tag_id>",
 		Short:       "Deletes the specified tag from the board. The tag is also removed from all cards and sticky notes on the board....",
-		Example:     "  miro-developer-platform-pp-cli boards tags delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards tags delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "tags.delete", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id}/tags/{tag_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

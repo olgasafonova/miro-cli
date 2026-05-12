@@ -21,7 +21,7 @@ func newOauthRevokeTokenV2Cmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "revoke-token-v2",
 		Short:       "Revoke the current access token. Revoking an access token means that the access token will no longer work. When an...",
-		Example:     "  miro-developer-platform-pp-cli oauth revoke-token-v2 --access-token your-token-here",
+		Example:     "  miro-cli oauth revoke-token-v2 --access-token your-token-here",
 		Annotations: map[string]string{"pp:endpoint": "oauth.revoke-token-v2", "pp:method": "POST", "pp:path": "/v2/oauth/revoke"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !stdinBody {

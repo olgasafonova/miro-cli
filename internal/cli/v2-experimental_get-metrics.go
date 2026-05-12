@@ -19,7 +19,7 @@ func newV2ExperimentalGetMetricsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-metrics <app_id>",
 		Short:       "Returns a list of usage metrics for a specific app for a given time range, grouped by requested time period. This...",
-		Example:     "  miro-developer-platform-pp-cli v2-experimental get-metrics 550e8400-e29b-41d4-a716-446655440000 --start-date 2026-01-15 --end-date 2026-01-15",
+		Example:     "  miro-cli v2-experimental get-metrics 550e8400-e29b-41d4-a716-446655440000 --start-date 2026-01-15 --end-date 2026-01-15",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-metrics", "pp:method": "GET", "pp:path": "/v2-experimental/apps/{app_id}/metrics", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -21,7 +21,7 @@ func newOrgsCasesEditCmd(flags *rootFlags) *cobra.Command {
 		Use:         "edit <org_id> <case_id>",
 		Aliases:     []string{"update"},
 		Short:       "Editing a case allows eDiscovery Admins to keep case details accurate and aligned with the evolving scope of a legal...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases edit 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs cases edit 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "cases.edit", "pp:method": "PUT", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

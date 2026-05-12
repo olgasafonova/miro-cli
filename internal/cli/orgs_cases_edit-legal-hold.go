@@ -21,7 +21,7 @@ func newOrgsCasesEditLegalHoldCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "edit-legal-hold <org_id> <case_id> <legal_hold_id>",
 		Short:       "Editing a legal hold allows eDiscovery Admins to adjust and refine ongoing legal preservation efforts as case...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases edit-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs cases edit-legal-hold 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "cases.edit-legal-hold", "pp:method": "PUT", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}/legal-holds/{legal_hold_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -18,7 +18,7 @@ func newBoardsGroupsUnCmd(flags *rootFlags) *cobra.Command {
 		Use:         "un <board_id> <group_id>",
 		Aliases:     []string{"delete"},
 		Short:       "Ungroups items from a group.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards groups un 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards groups un 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.un", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id}/groups/{group_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

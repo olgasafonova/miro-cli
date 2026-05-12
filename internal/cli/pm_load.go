@@ -9,7 +9,7 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 )
 
 func newLoadCmd(flags *rootFlags) *cobra.Command {
@@ -22,22 +22,22 @@ func newLoadCmd(flags *rootFlags) *cobra.Command {
 		Long: `Analyze locally synced data to show how many items are assigned to each
 person. Helps identify overloaded team members and unbalanced workload.`,
 		Example: `  # Show workload distribution
-  miro-developer-platform-pp-cli load
+  miro-cli load
 
   # Limit results
-  miro-developer-platform-pp-cli load --limit 10
+  miro-cli load --limit 10
 
   # Output as JSON
-  miro-developer-platform-pp-cli load --json`,
+  miro-cli load --json`,
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'miro-developer-platform-pp-cli sync' first.", err)
+				return fmt.Errorf("opening local database: %w\nRun 'miro-cli sync' first.", err)
 			}
 			defer db.Close()
 
@@ -177,7 +177,7 @@ person. Helps identify overloaded team members and unbalanced workload.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-developer-platform-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-cli/data.db)")
 	cmd.Flags().IntVar(&limit, "limit", 50, "Maximum entries to show")
 
 	return cmd

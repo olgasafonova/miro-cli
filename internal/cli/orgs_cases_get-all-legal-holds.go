@@ -19,7 +19,7 @@ func newOrgsCasesGetAllLegalHoldsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-all-legal-holds <org_id> <case_id>",
 		Short:       "Retrieves the list of all legal holds within a case for an organization.<br/><h3>Required scope</h3> <a...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases get-all-legal-holds 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs cases get-all-legal-holds 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "cases.get-all-legal-holds", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}/legal-holds", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

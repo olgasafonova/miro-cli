@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 )
 
 // isNilOrEmpty checks whether a JSON object has nil or empty values for
@@ -95,16 +95,16 @@ otherwise searches local data. Falls back to local on network failure.
 In live mode: uses the API search endpoint only.
 In local mode: searches locally synced data only.`,
 		Example: `  # Search (uses API endpoint if available, local FTS otherwise)
-  miro-developer-platform-pp-cli search "error timeout"
+  miro-cli search "error timeout"
 
   # Force local search only
-  miro-developer-platform-pp-cli search "payment failed" --data-source local
+  miro-cli search "payment failed" --data-source local
 
   # Search a specific resource type locally
-  miro-developer-platform-pp-cli search "critical" --type transactions --data-source local
+  miro-cli search "critical" --type transactions --data-source local
 
   # JSON output for piping
-  miro-developer-platform-pp-cli search "critical" --json --limit 20`,
+  miro-cli search "critical" --json --limit 20`,
 		Annotations: map[string]string{"mcp:hidden": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -121,12 +121,12 @@ In local mode: searches locally synced data only.`,
 
 			// Local FTS search
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'miro-developer-platform-pp-cli sync' first to populate the local database.", err)
+				return fmt.Errorf("opening local database: %w\nRun 'miro-cli sync' first to populate the local database.", err)
 			}
 			defer db.Close()
 
@@ -201,7 +201,7 @@ In local mode: searches locally synced data only.`,
 
 	cmd.Flags().StringVar(&resourceType, "type", "", "Filter by resource type")
 	cmd.Flags().IntVar(&limit, "limit", 50, "Maximum results to return")
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-developer-platform-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-cli/data.db)")
 
 	return cmd
 }

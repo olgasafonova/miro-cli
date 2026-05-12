@@ -21,7 +21,7 @@ func newOrgsGroupsEnterpriseCreateCmd(flags *rootFlags) *cobra.Command {
 		Use:         "enterprise-create <org_id>",
 		Aliases:     []string{"create"},
 		Short:       "Creates a new user group in an organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-create 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs groups enterprise-create 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-create", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/groups"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

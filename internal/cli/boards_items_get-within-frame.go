@@ -21,7 +21,7 @@ func newBoardsItemsGetWithinFrameCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-within-frame <board_id_PlatformContainers>",
 		Short:       "Retrieves a list of items within a specific frame. A frame is a parent item and all items within a frame are child...",
-		Example:     "  miro-developer-platform-pp-cli boards items get-within-frame example-value --parent-item-id 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items get-within-frame example-value --parent-item-id 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.get-within-frame", "pp:method": "GET", "pp:path": "/v2/boards/{board_id_PlatformContainers}/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -21,7 +21,7 @@ func newBoardsDocumentsCreateItemUsingUrlCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create-item-using-url <board_id>",
 		Short:       "Adds a document item to a board by specifying the URL where the document is hosted.<br/><h3>Required scope</h3> <a...",
-		Example:     "  miro-developer-platform-pp-cli boards documents create-item-using-url 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards documents create-item-using-url 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "documents.create-item-using-url", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/documents"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

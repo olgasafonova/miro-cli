@@ -19,7 +19,7 @@ func newOrgsGroupsEnterpriseCreateMemberCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-create-member <org_id> <group_id>",
 		Short:       "Adds a member to a user group in an organization.<br/> <h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-create-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --email user@example.com",
+		Example:     "  miro-cli orgs groups enterprise-create-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --email user@example.com",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-create-member", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/groups/{group_id}/members"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

@@ -20,7 +20,7 @@ func newOrgsGroupsEnterpriseUpdateMembersCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-update-members <org_id> <group_id>",
 		Short:       "Add and remove members in one request. For example, remove user A and add user B. You can add or remove up to 500...",
-		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-update-members 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs groups enterprise-update-members 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-update-members", "pp:method": "PATCH", "pp:path": "/v2/orgs/{org_id}/groups/{group_id}/members"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

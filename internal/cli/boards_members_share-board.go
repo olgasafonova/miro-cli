@@ -22,7 +22,7 @@ func newBoardsMembersShareBoardCmd(flags *rootFlags) *cobra.Command {
 		Use:         "share-board <board_id>",
 		Aliases:     []string{"create"},
 		Short:       "Shares the board and Invites new members to collaborate on a board by sending an invitation email. Depending on the...",
-		Example:     "  miro-developer-platform-pp-cli boards members share-board 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards members share-board 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.share-board", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/members"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

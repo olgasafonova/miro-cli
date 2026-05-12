@@ -20,7 +20,7 @@ func newBoardsItemsGetCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get <board_id>",
 		Short:       "Retrieves a list of items for a specific board. You can retrieve all items on the board, a list of child items...",
-		Example:     "  miro-developer-platform-pp-cli boards items get 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.get", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

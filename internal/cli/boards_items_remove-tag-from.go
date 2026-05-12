@@ -17,7 +17,7 @@ func newBoardsItemsRemoveTagFromCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "remove-tag-from <board_id_PlatformTags> <item_id>",
 		Short:       "Removes the specified tag from the specified item. The tag still exists on the board....",
-		Example:     "  miro-developer-platform-pp-cli boards items remove-tag-from example-value 550e8400-e29b-41d4-a716-446655440000 --tag-id 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items remove-tag-from example-value 550e8400-e29b-41d4-a716-446655440000 --tag-id 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.remove-tag-from", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id_PlatformTags}/items/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

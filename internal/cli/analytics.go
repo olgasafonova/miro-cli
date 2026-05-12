@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 )
 
 func newAnalyticsCmd(flags *rootFlags) *cobra.Command {
@@ -26,21 +26,21 @@ func newAnalyticsCmd(flags *rootFlags) *cobra.Command {
 		Long: `Analyze locally synced data with count, group-by, and summary operations.
 Data must be synced first with the sync command.`,
 		Example: `  # Count records by type
-  miro-developer-platform-pp-cli analytics --type messages
+  miro-cli analytics --type messages
 
   # Group by a field
-  miro-developer-platform-pp-cli analytics --type messages --group-by author_id
+  miro-cli analytics --type messages --group-by author_id
 
   # Top 10 most frequent values
-  miro-developer-platform-pp-cli analytics --type messages --group-by channel_id --limit 10 --json`,
+  miro-cli analytics --type messages --group-by channel_id --limit 10 --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'miro-developer-platform-pp-cli sync' first.", err)
+				return fmt.Errorf("opening local database: %w\nRun 'miro-cli sync' first.", err)
 			}
 			defer db.Close()
 

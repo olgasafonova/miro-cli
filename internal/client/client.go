@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"miro-developer-platform-pp-cli/internal/cliutil"
-	"miro-developer-platform-pp-cli/internal/config"
+	"miro-cli/internal/cliutil"
+	"miro-cli/internal/config"
 	"net/http"
 	"net/url"
 	"os"
@@ -50,7 +50,7 @@ func newHTTPClient(timeout time.Duration, jar http.CookieJar) *http.Client {
 
 func New(cfg *config.Config, timeout time.Duration, rateLimit float64) *Client {
 	homeDir, _ := os.UserHomeDir()
-	cacheDir := filepath.Join(homeDir, ".cache", "miro-developer-platform-pp-cli")
+	cacheDir := filepath.Join(homeDir, ".cache", "miro-cli")
 	httpClient := newHTTPClient(timeout, nil)
 	return &Client{
 		BaseURL:    strings.TrimRight(cfg.BaseURL, "/"),
@@ -272,7 +272,7 @@ func (c *Client) do(method, path string, params map[string]string, body any, hea
 			req.Header.Set(k, v)
 		}
 		if req.Header.Get("User-Agent") == "" {
-			req.Header.Set("User-Agent", "miro-developer-platform-pp-cli/v2.0")
+			req.Header.Set("User-Agent", "miro-cli/v2.0")
 		}
 
 		resp, err := c.HTTPClient.Do(req)

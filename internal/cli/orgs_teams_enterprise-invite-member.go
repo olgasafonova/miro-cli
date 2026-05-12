@@ -20,7 +20,7 @@ func newOrgsTeamsEnterpriseInviteMemberCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-invite-member <org_id> <team_id>",
 		Short:       "Invites a new Miro user to an existing team. The user must exist in your Miro organization. Users who do not exist...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-invite-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --email user@example.com",
+		Example:     "  miro-cli orgs teams enterprise-invite-member 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --email user@example.com",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-invite-member", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/members"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

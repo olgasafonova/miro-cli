@@ -16,7 +16,7 @@ func newOrgsTeamsEnterpriseGetProjectSettingsCmd(flags *rootFlags) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:         "enterprise-get-project-settings <org_id> <team_id> <project_id>",
 		Short:       "Retrieves the project settings.<h4>Note</h4> <em>Projects</em> have been renamed to <em>Spaces</em>, and the terms...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get-project-settings 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-get-project-settings 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get-project-settings", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}/settings", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

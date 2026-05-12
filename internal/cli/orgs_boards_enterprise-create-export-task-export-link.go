@@ -18,7 +18,7 @@ func newOrgsBoardsEnterpriseCreateExportTaskExportLinkCmd(flags *rootFlags) *cob
 	cmd := &cobra.Command{
 		Use:         "enterprise-create-export-task-export-link <org_id> <job_id> <task_id>",
 		Short:       "Creates a link to download the results of a board export task.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-create-export-task-export-link 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs boards enterprise-create-export-task-export-link 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-create-export-task-export-link", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}/tasks/{task_id}/export-link"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

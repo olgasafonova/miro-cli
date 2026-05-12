@@ -16,7 +16,7 @@ func newBoardsDeleteCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "delete <board_id>",
 		Short:       "Deletes a board. Deleted boards go to Trash (on paid plans) and can be restored via UI within 90 days after...",
-		Example:     "  miro-developer-platform-pp-cli boards delete 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards delete 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "boards.delete", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

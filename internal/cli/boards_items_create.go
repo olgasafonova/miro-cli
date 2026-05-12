@@ -18,7 +18,7 @@ func newBoardsItemsCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create <board_id>",
 		Short:       "Adds different types of items to a board. You can add up to 20 items of the same or different type per create call....",
-		Example:     "  miro-developer-platform-pp-cli boards items create 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items create 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.create", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/items/bulk"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

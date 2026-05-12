@@ -22,7 +22,7 @@ func newGroupsListCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "list",
 		Short:       "Retrieves the list of groups (teams) in the organization.<br><br> Note: Along with groups (teams), the users that...",
-		Example:     "  miro-developer-platform-pp-cli groups list",
+		Example:     "  miro-cli groups list",
 		Annotations: map[string]string{"pp:endpoint": "groups.list", "pp:method": "GET", "pp:path": "/Groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("sort-order") {

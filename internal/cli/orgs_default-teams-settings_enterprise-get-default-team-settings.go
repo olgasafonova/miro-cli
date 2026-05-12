@@ -17,7 +17,7 @@ func newOrgsDefaultTeamsSettingsEnterpriseGetDefaultTeamSettingsCmd(flags *rootF
 		Use:         "enterprise-get-default-team-settings <org_id>",
 		Aliases:     []string{"get"},
 		Short:       "Retrieves default team settings of an existing organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs default-teams-settings enterprise-get-default-team-settings 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs default-teams-settings enterprise-get-default-team-settings 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "default-teams-settings.enterprise-get-default-team-settings", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/default_teams_settings", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

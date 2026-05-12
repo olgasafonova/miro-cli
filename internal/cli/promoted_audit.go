@@ -23,7 +23,7 @@ func newAuditPromotedCmd(flags *rootFlags) *cobra.Command {
 		Use:         "audit",
 		Short:       "Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
 		Long:        "Shortcut for 'audit enterprise-get-logs'. Retrieves a page of audit events from the last 90 days. If you want to retrieve data that is older than 90 days, you...",
-		Example:     "  miro-developer-platform-pp-cli audit --created-after example-value --created-before example-value",
+		Example:     "  miro-cli audit --created-after example-value --created-before example-value",
 		Annotations: map[string]string{"pp:endpoint": "audit.enterprise-get-logs", "pp:method": "GET", "pp:path": "/v2/audit/logs", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !cmd.Flags().Changed("created-after") && !flags.dryRun {

@@ -20,7 +20,7 @@ func newBoardsGroupsGetAllCmd(flags *rootFlags) *cobra.Command {
 		Use:         "get-all <board_id>",
 		Aliases:     []string{"get"},
 		Short:       "Returns all the groups and the items of the respective groups within a specific board.<br/> This method returns...",
-		Example:     "  miro-developer-platform-pp-cli boards groups get-all 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards groups get-all 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.get-all", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

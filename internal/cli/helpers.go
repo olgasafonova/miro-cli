@@ -37,8 +37,8 @@ import (
 	"strings"
 	"time"
 
-	"miro-developer-platform-pp-cli/internal/client"
-	"miro-developer-platform-pp-cli/internal/cliutil"
+	"miro-cli/internal/client"
+	"miro-cli/internal/cliutil"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -264,16 +264,16 @@ var apiErrorClassifiers = []apiErrorClassifier{
 		classify: func(err error, msg string, _ *rootFlags) error {
 			return authErr(fmt.Errorf("%w\nhint: the API rejected the request — this usually means auth is missing or invalid."+
 				"\n      Set your API key: export MIRO_ACCESS_TOKEN=<your-key>"+
-				"\n      Run 'miro-developer-platform-pp-cli doctor' to check auth status."+
+				"\n      Run 'miro-cli doctor' to check auth status."+
 				"\n      Response: "+cliutil.SanitizeErrorBody(msg), err))
 		},
 	},
 	{
 		matches: func(msg string) bool { return strings.Contains(msg, "HTTP 401") },
 		classify: func(err error, _ string, _ *rootFlags) error {
-			return authErr(fmt.Errorf("%w\nhint: check your token. Set it with: miro-developer-platform-pp-cli auth set-token <token>"+
+			return authErr(fmt.Errorf("%w\nhint: check your token. Set it with: miro-cli auth set-token <token>"+
 				"\n      or: export MIRO_ACCESS_TOKEN=<your-token>"+
-				"\n      Run 'miro-developer-platform-pp-cli doctor' to check auth status.", err))
+				"\n      Run 'miro-cli doctor' to check auth status.", err))
 		},
 	},
 	{
@@ -282,7 +282,7 @@ var apiErrorClassifiers = []apiErrorClassifier{
 			return authErr(fmt.Errorf("%w\nhint: permission denied. Your credentials are valid but lack access to this resource."+
 				"\n      Check that your API key has the required permissions."+
 				"\n      Set it with: export MIRO_ACCESS_TOKEN=<your-key>"+
-				"\n      Run 'miro-developer-platform-pp-cli doctor' to check auth status.", err))
+				"\n      Run 'miro-cli doctor' to check auth status.", err))
 		},
 	},
 	{

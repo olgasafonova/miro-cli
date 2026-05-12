@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/client"
-	"miro-developer-platform-pp-cli/internal/config"
+	"miro-cli/internal/client"
+	"miro-cli/internal/config"
 )
 
 var version = "1.0.0"
@@ -82,16 +82,16 @@ func Execute() error {
 
 func newRootCmd(flags *rootFlags) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "miro-developer-platform-pp-cli",
+		Use:   "miro-cli",
 		Short: "Manage miro-developer-platform resources via the miro-developer-platform API",
 		Long: `Manage miro-developer-platform resources via the miro-developer-platform API.
 
 Add --agent to any command for JSON output + non-interactive mode.
-Run 'miro-developer-platform-pp-cli doctor' to verify auth and connectivity.`,
+Run 'miro-cli doctor' to verify auth and connectivity.`,
 		SilenceUsage: true,
 		Version:      version,
 	}
-	rootCmd.SetVersionTemplate("miro-developer-platform-pp-cli {{ .Version }}\n")
+	rootCmd.SetVersionTemplate("miro-cli {{ .Version }}\n")
 
 	rootCmd.PersistentFlags().BoolVar(&flags.asJSON, "json", false, "Output as JSON")
 	rootCmd.PersistentFlags().BoolVar(&flags.compact, "compact", false, "Return only key fields (id, name, status, timestamps) for minimal token usage")
@@ -111,7 +111,7 @@ Run 'miro-developer-platform-pp-cli doctor' to verify auth and connectivity.`,
 	rootCmd.PersistentFlags().BoolVar(&humanFriendly, "human-friendly", false, "Enable colored output and rich formatting")
 	rootCmd.PersistentFlags().BoolVar(&flags.agent, "agent", false, "Set all agent-friendly defaults (--json --compact --no-input --no-color --yes)")
 	rootCmd.PersistentFlags().StringVar(&flags.dataSource, "data-source", "auto", "Data source for read commands: auto (live with local fallback), live (API only), local (synced data only)")
-	rootCmd.PersistentFlags().StringVar(&flags.profileName, "profile", "", "Apply values from a saved profile (see 'miro-developer-platform-pp-cli profile list')")
+	rootCmd.PersistentFlags().StringVar(&flags.profileName, "profile", "", "Apply values from a saved profile (see 'miro-cli profile list')")
 	rootCmd.PersistentFlags().StringVar(&flags.deliverSpec, "deliver", "", "Route output to a sink: stdout (default), file:<path>, webhook:<url>")
 	rootCmd.PersistentFlags().Float64Var(&flags.rateLimit, "rate-limit", 0, "Max requests per second (0 to disable)")
 
@@ -257,7 +257,7 @@ func newVersionCliCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("miro-developer-platform-pp-cli %s\n", version)
+			fmt.Printf("miro-cli %s\n", version)
 		},
 	}
 }

@@ -21,7 +21,7 @@ func newOrgsProjectsEnterpriseCreateGroupCmd(flags *rootFlags) *cobra.Command {
 		Use:         "enterprise-create-group <org_id> <project_id>",
 		Aliases:     []string{"create"},
 		Short:       "Shares a project with user groups with a specified role. Updates the role if already shared.<br/> <h3>Required...",
-		Example:     "  miro-developer-platform-pp-cli orgs projects enterprise-create-group 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --role example-value",
+		Example:     "  miro-cli orgs projects enterprise-create-group 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --role example-value",
 		Annotations: map[string]string{"pp:endpoint": "projects.enterprise-create-group", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/projects/{project_id}/groups"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

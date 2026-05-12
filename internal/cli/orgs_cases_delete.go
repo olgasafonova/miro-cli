@@ -16,7 +16,7 @@ func newOrgsCasesDeleteCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "delete <org_id> <case_id>",
 		Short:       "Closing a case is the final stage in the eDiscovery process, marking the conclusion of a legal matter or...",
-		Example:     "  miro-developer-platform-pp-cli orgs cases delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs cases delete 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "cases.delete", "pp:method": "DELETE", "pp:path": "/v2/orgs/{org_id}/cases/{case_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

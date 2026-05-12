@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseGetProjectsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-get-projects <org_id> <team_id>",
 		Short:       "Retrieves the list of projects in an existing team of an organization. You can retrieve all projects, including all...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get-projects 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-get-projects 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get-projects", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

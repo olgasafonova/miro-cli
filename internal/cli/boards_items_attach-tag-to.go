@@ -19,7 +19,7 @@ func newBoardsItemsAttachTagToCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "attach-tag-to <board_id_PlatformTags> <item_id>",
 		Short:       "Attach an existing tag to the specified item. Card and sticky note items can have up to 8 tags....",
-		Example:     "  miro-developer-platform-pp-cli boards items attach-tag-to example-value 550e8400-e29b-41d4-a716-446655440000 --tag-id 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items attach-tag-to example-value 550e8400-e29b-41d4-a716-446655440000 --tag-id 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.attach-tag-to", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_PlatformTags}/items/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

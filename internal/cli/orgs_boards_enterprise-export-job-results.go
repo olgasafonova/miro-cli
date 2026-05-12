@@ -17,7 +17,7 @@ func newOrgsBoardsEnterpriseExportJobResultsCmd(flags *rootFlags) *cobra.Command
 		Use:         "enterprise-export-job-results <org_id> <job_id>",
 		Aliases:     []string{"get"},
 		Short:       "Retrieves the result of the board export job. The response provides more information about the board export job,...",
-		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-export-job-results 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs boards enterprise-export-job-results 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-export-job-results", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}/results", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

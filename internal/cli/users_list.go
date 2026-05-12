@@ -22,7 +22,7 @@ func newUsersListCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "list",
 		Short:       "Retrieves the list of users in your organization. <br><b> <br>Note</b>: The API returns users that are members in...",
-		Example:     "  miro-developer-platform-pp-cli users list",
+		Example:     "  miro-cli users list",
 		Annotations: map[string]string{"pp:endpoint": "users.list", "pp:method": "GET", "pp:path": "/Users", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if cmd.Flags().Changed("sort-order") {

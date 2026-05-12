@@ -17,7 +17,7 @@ func newUsersGetCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get <id>",
 		Short:       "Retrieves a single user resource. <br><b> <br>Note</b>: Returns only users that are members in the organization. It...",
-		Example:     "  miro-developer-platform-pp-cli users get 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli users get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "users.get", "pp:method": "GET", "pp:path": "/Users/{id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

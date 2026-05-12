@@ -21,7 +21,7 @@ func newBoardsDocumentsCreateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra
 		Use:         "create-item-using-file-from-device <board_id_PlatformFileUpload>",
 		Aliases:     []string{"create"},
 		Short:       "Adds a document item to a board by selecting file from device.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards documents create-item-using-file-from-device example-value --resource example-value",
+		Example:     "  miro-cli boards documents create-item-using-file-from-device example-value --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "documents.create-item-using-file-from-device", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/documents"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

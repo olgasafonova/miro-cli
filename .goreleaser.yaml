@@ -1,15 +1,15 @@
 version: 2
-project_name: miro-developer-platform-pp-cli
+project_name: miro-cli
 changelog:
   disable: true
 builds:
-  - id: miro-developer-platform-pp-cli
-    main: ./cmd/miro-developer-platform-pp-cli
-    binary: miro-developer-platform-pp-cli
+  - id: miro-cli
+    main: ./cmd/miro-cli
+    binary: miro-cli
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X miro-developer-platform-pp-cli/internal/cli.version={{ .Version }}
+      - -s -w -X miro-cli/internal/cli.version={{ .Version }}
     targets:
       - darwin_amd64
       - darwin_arm64
@@ -26,11 +26,11 @@ archives:
 checksum:
   name_template: checksums.txt
 brews:
-  - name: miro-developer-platform-pp-cli
+  - name: miro-cli
     repository:
       owner: olga-safonova
       name: homebrew-tap
-    homepage: "https://github.com/olga-safonova/miro-developer-platform-pp-cli"
+    homepage: "https://github.com/olga-safonova/miro-cli"
     description: "<img src=\"https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n\" width=\"1685\" height=\"593\"> ###..."
     install: |
-      bin.install "miro-developer-platform-pp-cli"
+      bin.install "miro-cli"

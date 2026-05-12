@@ -16,7 +16,7 @@ func newOrgsGroupsEnterpriseGetOrgsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-get-orgs <org_id> <group_id>",
 		Short:       "Retrieves a user group in an organization.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs groups enterprise-get-orgs 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs groups enterprise-get-orgs 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.enterprise-get-orgs", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/groups/{group_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

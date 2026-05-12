@@ -21,7 +21,7 @@ func newBoardsItemsUpdatePositionOrParentCmd(flags *rootFlags) *cobra.Command {
 		Use:         "update-position-or-parent <board_id> <item_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates the position or the parent of an item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards items update-position-or-parent 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items update-position-or-parent 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.update-position-or-parent", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id}/items/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

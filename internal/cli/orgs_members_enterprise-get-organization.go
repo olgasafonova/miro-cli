@@ -24,7 +24,7 @@ func newOrgsMembersEnterpriseGetOrganizationCmd(flags *rootFlags) *cobra.Command
 		Use:         "enterprise-get-organization <org_id>",
 		Aliases:     []string{"get"},
 		Short:       "Retrieves organization members based on the organization ID and the cursor, or based on the user emails provided in...",
-		Example:     "  miro-developer-platform-pp-cli orgs members enterprise-get-organization 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs members enterprise-get-organization 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.enterprise-get-organization", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/members", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

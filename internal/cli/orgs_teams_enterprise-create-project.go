@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseCreateProjectCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-create-project <org_id> <team_id>",
 		Short:       "Projects are essentially folders of boards with the option to manage user access for a smaller group of people...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-create-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
+		Example:     "  miro-cli orgs teams enterprise-create-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --name example-resource",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-create-project", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

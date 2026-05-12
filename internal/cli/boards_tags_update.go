@@ -20,7 +20,7 @@ func newBoardsTagsUpdateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "update <board_id> <tag_id>",
 		Short:       "Updates a tag based on the data properties provided in the request body. <br><blockquote><strong>Note:</strong>...",
-		Example:     "  miro-developer-platform-pp-cli boards tags update 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards tags update 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "tags.update", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id}/tags/{tag_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

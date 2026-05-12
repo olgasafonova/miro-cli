@@ -24,7 +24,7 @@ func newBoardsShapesUpdateItemCmd(flags *rootFlags) *cobra.Command {
 		Use:         "update-item <board_id> <item_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates a shape item on a board based on the data and style properties provided in the request...",
-		Example:     "  miro-developer-platform-pp-cli boards shapes update-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards shapes update-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "shapes.update-item", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id}/shapes/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

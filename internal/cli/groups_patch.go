@@ -22,7 +22,7 @@ func newGroupsPatchCmd(flags *rootFlags) *cobra.Command {
 		Use:         "patch <id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates an existing group resource, i.e. a team, overwriting values for specified attributes. Patch operation for...",
-		Example:     "  miro-developer-platform-pp-cli groups patch 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli groups patch 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.patch", "pp:method": "PATCH", "pp:path": "/Groups/{id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

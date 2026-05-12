@@ -23,7 +23,7 @@ func newV2ExperimentalCreateCodeWidgetItemCmd(flags *rootFlags) *cobra.Command {
 		Use:         "create-code-widget-item <board_id>",
 		Aliases:     []string{"create"},
 		Short:       "Adds a code widget item to a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli v2-experimental create-code-widget-item 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli v2-experimental create-code-widget-item 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.create-code-widget-item", "pp:method": "POST", "pp:path": "/v2-experimental/boards/{board_id}/code_widgets"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

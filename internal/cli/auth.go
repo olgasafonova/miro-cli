@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/config"
+	"miro-cli/internal/config"
 )
 
 func newAuthCmd(flags *rootFlags) *cobra.Command {

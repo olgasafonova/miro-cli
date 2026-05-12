@@ -16,7 +16,7 @@ func newBoardsMembersGetSpecificBoardCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-specific-board <board_id> <board_member_id>",
 		Short:       "Retrieves information for a board member.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards members get-specific-board 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards members get-specific-board 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.get-specific-board", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/members/{board_member_id}", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

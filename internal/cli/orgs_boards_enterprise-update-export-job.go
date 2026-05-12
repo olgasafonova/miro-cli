@@ -20,7 +20,7 @@ func newOrgsBoardsEnterpriseUpdateExportJobCmd(flags *rootFlags) *cobra.Command 
 		Use:         "enterprise-update-export-job <org_id> <job_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates the status of the board export job.<br/>Currently, only the cancellation of an ongoing export job is...",
-		Example:     "  miro-developer-platform-pp-cli orgs boards enterprise-update-export-job 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --status example-value",
+		Example:     "  miro-cli orgs boards enterprise-update-export-job 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 --status example-value",
 		Annotations: map[string]string{"pp:endpoint": "boards.enterprise-update-export-job", "pp:method": "PUT", "pp:path": "/v2/orgs/{org_id}/boards/export/jobs/{job_id}/status"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

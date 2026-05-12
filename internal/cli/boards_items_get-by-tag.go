@@ -20,7 +20,7 @@ func newBoardsItemsGetByTagCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-by-tag <board_id_PlatformTags>",
 		Short:       "Retrieves all the items that have the specified tag.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards items get-by-tag example-value --tag-id 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards items get-by-tag example-value --tag-id 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "items.get-by-tag", "pp:method": "GET", "pp:path": "/v2/boards/{board_id_PlatformTags}/items", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

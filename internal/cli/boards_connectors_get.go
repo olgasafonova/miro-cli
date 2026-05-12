@@ -19,7 +19,7 @@ func newBoardsConnectorsGetCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get <board_id>",
 		Short:       "Retrieves a list of connectors for a specific board. This method returns results using a cursor-based approach. A...",
-		Example:     "  miro-developer-platform-pp-cli boards connectors get 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards connectors get 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "connectors.get", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/connectors", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

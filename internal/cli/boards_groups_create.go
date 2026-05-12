@@ -19,7 +19,7 @@ func newBoardsGroupsCreateCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "create <board_id>",
 		Short:       "Creates a group of items on a board. The group is created with the items that are passed in the request...",
-		Example:     "  miro-developer-platform-pp-cli boards groups create 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards groups create 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "groups.create", "pp:method": "POST", "pp:path": "/v2/boards/{board_id}/groups"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

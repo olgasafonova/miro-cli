@@ -17,7 +17,7 @@ func newServiceProviderConfigPromotedCmd(flags *rootFlags) *cobra.Command {
 		Use:         "service-provider-config",
 		Short:       "Retrieve supported operations and SCIM API basic configuration.",
 		Long:        "Shortcut for 'service-provider-config list'. Retrieve supported operations and SCIM API basic configuration.",
-		Example:     "  miro-developer-platform-pp-cli service-provider-config",
+		Example:     "  miro-cli service-provider-config",
 		Annotations: map[string]string{"pp:endpoint": "service-provider-config.list", "pp:method": "GET", "pp:path": "/ServiceProviderConfig", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := flags.newClient()

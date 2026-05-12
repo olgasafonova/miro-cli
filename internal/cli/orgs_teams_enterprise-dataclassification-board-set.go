@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseDataclassificationBoardSetCmd(flags *rootFlags) *cobr
 	cmd := &cobra.Command{
 		Use:         "enterprise-dataclassification-board-set <org_id> <team_id> <board_id>",
 		Short:       "Updates board classification for an existing board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-dataclassification-board-set 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-dataclassification-board-set 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-dataclassification-board-set", "pp:method": "POST", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/boards/{board_id}/data-classification"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

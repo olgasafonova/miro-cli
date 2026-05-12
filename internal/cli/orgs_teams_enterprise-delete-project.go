@@ -16,7 +16,7 @@ func newOrgsTeamsEnterpriseDeleteProjectCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-delete-project <org_id> <team_id> <project_id>",
 		Short:       "Deletes a project. After a project is deleted, all boards and users that belong to the project remain in the...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-delete-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-delete-project 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-delete-project", "pp:method": "DELETE", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/projects/{project_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

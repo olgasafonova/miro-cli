@@ -19,7 +19,7 @@ func newOrgsTeamsEnterpriseGetGroupsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "enterprise-get-groups <org_id> <team_id>",
 		Short:       "Retrieves the list of user groups that are part of a team in an organization.<br/> <h3>Required scope</h3> <a...",
-		Example:     "  miro-developer-platform-pp-cli orgs teams enterprise-get-groups 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli orgs teams enterprise-get-groups 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "teams.enterprise-get-groups", "pp:method": "GET", "pp:path": "/v2/orgs/{org_id}/teams/{team_id}/groups", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

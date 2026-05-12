@@ -20,7 +20,7 @@ func newBoardsItemsCreateInBulkUsingFileFromDeviceCmd(flags *rootFlags) *cobra.C
 	cmd := &cobra.Command{
 		Use:         "create-in-bulk-using-file-from-device <board_id>",
 		Short:       "Adds different types of items to a board using files from a device. You can add up to 20 items of the same or...",
-		Example:     "  miro-developer-platform-pp-cli boards items create-in-bulk-using-file-from-device 550e8400-e29b-41d4-a716-446655440000 --data example-value",
+		Example:     "  miro-cli boards items create-in-bulk-using-file-from-device 550e8400-e29b-41d4-a716-446655440000 --data example-value",
 		Annotations: map[string]string{"pp:endpoint": "items.create-in-bulk-using-file-from-device", "pp:method": "POST", "pp:path": "/v2/boards/{board_id_Platformcreateitemsinbulkusingfilefromdevice}/items/bulk"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

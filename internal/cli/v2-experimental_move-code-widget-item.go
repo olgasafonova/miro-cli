@@ -21,7 +21,7 @@ func newV2ExperimentalMoveCodeWidgetItemCmd(flags *rootFlags) *cobra.Command {
 		Use:         "move-code-widget-item <board_id> <item_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates the position of a code widget item on a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli v2-experimental move-code-widget-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli v2-experimental move-code-widget-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.move-code-widget-item", "pp:method": "PATCH", "pp:path": "/v2-experimental/boards/{board_id}/code_widgets/{item_id}/position"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

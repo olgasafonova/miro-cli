@@ -17,7 +17,7 @@ func newBoardsFramesDeleteItemCmd(flags *rootFlags) *cobra.Command {
 		Use:         "delete-item <board_id> <item_id>",
 		Aliases:     []string{"delete"},
 		Short:       "Deletes a frame from a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards frames delete-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards frames delete-item 550e8400-e29b-41d4-a716-446655440000 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "frames.delete-item", "pp:method": "DELETE", "pp:path": "/v2/boards/{board_id}/frames/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

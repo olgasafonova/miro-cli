@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"miro-developer-platform-pp-cli/internal/store"
+	"miro-cli/internal/store"
 )
 
 func newStaleCmd(flags *rootFlags) *cobra.Command {
@@ -24,25 +24,25 @@ func newStaleCmd(flags *rootFlags) *cobra.Command {
 		Long: `Scan locally synced data for items that have not been updated within
 the specified number of days. Useful for identifying forgotten or blocked work.`,
 		Example: `  # Find items not updated in 30 days (default)
-  miro-developer-platform-pp-cli stale
+  miro-cli stale
 
   # Find items not updated in 14 days
-  miro-developer-platform-pp-cli stale --days 14
+  miro-cli stale --days 14
 
   # Filter by team
-  miro-developer-platform-pp-cli stale --days 7 --team backend
+  miro-cli stale --days 7 --team backend
 
   # Output as JSON
-  miro-developer-platform-pp-cli stale --days 30 --json`,
+  miro-cli stale --days 30 --json`,
 		Annotations: map[string]string{"mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if dbPath == "" {
-				dbPath = defaultDBPath("miro-developer-platform-pp-cli")
+				dbPath = defaultDBPath("miro-cli")
 			}
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'miro-developer-platform-pp-cli sync' first.", err)
+				return fmt.Errorf("opening local database: %w\nRun 'miro-cli sync' first.", err)
 			}
 			defer db.Close()
 
@@ -167,7 +167,7 @@ the specified number of days. Useful for identifying forgotten or blocked work.`
 
 	cmd.Flags().IntVar(&days, "days", 30, "Number of days without update to consider stale")
 	cmd.Flags().StringVar(&team, "team", "", "Filter by team identifier")
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-developer-platform-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/miro-cli/data.db)")
 	cmd.Flags().IntVar(&limit, "limit", 50, "Maximum items to show")
 
 	return cmd

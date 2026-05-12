@@ -20,7 +20,7 @@ func newBoardsMembersGetBoardCmd(flags *rootFlags) *cobra.Command {
 		Use:         "get-board <board_id>",
 		Aliases:     []string{"get"},
 		Short:       "Retrieves a pageable list of members for a board.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards members get-board 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli boards members get-board 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "members.get-board", "pp:method": "GET", "pp:path": "/v2/boards/{board_id}/members", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

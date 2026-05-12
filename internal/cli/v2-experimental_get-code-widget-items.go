@@ -19,7 +19,7 @@ func newV2ExperimentalGetCodeWidgetItemsCmd(flags *rootFlags) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:         "get-code-widget-items <board_id>",
 		Short:       "Retrieves a list of code widget items for a specific board. This method returns results using a cursor-based...",
-		Example:     "  miro-developer-platform-pp-cli v2-experimental get-code-widget-items 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli v2-experimental get-code-widget-items 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "v2-experimental.get-code-widget-items", "pp:method": "GET", "pp:path": "/v2-experimental/boards/{board_id}/code_widgets", "mcp:read-only": "true"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

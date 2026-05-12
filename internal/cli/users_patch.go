@@ -21,7 +21,7 @@ func newUsersPatchCmd(flags *rootFlags) *cobra.Command {
 		Use:         "patch <id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates an existing user resource, overwriting values for specified attributes. Attributes that are not provided...",
-		Example:     "  miro-developer-platform-pp-cli users patch 550e8400-e29b-41d4-a716-446655440000",
+		Example:     "  miro-cli users patch 550e8400-e29b-41d4-a716-446655440000",
 		Annotations: map[string]string{"pp:endpoint": "users.patch", "pp:method": "PATCH", "pp:path": "/Users/{id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {

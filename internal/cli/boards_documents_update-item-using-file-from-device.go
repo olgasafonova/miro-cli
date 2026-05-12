@@ -21,7 +21,7 @@ func newBoardsDocumentsUpdateItemUsingFileFromDeviceCmd(flags *rootFlags) *cobra
 		Use:         "update-item-using-file-from-device <board_id_PlatformFileUpload> <item_id>",
 		Aliases:     []string{"update"},
 		Short:       "Updates a document item on a board by using file from a device.<br/><h3>Required scope</h3> <a target=_blank...",
-		Example:     "  miro-developer-platform-pp-cli boards documents update-item-using-file-from-device example-value 550e8400-e29b-41d4-a716-446655440000 --resource example-value",
+		Example:     "  miro-cli boards documents update-item-using-file-from-device example-value 550e8400-e29b-41d4-a716-446655440000 --resource example-value",
 		Annotations: map[string]string{"pp:endpoint": "documents.update-item-using-file-from-device", "pp:method": "PATCH", "pp:path": "/v2/boards/{board_id_PlatformFileUpload}/documents/{item_id}"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
