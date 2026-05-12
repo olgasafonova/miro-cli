@@ -183,17 +183,6 @@ func validateTextOrientation(s string) error {
 	}
 }
 
-// validateTextAlignVertical rejects any caption vertical-align value
-// that isn't top|middle|bottom.
-func validateTextAlignVertical(s string) error {
-	switch s {
-	case "", "top", "middle", "bottom":
-		return nil
-	default:
-		return fmt.Errorf("invalid caption text-align-vertical %q: must be top, middle, or bottom", s)
-	}
-}
-
 // parsePosition splits a "X%,Y%" pair into the two percentage strings.
 // Empty input returns nil, nil (caller did not set the flag). Both axes
 // are optional — "50%," sets only X, ",25%" sets only Y. Whitespace is

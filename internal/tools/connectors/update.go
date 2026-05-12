@@ -244,9 +244,9 @@ func buildUpdateEndpoint(itemID string, itemIDSet bool, snapTo string, snapToSet
 // style field was set. The check uses the *Set bools so explicit empty
 // strings can clear individual fields without clobbering the rest.
 func buildUpdateStyle(f updateFlags) *connectorStyle {
-	if !(f.strokeColorSet || f.strokeWidthSet || f.strokeStyleSet ||
-		f.startStrokeCapSet || f.endStrokeCapSet || f.fontSizeSet ||
-		f.captionColorSet || f.textOrientationSet) {
+	if !f.strokeColorSet && !f.strokeWidthSet && !f.strokeStyleSet &&
+		!f.startStrokeCapSet && !f.endStrokeCapSet && !f.fontSizeSet &&
+		!f.captionColorSet && !f.textOrientationSet {
 		return nil
 	}
 	s := &connectorStyle{}
