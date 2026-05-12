@@ -9,7 +9,9 @@ import (
 	"miro-cli/internal/tools/boards"
 	"miro-cli/internal/tools/clictx"
 	"miro-cli/internal/tools/items"
+	"miro-cli/internal/tools/shapes"
 	"miro-cli/internal/tools/stickies"
+	"miro-cli/internal/tools/texts"
 )
 
 // newRootCmd builds the root *cobra.Command and the Globals it backs.
@@ -39,6 +41,8 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 
 	cmd.AddCommand(boards.NewCmd(g))
 	cmd.AddCommand(items.NewCmd(g))
+	cmd.AddCommand(shapes.NewCmd(g))
 	cmd.AddCommand(stickies.NewCmd(g))
+	cmd.AddCommand(texts.NewCmd(g))
 	return cmd, g
 }
