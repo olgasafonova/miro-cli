@@ -290,7 +290,10 @@ func TestRunDeleteAgentImpliesYes(t *testing.T) {
 
 func TestNewCmdRegistersAllCRUDVerbs(t *testing.T) {
 	cmd := NewCmd(clictx.New())
-	want := map[string]bool{"list": false, "get": false, "create": false, "update": false, "delete": false}
+	want := map[string]bool{
+		"list": false, "get": false, "create": false, "copy": false,
+		"update": false, "delete": false, "share": false,
+	}
 	for _, sub := range cmd.Commands() {
 		// sub.Use may be "list" or "get <board_id>" — use Name() which
 		// strips the args portion.

@@ -46,6 +46,17 @@ type deleteResult struct {
 	ID      string `json:"id"`
 }
 
+// shareRequest is the POST /v2/boards/{board_id}/members body. Emails
+// is plural because Miro's API accepts an array; the CLI exposes only
+// a single --email flag today because mixing the allowlist gate with
+// partial-success semantics for arrays is its own design exercise.
+// Phase 4+ can lift that restriction if a real use case appears.
+type shareRequest struct {
+	Emails  []string `json:"emails"`
+	Role    string   `json:"role"`
+	Message string   `json:"message,omitempty"`
+}
+
 // ListResponse mirrors the offset-paginated envelope Miro returns from
 // GET /v2/boards. We decode into a generic []map for the data slice so
 // callers and --select can see every field the API returned, not just
