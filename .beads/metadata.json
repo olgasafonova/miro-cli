@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "miro_cli",
+  "project_id": "6a08a981-5fb1-47c4-847e-dbf978db7e87"
+}
