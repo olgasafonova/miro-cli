@@ -10,7 +10,7 @@ The printing-press-generated MCP surface (`cmd/miro-developer-platform-pp-mcp/`,
 - This repo's MCP surface was generator-default, not deliberately designed — the README already de-emphasized it as "advanced".
 - The unique MCP value here (local SQL/FTS over synced data via `search`/`sql`/`context` tools) is real but belongs as features inside `miro-mcp-server`, not as a parallel server.
 
-This repo is now CLI + skill only. The generator-side follow-up — adding `mcp.enabled: false` support to `MCPConfig` in `cli-printing-press` — is open; until that lands, the next `scripts/regenerate.sh` will reintroduce the MCP artifacts and they must be deleted post-regen. The destructive `--force` already requires a clean working tree (`scripts/regenerate.sh` guard), so post-regen the deletion is a single commit. See `cli-printing-press/internal/spec/spec.go:799` (`MCPConfig`) for the upstream edit point.
+This repo is now CLI + skill only. `scripts/regenerate.sh` strips `cmd/miro-developer-platform-pp-mcp/`, `internal/mcp/`, and `manifest.json` after each generator run, so the MCP wrapper stays gone without any upstream printing-press change. No fork, no PR, no dependency on `cli-printing-press` adding an `Enabled` toggle.
 
 Phases 2 and 6 below were edited to reflect this; Phase 3 (client-pattern backport into `miro-mcp-server`) is unchanged but newly higher-priority — see bead `claude-code-config-27e`.
 

@@ -8,9 +8,7 @@
   "owner": "olga-safonova",
   "printer_name": "Olga Safonova",
   "spec_path": "/Users/olgasafonova/projects/miro-cli/specs/miro-spec-curated.json",
-  "mcp_binary": "miro-developer-platform-pp-mcp",
-  "mcp_tool_count": 196,
-  "mcp_ready": "full",
+  "mcp_ready": "disabled",
   "api_version": "v2.0",
   "auth_type": "bearer_token",
   "auth_env_vars": [

@@ -67,6 +67,14 @@ go build -o ./printing-press ./cmd/printing-press
   --force
 
 cd "$REPO_ROOT"
+
+# Strip MCP artifacts. printing-press emits them unconditionally; this CLI
+# does not ship an MCP wrapper (see HANDOFF.md "Scope pivot"). Miro MCP tools
+# live in the separate miro-mcp-server repo.
+rm -rf "$REPO_ROOT/cmd/miro-developer-platform-pp-mcp"
+rm -rf "$REPO_ROOT/internal/mcp"
+rm -f  "$REPO_ROOT/manifest.json"
+
 go build ./...
 
 echo ""
