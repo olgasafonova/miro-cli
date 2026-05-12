@@ -105,3 +105,55 @@ func Fetch(ctx context.Context, client *miro.Client, lf ListFlags) (ListResponse
 	}
 	return resp, nil
 }
+
+// DefaultFetchAllCap is the safety ceiling on FetchAll's accumulator —
+// we won't fetch more than this many items in a single FetchAll call.
+// Boards in the wild can have tens of thousands of items; an unbounded
+// iteration would burn the user's rate-limit quota and the agent's
+// context window. Callers that genuinely need more pass a higher
+// MaxItems via FetchAllOptions.
+const DefaultFetchAllCap = 5000
+
+// FetchAllOptions caps a paginate-everything traversal. MaxItems<=0
+// uses DefaultFetchAllCap. PageSize<=0 lets Miro pick (currently 50).
+type FetchAllOptions struct {
+	MaxItems int
+	PageSize int
+}
+
+// FetchAll iterates through cursor-paginated items, accumulating up to
+// MaxItems items. Stops on empty cursor (end of list) or when the cap
+// is hit; returns whatever it has plus a Truncated flag so callers can
+// surface "we stopped early" to the user.
+//
+// Used by boards.summary and boards.content. Phase 4 (perf) will swap
+// this for a bounded-concurrency fan-out across pages once we've
+// understood Miro's rate-limit headers; today it's a serial loop, which
+// is the right default for correctness.
+func FetchAll(ctx context.Context, client *miro.Client, lf ListFlags, opts FetchAllOptions) (allItems []map[string]any, truncated bool, err error) {
+	cap := opts.MaxItems
+	if cap <= 0 {
+		cap = DefaultFetchAllCap
+	}
+	if opts.PageSize > 0 {
+		lf.Limit = opts.PageSize
+	}
+
+	for {
+		if err := ctx.Err(); err != nil {
+			return allItems, false, err
+		}
+		resp, err := Fetch(ctx, client, lf)
+		if err != nil {
+			return allItems, false, err
+		}
+		allItems = append(allItems, resp.Data...)
+		if len(allItems) >= cap {
+			return allItems[:cap], true, nil
+		}
+		if resp.Cursor == "" {
+			return allItems, false, nil
+		}
+		lf.Cursor = resp.Cursor
+	}
+}

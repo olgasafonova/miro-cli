@@ -119,6 +119,120 @@ func TestFetchReturnsDecodedResponse(t *testing.T) {
 	}
 }
 
+func TestFetchAllPaginatesUntilEmptyCursor(t *testing.T) {
+	pageCounter := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		pageCounter++
+		switch pageCounter {
+		case 1:
+			_, _ = w.Write([]byte(`{"data":[{"id":"1"},{"id":"2"}],"cursor":"page-2"}`))
+		case 2:
+			_, _ = w.Write([]byte(`{"data":[{"id":"3"}],"cursor":"page-3"}`))
+		case 3:
+			_, _ = w.Write([]byte(`{"data":[{"id":"4"}],"cursor":""}`)) // last page
+		default:
+			t.Errorf("server got extra request after end of pagination")
+		}
+	}))
+	defer srv.Close()
+
+	client := miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})
+	all, truncated, err := FetchAll(context.Background(), client, ListFlags{BoardID: "abc"}, FetchAllOptions{})
+	if err != nil {
+		t.Fatalf("FetchAll: %v", err)
+	}
+	if truncated {
+		t.Error("FetchAll under cap should not be truncated")
+	}
+	if len(all) != 4 {
+		t.Fatalf("got %d items, want 4", len(all))
+	}
+	ids := []string{
+		all[0]["id"].(string), all[1]["id"].(string),
+		all[2]["id"].(string), all[3]["id"].(string),
+	}
+	want := []string{"1", "2", "3", "4"}
+	for i := range ids {
+		if ids[i] != want[i] {
+			t.Errorf("ids[%d] = %q, want %q", i, ids[i], want[i])
+		}
+	}
+}
+
+func TestFetchAllRespectsMaxItemsCap(t *testing.T) {
+	// Server returns 5 items per page with a forever-cursor.
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"data":[{"id":"a"},{"id":"b"},{"id":"c"},{"id":"d"},{"id":"e"}],"cursor":"more"}`))
+	}))
+	defer srv.Close()
+
+	client := miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})
+	all, truncated, err := FetchAll(context.Background(), client, ListFlags{BoardID: "abc"}, FetchAllOptions{MaxItems: 7})
+	if err != nil {
+		t.Fatalf("FetchAll: %v", err)
+	}
+	if !truncated {
+		t.Error("FetchAll past cap should be truncated")
+	}
+	if len(all) != 7 {
+		t.Errorf("got %d items, want 7 (cap)", len(all))
+	}
+}
+
+func TestFetchAllUsesDefaultCapWhenZero(t *testing.T) {
+	// Each page returns 1000 items + cursor; 5 pages would be 5000;
+	// 6th would breach the default cap of 5000. We verify the default
+	// kicks in by counting requests — server stops after 5.
+	requests := 0
+	body := `{"data":[`
+	for i := 0; i < 1000; i++ {
+		if i > 0 {
+			body += ","
+		}
+		body += `{"id":"x"}`
+	}
+	body += `],"cursor":"more"}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write([]byte(body))
+	}))
+	defer srv.Close()
+
+	client := miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})
+	all, truncated, err := FetchAll(context.Background(), client, ListFlags{BoardID: "abc"}, FetchAllOptions{})
+	if err != nil {
+		t.Fatalf("FetchAll: %v", err)
+	}
+	if !truncated {
+		t.Error("default cap should truncate at DefaultFetchAllCap")
+	}
+	if len(all) != DefaultFetchAllCap {
+		t.Errorf("got %d items, want %d (default cap)", len(all), DefaultFetchAllCap)
+	}
+	// 5 pages * 1000 = 5000, exact cap. Either 5 or possibly 5 (since
+	// the loop checks AFTER appending). Allow 5 or 6 if implementation
+	// nuance changes; today's loop should make exactly 5.
+	if requests < 5 || requests > 6 {
+		t.Errorf("made %d requests, want ~5", requests)
+	}
+}
+
+func TestFetchAllPropagatesContextCancellation(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"data":[{"id":"x"}],"cursor":"more"}`))
+	}))
+	defer srv.Close()
+
+	client := miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancelled before the call
+
+	_, _, err := FetchAll(ctx, client, ListFlags{BoardID: "abc"}, FetchAllOptions{})
+	if err == nil {
+		t.Fatal("FetchAll with cancelled context returned nil error")
+	}
+}
+
 func TestNewCmdRegistersList(t *testing.T) {
 	cmd := NewCmd(clictx.New())
 	if cmd.Use != "items" {
