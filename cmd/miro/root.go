@@ -7,17 +7,24 @@ import (
 	"github.com/spf13/cobra"
 
 	"miro-cli/internal/tools/appcards"
+	"miro-cli/internal/tools/audit"
 	"miro-cli/internal/tools/boards"
 	"miro-cli/internal/tools/cards"
 	"miro-cli/internal/tools/clictx"
+	"miro-cli/internal/tools/codewidgets"
 	"miro-cli/internal/tools/connectors"
 	"miro-cli/internal/tools/documents"
 	"miro-cli/internal/tools/embeds"
+	"miro-cli/internal/tools/exports"
 	"miro-cli/internal/tools/frames"
+	"miro-cli/internal/tools/groups"
 	"miro-cli/internal/tools/images"
 	"miro-cli/internal/tools/items"
+	"miro-cli/internal/tools/members"
+	"miro-cli/internal/tools/mindmap"
 	"miro-cli/internal/tools/shapes"
 	"miro-cli/internal/tools/stickies"
+	"miro-cli/internal/tools/tags"
 	"miro-cli/internal/tools/texts"
 )
 
@@ -47,16 +54,23 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	pf.StringVar(&g.Select, "select", "", "Comma-separated list of top-level fields to keep in JSON output")
 
 	cmd.AddCommand(appcards.NewCmd(g))
+	cmd.AddCommand(audit.NewCmd(g))
 	cmd.AddCommand(boards.NewCmd(g))
 	cmd.AddCommand(cards.NewCmd(g))
+	cmd.AddCommand(codewidgets.NewCmd(g))
 	cmd.AddCommand(connectors.NewCmd(g))
 	cmd.AddCommand(documents.NewCmd(g))
 	cmd.AddCommand(embeds.NewCmd(g))
+	cmd.AddCommand(exports.NewCmd(g))
 	cmd.AddCommand(frames.NewCmd(g))
+	cmd.AddCommand(groups.NewCmd(g))
 	cmd.AddCommand(images.NewCmd(g))
 	cmd.AddCommand(items.NewCmd(g))
+	cmd.AddCommand(members.NewCmd(g))
+	cmd.AddCommand(mindmap.NewCmd(g))
 	cmd.AddCommand(shapes.NewCmd(g))
 	cmd.AddCommand(stickies.NewCmd(g))
+	cmd.AddCommand(tags.NewCmd(g))
 	cmd.AddCommand(texts.NewCmd(g))
 	return cmd, g
 }

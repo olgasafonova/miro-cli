@@ -20,7 +20,19 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 		Use:   "items",
 		Short: "Manage items on a Miro board",
 	}
-	cmd.AddCommand(newListCmd(g))
+	cmd.AddCommand(
+		newListCmd(g),
+		newGetCmd(g),
+		newDeleteCmd(g),
+		newUpdateCmd(g),
+		newGetByTagCmd(g),
+		newGetWithinFrameCmd(g),
+		newBulkCreateCmd(g),
+		newAttachTagCmd(g),
+		newDetachTagCmd(g),
+		newGetTagsCmd(g),
+		newListAllCmd(g),
+	)
 	return cmd
 }
 

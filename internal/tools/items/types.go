@@ -19,3 +19,58 @@ type ListResponse struct {
 	Cursor string           `json:"cursor,omitempty"`
 	Limit  int              `json:"limit,omitempty"`
 }
+
+// updateRequest is the PATCH /v2/boards/{board_id}/items/{item_id}
+// body. Only position / geometry / parent are mutable through this
+// generic endpoint; typed data lives on the per-flavour endpoints
+// (cards, stickies, embeds, etc.). All sections are pointers so an
+// absent flag stays out of the payload.
+type updateRequest struct {
+	Position *positionData `json:"position,omitempty"`
+	Geometry *geometryData `json:"geometry,omitempty"`
+	Parent   *parentRef    `json:"parent,omitempty"`
+}
+
+type positionData struct {
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Origin string  `json:"origin,omitempty"`
+}
+
+type geometryData struct {
+	Width  float64 `json:"width,omitempty"`
+	Height float64 `json:"height,omitempty"`
+}
+
+// parentRef mirrors Miro's parent envelope. Setting ID="" with the
+// envelope present is how the API expresses "detach from frame";
+// omitting the envelope leaves the existing parent untouched.
+type parentRef struct {
+	ID string `json:"id"`
+}
+
+// deleteResult is the synthesized JSON envelope emitted after a 204.
+// Agents branch on `deleted` rather than inspecting exit codes.
+type deleteResult struct {
+	Deleted bool   `json:"deleted"`
+	ID      string `json:"id"`
+}
+
+// detachTagResult is the envelope emitted after DELETE /items/{id}?tag_id=X.
+// Distinct from deleteResult so the shape signals "an association was
+// removed" rather than "the item itself was deleted."
+type detachTagResult struct {
+	Detached bool   `json:"detached"`
+	ItemID   string `json:"item_id"`
+	TagID    string `json:"tag_id"`
+}
+
+// listAllResponse is the envelope `list-all` emits after a paginate-
+// everything traversal. Mirrors what FetchAll returns to the boards
+// composites, but as a JSON-friendly shape with explicit total and
+// truncated flag.
+type listAllResponse struct {
+	Items     []map[string]any `json:"items"`
+	Total     int              `json:"total"`
+	Truncated bool             `json:"truncated,omitempty"`
+}

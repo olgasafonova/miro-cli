@@ -1,0 +1,55 @@
+package members
+
+import (
+	"context"
+	"errors"
+
+	"github.com/spf13/cobra"
+
+	"miro-cli/internal/tools/clictx"
+)
+
+func newGetCmd(g *clictx.Globals) *cobra.Command {
+	var (
+		boardID  string
+		memberID string
+	)
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get a single board member",
+		Long: "Calls GET /v2/boards/{board_id}/members/{board_member_id} and\n" +
+			"prints the response. Returns id, name, email, role, and links.\n\n" +
+			"--member-id maps to the API's board_member_id path parameter.",
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGet(cmd.Context(), g, boardID, memberID)
+		},
+	}
+	cmd.Flags().StringVar(&boardID, "board-id", "", "Board ID (required)")
+	cmd.Flags().StringVar(&memberID, "member-id", "", "Board member ID (required)")
+	_ = cmd.MarkFlagRequired("board-id")
+	_ = cmd.MarkFlagRequired("member-id")
+	return cmd
+}
+
+func runGet(ctx context.Context, g *clictx.Globals, boardID, memberID string) error {
+	if boardID == "" {
+		return errors.New("--board-id is required")
+	}
+	if memberID == "" {
+		return errors.New("--member-id is required")
+	}
+	path := "/v2/boards/" + boardID + "/members/" + memberID
+	if g.DryRun {
+		return g.EmitDryRun("GET", path)
+	}
+	client, err := g.BuildClient()
+	if err != nil {
+		return err
+	}
+	var resp map[string]any
+	if err := client.Get(ctx, path, &resp); err != nil {
+		return err
+	}
+	return g.EmitJSON(resp)
+}
