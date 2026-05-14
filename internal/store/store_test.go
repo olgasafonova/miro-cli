@@ -108,7 +108,7 @@ func TestUpsertAndGetBoard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetBoard: %v", err)
 	}
-	if got.Name != "Roadmap" || got.OwnerID != "u1" || string(got.RawJSON) != string(b.RawJSON) {
+	if !reflect.DeepEqual(got, b) {
 		t.Errorf("GetBoard = %+v, want %+v", got, b)
 	}
 

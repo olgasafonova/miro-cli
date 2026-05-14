@@ -183,12 +183,9 @@ func DefaultPath() (string, error) {
 // strictly above the on-disk version inside one transaction so a partial
 // upgrade can't leave the store wedged between versions.
 func (s *Store) migrate(ctx context.Context) error {
-	var current int
-	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&current); err != nil {
-		return fmt.Errorf("store: read user_version: %w", err)
-	}
-	if current > SchemaVersion {
-		return fmt.Errorf("%w: on-disk version %d, binary supports %d", ErrSchemaTooNew, current, SchemaVersion)
+	current, err := s.currentVersion(ctx)
+	if err != nil {
+		return err
 	}
 	if current == SchemaVersion {
 		return nil
@@ -215,6 +212,20 @@ func (s *Store) migrate(ctx context.Context) error {
 		return fmt.Errorf("store: commit migration: %w", err)
 	}
 	return nil
+}
+
+// currentVersion reads PRAGMA user_version and refuses an on-disk
+// version newer than the binary supports. Split out of migrate so the
+// version-reading and the migration loop don't share cognitive load.
+func (s *Store) currentVersion(ctx context.Context) (int, error) {
+	var v int
+	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&v); err != nil {
+		return 0, fmt.Errorf("store: read user_version: %w", err)
+	}
+	if v > SchemaVersion {
+		return 0, fmt.Errorf("%w: on-disk version %d, binary supports %d", ErrSchemaTooNew, v, SchemaVersion)
+	}
+	return v, nil
 }
 
 // migrations is the version-keyed table migrate consults. Add a new
@@ -345,7 +356,21 @@ func (s *Store) UpsertBoard(ctx context.Context, b Board) error {
 
 // UpsertBoards writes a batch of boards in a single transaction.
 func (s *Store) UpsertBoards(ctx context.Context, boards []Board) error {
-	if len(boards) == 0 {
+	return batchTx(ctx, s, "upsert boards", boards, upsertBoard)
+}
+
+// execer is the subset of *sql.DB / *sql.Tx that upsert helpers depend
+// on, so the same code services both the single-row and batched calls.
+type execer interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+// batchTx runs fn against every element of rows inside a single
+// transaction while writeMu is held. Empty input is a no-op. label is
+// used in the begin/commit error messages so failures point at the
+// caller without each batched method having to repeat the plumbing.
+func batchTx[T any](ctx context.Context, s *Store, label string, rows []T, fn func(context.Context, execer, T) error) error {
+	if len(rows) == 0 {
 		return nil
 	}
 	s.writeMu.Lock()
@@ -353,24 +378,18 @@ func (s *Store) UpsertBoards(ctx context.Context, boards []Board) error {
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("store: begin upsert boards: %w", err)
+		return fmt.Errorf("store: begin %s: %w", label, err)
 	}
 	defer func() { _ = tx.Rollback() }()
-	for _, b := range boards {
-		if err := upsertBoard(ctx, tx, b); err != nil {
+	for _, r := range rows {
+		if err := fn(ctx, tx, r); err != nil {
 			return err
 		}
 	}
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("store: commit upsert boards: %w", err)
+		return fmt.Errorf("store: commit %s: %w", label, err)
 	}
 	return nil
-}
-
-// execer is the subset of *sql.DB / *sql.Tx that upsert helpers depend
-// on, so the same code services both the single-row and batched calls.
-type execer interface {
-	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
 
 func upsertBoard(ctx context.Context, e execer, b Board) error {
@@ -405,26 +424,7 @@ func (s *Store) UpsertItem(ctx context.Context, it Item) error {
 
 // UpsertItems writes a batch of items in a single transaction.
 func (s *Store) UpsertItems(ctx context.Context, items []Item) error {
-	if len(items) == 0 {
-		return nil
-	}
-	s.writeMu.Lock()
-	defer s.writeMu.Unlock()
-
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("store: begin upsert items: %w", err)
-	}
-	defer func() { _ = tx.Rollback() }()
-	for _, it := range items {
-		if err := upsertItem(ctx, tx, it); err != nil {
-			return err
-		}
-	}
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("store: commit upsert items: %w", err)
-	}
-	return nil
+	return batchTx(ctx, s, "upsert items", items, upsertItem)
 }
 
 func upsertItem(ctx context.Context, e execer, it Item) error {
@@ -455,89 +455,107 @@ func upsertItem(ctx context.Context, e execer, it Item) error {
 	return nil
 }
 
-// GetBoard returns a board by id. Returns sql.ErrNoRows when the id is
-// not present; callers can check with errors.Is(err, sql.ErrNoRows) and
-// treat that as "not yet synced".
-func (s *Store) GetBoard(ctx context.Context, id string) (Board, error) {
-	const q = `SELECT id, name, owner_id, modified_at, raw_json FROM boards WHERE id = ?`
+// Column lists for the projection tables. Kept as named consts so the
+// SELECT statements below stay readable and any future schema change
+// touches one place per table.
+const (
+	boardColumns = `id, name, owner_id, modified_at, raw_json`
+	itemColumns  = `id, board_id, type, position_x, position_y, modified_at, raw_json`
+)
+
+// scanBoardRow is the per-row decoder used by every board-shaped read.
+// The raw_json TEXT column lands as a string and is converted to bytes
+// so the caller hands out []byte regardless of how the driver scanned.
+func scanBoardRow(rows *sql.Rows) (Board, error) {
 	var b Board
 	var raw string
-	err := s.db.QueryRowContext(ctx, q, id).Scan(&b.ID, &b.Name, &b.OwnerID, &b.ModifiedAt, &raw)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return Board{}, err
-		}
-		return Board{}, fmt.Errorf("store: get board %s: %w", id, err)
+	if err := rows.Scan(&b.ID, &b.Name, &b.OwnerID, &b.ModifiedAt, &raw); err != nil {
+		return Board{}, err
 	}
 	b.RawJSON = []byte(raw)
 	return b, nil
 }
 
-// ListBoards returns every board, ordered by id for stable test output.
-func (s *Store) ListBoards(ctx context.Context) ([]Board, error) {
-	const q = `SELECT id, name, owner_id, modified_at, raw_json FROM boards ORDER BY id`
-	rows, err := s.db.QueryContext(ctx, q)
-	if err != nil {
-		return nil, fmt.Errorf("store: list boards: %w", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	var out []Board
-	for rows.Next() {
-		var b Board
-		var raw string
-		if err := rows.Scan(&b.ID, &b.Name, &b.OwnerID, &b.ModifiedAt, &raw); err != nil {
-			return nil, fmt.Errorf("store: scan board row: %w", err)
-		}
-		b.RawJSON = []byte(raw)
-		out = append(out, b)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("store: iterate boards: %w", err)
-	}
-	return out, nil
-}
-
-// GetItem returns an item by id. Returns sql.ErrNoRows when missing.
-func (s *Store) GetItem(ctx context.Context, id string) (Item, error) {
-	const q = `SELECT id, board_id, type, position_x, position_y, modified_at, raw_json FROM items WHERE id = ?`
+// scanItemRow is the per-row decoder used by every item-shaped read.
+func scanItemRow(rows *sql.Rows) (Item, error) {
 	var it Item
 	var raw string
-	err := s.db.QueryRowContext(ctx, q, id).Scan(&it.ID, &it.BoardID, &it.Type, &it.PositionX, &it.PositionY, &it.ModifiedAt, &raw)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return Item{}, err
-		}
-		return Item{}, fmt.Errorf("store: get item %s: %w", id, err)
+	if err := rows.Scan(&it.ID, &it.BoardID, &it.Type, &it.PositionX, &it.PositionY, &it.ModifiedAt, &raw); err != nil {
+		return Item{}, err
 	}
 	it.RawJSON = []byte(raw)
 	return it, nil
 }
 
-// ListItemsByBoard returns every item on a board, ordered by id.
-func (s *Store) ListItemsByBoard(ctx context.Context, boardID string) ([]Item, error) {
-	const q = `SELECT id, board_id, type, position_x, position_y, modified_at, raw_json
-		FROM items WHERE board_id = ? ORDER BY id`
-	rows, err := s.db.QueryContext(ctx, q, boardID)
+// queryRows runs query against db and decodes each row with scan. label
+// is used in the error wrap so failures still trace back to the caller
+// without every reader needing its own copy of the open/scan/iterate
+// boilerplate.
+func queryRows[T any](ctx context.Context, db *sql.DB, label, query string, scan func(*sql.Rows) (T, error), args ...any) ([]T, error) {
+	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("store: list items by board %s: %w", boardID, err)
+		return nil, fmt.Errorf("store: %s: %w", label, err)
 	}
 	defer func() { _ = rows.Close() }()
 
-	var out []Item
+	var out []T
 	for rows.Next() {
-		var it Item
-		var raw string
-		if err := rows.Scan(&it.ID, &it.BoardID, &it.Type, &it.PositionX, &it.PositionY, &it.ModifiedAt, &raw); err != nil {
-			return nil, fmt.Errorf("store: scan item row: %w", err)
+		v, err := scan(rows)
+		if err != nil {
+			return nil, fmt.Errorf("store: %s: %w", label, err)
 		}
-		it.RawJSON = []byte(raw)
-		out = append(out, it)
+		out = append(out, v)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("store: iterate items: %w", err)
+		return nil, fmt.Errorf("store: %s: %w", label, err)
 	}
 	return out, nil
+}
+
+// queryOne runs query expecting at most one row. Returns sql.ErrNoRows
+// when the query returns nothing — the unwrapped sentinel so callers
+// keep using errors.Is. queryRows handles the surrounding plumbing.
+func queryOne[T any](ctx context.Context, db *sql.DB, label, query string, scan func(*sql.Rows) (T, error), args ...any) (T, error) {
+	out, err := queryRows(ctx, db, label, query, scan, args...)
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+	if len(out) == 0 {
+		var zero T
+		return zero, sql.ErrNoRows
+	}
+	return out[0], nil
+}
+
+// GetBoard returns a board by id. Returns sql.ErrNoRows when the id is
+// not present; callers can check with errors.Is(err, sql.ErrNoRows) and
+// treat that as "not yet synced".
+func (s *Store) GetBoard(ctx context.Context, id string) (Board, error) {
+	return queryOne(ctx, s.db, "get board "+id,
+		`SELECT `+boardColumns+` FROM boards WHERE id = ? LIMIT 1`,
+		scanBoardRow, id)
+}
+
+// ListBoards returns every board, ordered by id for stable test output.
+func (s *Store) ListBoards(ctx context.Context) ([]Board, error) {
+	return queryRows(ctx, s.db, "list boards",
+		`SELECT `+boardColumns+` FROM boards ORDER BY id`,
+		scanBoardRow)
+}
+
+// GetItem returns an item by id. Returns sql.ErrNoRows when missing.
+func (s *Store) GetItem(ctx context.Context, id string) (Item, error) {
+	return queryOne(ctx, s.db, "get item "+id,
+		`SELECT `+itemColumns+` FROM items WHERE id = ? LIMIT 1`,
+		scanItemRow, id)
+}
+
+// ListItemsByBoard returns every item on a board, ordered by id.
+func (s *Store) ListItemsByBoard(ctx context.Context, boardID string) ([]Item, error) {
+	return queryRows(ctx, s.db, "list items by board "+boardID,
+		`SELECT `+itemColumns+` FROM items WHERE board_id = ? ORDER BY id`,
+		scanItemRow, boardID)
 }
 
 // SetSyncMetadata writes or replaces a key/value pair. The sync command
