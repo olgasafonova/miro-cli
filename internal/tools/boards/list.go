@@ -33,6 +33,7 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 		newSummaryCmd(g),
 		newContentCmd(g),
 		newAuditCmd(g),
+		newDiagramCmd(g),
 	)
 	return cmd
 }
