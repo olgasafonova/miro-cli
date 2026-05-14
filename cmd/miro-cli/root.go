@@ -26,6 +26,7 @@ import (
 	"miro-cli/internal/tools/shapes"
 	"miro-cli/internal/tools/stickies"
 	"miro-cli/internal/tools/sync"
+	"miro-cli/internal/tools/tables"
 	"miro-cli/internal/tools/tags"
 	"miro-cli/internal/tools/texts"
 )
@@ -78,6 +79,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd.AddCommand(shapes.NewCmd(g))
 	cmd.AddCommand(stickies.NewCmd(g))
 	cmd.AddCommand(sync.NewCmd(g))
+	cmd.AddCommand(tables.NewCmd(g))
 	cmd.AddCommand(tags.NewCmd(g))
 	cmd.AddCommand(texts.NewCmd(g))
 	return cmd, g
