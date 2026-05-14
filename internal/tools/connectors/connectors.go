@@ -20,6 +20,7 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 	cmd.AddCommand(
 		newCreateCmd(g),
 		newGetCmd(g),
+		newListCmd(g),
 		newUpdateCmd(g),
 		newDeleteCmd(g),
 	)
