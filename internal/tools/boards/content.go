@@ -2,10 +2,10 @@ package boards
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 	"miro-cli/internal/tools/items"
 )
@@ -55,8 +55,8 @@ func newContentCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runContent(ctx context.Context, g *clictx.Globals, boardID string, maxItems int) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	if g.DryRun {
 		return g.EmitDryRun("GET", "/v2/boards/"+boardID+" + /v2/boards/"+boardID+"/items")

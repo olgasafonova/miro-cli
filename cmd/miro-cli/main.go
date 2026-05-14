@@ -15,7 +15,9 @@ func main() {
 	defer stop()
 
 	cmd, _ := newRootCmd()
-	err := cmd.ExecuteContext(ctx)
+	err := miro.RunWithRecover(os.Stderr, func() error {
+		return cmd.ExecuteContext(ctx)
+	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "miro: "+err.Error())
 	}

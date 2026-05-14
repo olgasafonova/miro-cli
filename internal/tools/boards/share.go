@@ -58,8 +58,8 @@ func newShareCmd(g *clictx.Globals) *cobra.Command {
 // which case we lazily load from the env. Tests inject a pre-built
 // allowlist to avoid depending on process-wide env state.
 func runShare(ctx context.Context, g *clictx.Globals, deps shareDeps, boardID string, req shareRequest) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	if len(req.Emails) != 1 || req.Emails[0] == "" {
 		return errors.New("--email is required")

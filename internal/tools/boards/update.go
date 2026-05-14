@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -27,8 +28,8 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, boardID string, req updateRequest) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	if req.Name == "" && req.Description == "" {
 		return errors.New("--name or --description must be set")

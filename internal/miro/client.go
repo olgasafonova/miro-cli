@@ -89,6 +89,9 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 	if c == nil {
 		return errors.New("miro: nil client")
 	}
+	if err := validatePath(path); err != nil {
+		return err
+	}
 	url := c.baseURL + path
 
 	var (
@@ -127,7 +130,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 	if err != nil {
 		return fmt.Errorf("miro: %s %s: %w", method, path, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	limited := io.LimitReader(resp.Body, maxResponseBody)
 	respBody, err := io.ReadAll(limited)

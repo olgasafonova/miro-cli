@@ -2,7 +2,6 @@ package boards
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -27,8 +26,8 @@ func newDeleteCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runDelete(ctx context.Context, g *clictx.Globals, boardID string) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	path := "/v2/boards/" + boardID
 	if g.DryRun {

@@ -2,11 +2,11 @@ package boards
 
 import (
 	"context"
-	"errors"
 	"net/url"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -30,8 +30,8 @@ func newCopyCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCopy(ctx context.Context, g *clictx.Globals, boardID string, req createRequest) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	path := "/v2/boards?copy_from=" + url.QueryEscape(boardID)
 	if g.DryRun {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 	"miro-cli/internal/tools/items"
 )
@@ -62,8 +63,8 @@ func newSearchCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runSearch(ctx context.Context, g *clictx.Globals, boardID, query, itemType string, limit int) error {
-	if boardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
 	if strings.TrimSpace(query) == "" {
 		return errors.New("--query is required")
