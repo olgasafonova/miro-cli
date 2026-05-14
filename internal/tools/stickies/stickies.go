@@ -7,9 +7,8 @@ import (
 )
 
 // NewCmd returns the `stickies` parent command. Phase 3b ships
-// create/get/update/delete against /v2/boards/{board_id}/sticky_notes.
-// The sticky-grid composite ships separately in Phase 3c alongside the
-// items bulk verbs.
+// create/get/update/delete against /v2/boards/{board_id}/sticky_notes;
+// create-grid composes a sticky grid via /v2/boards/{board_id}/items/bulk.
 func NewCmd(g *clictx.Globals) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stickies",
@@ -17,6 +16,7 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 	}
 	cmd.AddCommand(
 		newCreateCmd(g),
+		newCreateGridCmd(g),
 		newGetCmd(g),
 		newUpdateCmd(g),
 		newDeleteCmd(g),
