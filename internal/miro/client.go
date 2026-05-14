@@ -58,11 +58,23 @@ func WithUserAgent(ua string) Option {
 
 // New constructs a Client from a Config. The returned Client is ready
 // for use; close-equivalent is not required.
+//
+// Each Client gets its own *http.Transport (cloned from the package
+// default) rather than sharing http.DefaultTransport. Two reasons:
+//
+//   - Production: one Client per CLI invocation, so behaviour is the
+//     same as the default — connection pool is per-process.
+//   - Tests: parallel tests each spin up an httptest.Server and close it
+//     on cleanup. With a shared default transport, one test's srv.Close
+//     can evict idle connections another test's in-flight request was
+//     about to reuse, surfacing as "http: CloseIdleConnections called"
+//     under CI timing. Per-Client transports isolate the pools.
 func New(cfg *Config, opts ...Option) *Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
 	c := &Client{
 		baseURL:    cfg.BaseURL,
 		token:      cfg.Token,
-		httpClient: &http.Client{Timeout: defaultTimeout},
+		httpClient: &http.Client{Timeout: defaultTimeout, Transport: transport},
 		userAgent:  userAgent,
 	}
 	for _, opt := range opts {
