@@ -2,10 +2,10 @@ package exports
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -36,14 +36,14 @@ func newGetTaskLinkCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runGetTaskLink(ctx context.Context, g *clictx.Globals, orgID, jobID, taskID string) error {
-	if orgID == "" {
-		return errors.New("--org-id is required")
+	if err := miro.ValidateID("org_id", orgID); err != nil {
+		return err
 	}
-	if jobID == "" {
-		return errors.New("--job-id is required")
+	if err := miro.ValidateID("job_id", jobID); err != nil {
+		return err
 	}
-	if taskID == "" {
-		return errors.New("--task-id is required")
+	if err := miro.ValidateID("task_id", taskID); err != nil {
+		return err
 	}
 	path := "/v2/orgs/" + orgID + "/boards/export/jobs/" + jobID + "/tasks/" + taskID + "/export-link"
 	if g.DryRun {

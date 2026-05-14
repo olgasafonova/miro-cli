@@ -2,10 +2,10 @@ package groups
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -44,11 +44,11 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.groupID == "" {
-		return errors.New("--group-id is required")
+	if err := miro.ValidateID("group_id", f.groupID); err != nil {
+		return err
 	}
 	if err := validateItemIDs(f.itemIDs); err != nil {
 		return err

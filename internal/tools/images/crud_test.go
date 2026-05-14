@@ -154,8 +154,8 @@ func TestRunCreateRejectsEmptyBoardID(t *testing.T) {
 	if err == nil {
 		t.Fatal("runCreate with empty board ID returned nil, want error")
 	}
-	if !strings.Contains(err.Error(), "--board-id is required") {
-		t.Errorf("error = %q, want --board-id is required", err.Error())
+	if !strings.Contains(err.Error(), "board_id is required") {
+		t.Errorf("error = %q, want board_id is required", err.Error())
 	}
 }
 

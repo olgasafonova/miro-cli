@@ -2,7 +2,6 @@ package items
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 
@@ -68,8 +67,8 @@ func newListCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runList(ctx context.Context, g *clictx.Globals, lf ListFlags) error {
-	if lf.BoardID == "" {
-		return errors.New("board_id is required")
+	if err := miro.ValidateID("board_id", lf.BoardID); err != nil {
+		return err
 	}
 	path := BuildListPath(lf)
 	if g.DryRun {

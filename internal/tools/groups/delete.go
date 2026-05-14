@@ -2,7 +2,6 @@ package groups
 
 import (
 	"context"
-	"errors"
 	"net/url"
 
 	"github.com/spf13/cobra"
@@ -46,11 +45,11 @@ func newDeleteCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runDelete(ctx context.Context, g *clictx.Globals, f deleteFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.groupID == "" {
-		return errors.New("--group-id is required")
+	if err := miro.ValidateID("group_id", f.groupID); err != nil {
+		return err
 	}
 	path := buildDeletePath(f)
 	if g.DryRun {

@@ -2,7 +2,6 @@ package members
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -37,11 +36,11 @@ func newRemoveCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runRemove(ctx context.Context, g *clictx.Globals, boardID, memberID string) error {
-	if boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
-	if memberID == "" {
-		return errors.New("--member-id is required")
+	if err := miro.ValidateID("member_id", memberID); err != nil {
+		return err
 	}
 	path := "/v2/boards/" + boardID + "/members/" + memberID
 	if g.DryRun {

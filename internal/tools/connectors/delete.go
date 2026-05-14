@@ -2,7 +2,6 @@ package connectors
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
@@ -34,11 +33,11 @@ func newDeleteCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runDelete(ctx context.Context, g *clictx.Globals, boardID, connectorID string) error {
-	if boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
-	if connectorID == "" {
-		return errors.New("--connector-id is required")
+	if err := miro.ValidateID("connector_id", connectorID); err != nil {
+		return err
 	}
 	path := "/v2/boards/" + boardID + "/connectors/" + connectorID
 	if g.DryRun {

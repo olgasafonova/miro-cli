@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -78,14 +79,14 @@ func newCreateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCreate(ctx context.Context, g *clictx.Globals, f createFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.startItemID == "" {
-		return errors.New("--start-item-id is required")
+	if err := miro.ValidateID("start_item_id", f.startItemID); err != nil {
+		return err
 	}
-	if f.endItemID == "" {
-		return errors.New("--end-item-id is required")
+	if err := miro.ValidateID("end_item_id", f.endItemID); err != nil {
+		return err
 	}
 	if f.startItemID == f.endItemID {
 		return errors.New("--start-item-id and --end-item-id must differ")

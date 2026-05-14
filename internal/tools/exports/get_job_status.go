@@ -2,10 +2,10 @@ package exports
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -34,11 +34,11 @@ func newGetJobStatusCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runGetJobStatus(ctx context.Context, g *clictx.Globals, orgID, jobID string) error {
-	if orgID == "" {
-		return errors.New("--org-id is required")
+	if err := miro.ValidateID("org_id", orgID); err != nil {
+		return err
 	}
-	if jobID == "" {
-		return errors.New("--job-id is required")
+	if err := miro.ValidateID("job_id", jobID); err != nil {
+		return err
 	}
 	path := "/v2/orgs/" + orgID + "/boards/export/jobs/" + jobID
 	if g.DryRun {

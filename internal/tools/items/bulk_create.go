@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -44,8 +45,8 @@ func newBulkCreateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runBulkCreate(ctx context.Context, g *clictx.Globals, f bulkCreateFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
 	body, err := loadBulkItems(f)
 	if err != nil {

@@ -184,14 +184,16 @@ func TestRunCreateJobEscapesRequestID(t *testing.T) {
 	defer srv.Close()
 
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
+	// Use a value with '&' and '=' to verify query-string escaping. ValidateID
+	// rejects whitespace, so spaces can't be the escape-triggering character.
 	err := runCreateJob(context.Background(), g, createJobFlags{
-		orgID: "o", requestID: "req id with spaces", boardIDs: []string{"b"}, format: "PDF",
+		orgID: "o", requestID: "req&id=value", boardIDs: []string{"b"}, format: "PDF",
 	})
 	if err != nil {
 		t.Fatalf("runCreateJob: %v", err)
 	}
-	// url.QueryEscape turns spaces into '+' in query strings.
-	if !strings.Contains(gotQuery, "request_id=req+id+with+spaces") {
+	// url.QueryEscape encodes '&' as %26 and '=' as %3D in query strings.
+	if !strings.Contains(gotQuery, "request_id=req%26id%3Dvalue") {
 		t.Errorf("query = %q, want encoded request_id", gotQuery)
 	}
 }
@@ -423,8 +425,8 @@ func TestRunGetTaskLinkRejectsMissingTaskID(t *testing.T) {
 	if err == nil {
 		t.Fatal("runGetTaskLink with empty --task-id returned nil, want error")
 	}
-	if !strings.Contains(err.Error(), "task-id") {
-		t.Errorf("error = %q, want mention of task-id", err.Error())
+	if !strings.Contains(err.Error(), "task_id") {
+		t.Errorf("error = %q, want mention of task_id", err.Error())
 	}
 }
 

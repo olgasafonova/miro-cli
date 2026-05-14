@@ -2,11 +2,11 @@ package items
 
 import (
 	"context"
-	"errors"
 	"net/url"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -37,14 +37,14 @@ func newAttachTagCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runAttachTag(ctx context.Context, g *clictx.Globals, boardID, itemID, tagID string) error {
-	if boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
-	if itemID == "" {
-		return errors.New("--item-id is required")
+	if err := miro.ValidateID("item_id", itemID); err != nil {
+		return err
 	}
-	if tagID == "" {
-		return errors.New("--tag-id is required")
+	if err := miro.ValidateID("tag_id", tagID); err != nil {
+		return err
 	}
 	q := url.Values{}
 	q.Set("tag_id", tagID)

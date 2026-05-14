@@ -92,8 +92,8 @@ func TestRunListEmptyBoardIDIsUsageError(t *testing.T) {
 	if err == nil {
 		t.Fatal("runList with empty --board-id returned nil, want error")
 	}
-	if !strings.Contains(err.Error(), "board-id") {
-		t.Errorf("error %q does not mention --board-id", err)
+	if !strings.Contains(err.Error(), "board_id") {
+		t.Errorf("error %q does not mention board_id", err)
 	}
 }
 

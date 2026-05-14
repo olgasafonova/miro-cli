@@ -2,10 +2,10 @@ package items
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -38,8 +38,8 @@ func newListAllCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runListAll(ctx context.Context, g *clictx.Globals, f listAllFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
 	lf := ListFlags{BoardID: f.boardID, ItemType: f.itemType}
 	if g.DryRun {

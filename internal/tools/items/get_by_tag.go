@@ -2,12 +2,12 @@ package items
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -44,11 +44,11 @@ func newGetByTagCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runGetByTag(ctx context.Context, g *clictx.Globals, f getByTagFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.tagID == "" {
-		return errors.New("--tag-id is required")
+	if err := miro.ValidateID("tag_id", f.tagID); err != nil {
+		return err
 	}
 	path := buildGetByTagPath(f)
 	if g.DryRun {

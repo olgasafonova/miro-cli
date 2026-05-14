@@ -2,12 +2,12 @@ package items
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -47,11 +47,11 @@ func newGetWithinFrameCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runGetWithinFrame(ctx context.Context, g *clictx.Globals, f getWithinFrameFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.frameID == "" {
-		return errors.New("--frame-id is required")
+	if err := miro.ValidateID("frame_id", f.frameID); err != nil {
+		return err
 	}
 	path := buildGetWithinFramePath(f)
 	if g.DryRun {

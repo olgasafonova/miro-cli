@@ -2,10 +2,10 @@ package groups
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -32,11 +32,11 @@ func newGetCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runGet(ctx context.Context, g *clictx.Globals, boardID, groupID string) error {
-	if boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
 	}
-	if groupID == "" {
-		return errors.New("--group-id is required")
+	if err := miro.ValidateID("group_id", groupID); err != nil {
+		return err
 	}
 	path := "/v2/boards/" + boardID + "/groups/" + groupID
 	if g.DryRun {

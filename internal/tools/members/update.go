@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -42,11 +43,11 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
-	if f.memberID == "" {
-		return errors.New("--member-id is required")
+	if err := miro.ValidateID("member_id", f.memberID); err != nil {
+		return err
 	}
 	if f.role == "" {
 		return errors.New("--role is required")

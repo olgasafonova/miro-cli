@@ -45,11 +45,11 @@ func newUpdateJobCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdateJob(ctx context.Context, g *clictx.Globals, f updateJobFlags) error {
-	if f.orgID == "" {
-		return errors.New("--org-id is required")
+	if err := miro.ValidateID("org_id", f.orgID); err != nil {
+		return err
 	}
-	if f.jobID == "" {
-		return errors.New("--job-id is required")
+	if err := miro.ValidateID("job_id", f.jobID); err != nil {
+		return err
 	}
 	if !f.cancel {
 		return errors.New("--cancel is required; no other update operation is supported")

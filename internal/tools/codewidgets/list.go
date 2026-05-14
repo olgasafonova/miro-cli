@@ -2,12 +2,12 @@ package codewidgets
 
 import (
 	"context"
-	"errors"
 	"net/url"
 	"strconv"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -42,8 +42,8 @@ func newListCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runList(ctx context.Context, g *clictx.Globals, lf ListFlags) error {
-	if lf.BoardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", lf.BoardID); err != nil {
+		return err
 	}
 	path := BuildListPath(lf)
 	if g.DryRun {

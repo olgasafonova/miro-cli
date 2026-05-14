@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -48,11 +49,11 @@ func newCreateJobCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCreateJob(ctx context.Context, g *clictx.Globals, f createJobFlags) error {
-	if f.orgID == "" {
-		return errors.New("--org-id is required")
+	if err := miro.ValidateID("org_id", f.orgID); err != nil {
+		return err
 	}
-	if f.requestID == "" {
-		return errors.New("--request-id is required")
+	if err := miro.ValidateID("request_id", f.requestID); err != nil {
+		return err
 	}
 	if len(f.boardIDs) == 0 {
 		return errors.New("at least one --board-id is required")

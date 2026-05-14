@@ -2,10 +2,10 @@ package frames
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spf13/cobra"
 
+	"miro-cli/internal/miro"
 	"miro-cli/internal/tools/clictx"
 )
 
@@ -59,8 +59,8 @@ func newCreateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCreate(ctx context.Context, g *clictx.Globals, f createFlags) error {
-	if f.boardID == "" {
-		return errors.New("--board-id is required")
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
 	}
 	req := buildCreateRequest(f)
 	path := "/v2/boards/" + f.boardID + "/frames"
