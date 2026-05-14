@@ -201,14 +201,8 @@ func (s *Store) migrate(ctx context.Context) error {
 	defer func() { _ = tx.Rollback() }()
 
 	for v := current + 1; v <= SchemaVersion; v++ {
-		stmts, ok := migrations[v]
-		if !ok {
-			return fmt.Errorf("store: no migration registered for v%d", v)
-		}
-		for _, stmt := range stmts {
-			if _, err := tx.ExecContext(ctx, stmt); err != nil {
-				return fmt.Errorf("store: migrate v%d: %w", v, err)
-			}
+		if err := applyMigration(ctx, tx, v); err != nil {
+			return err
 		}
 	}
 	// PRAGMA user_version doesn't accept parameters and must be set as a
@@ -229,6 +223,22 @@ func (s *Store) migrate(ctx context.Context) error {
 var migrations = map[int][]string{
 	1: schemaV1,
 	2: schemaV2,
+}
+
+// applyMigration executes every statement registered for version v
+// against the supplied transaction. Split out of migrate so the version
+// loop stays flat and the per-version error wrapping has one home.
+func applyMigration(ctx context.Context, tx *sql.Tx, v int) error {
+	stmts, ok := migrations[v]
+	if !ok {
+		return fmt.Errorf("store: no migration registered for v%d", v)
+	}
+	for _, stmt := range stmts {
+		if _, err := tx.ExecContext(ctx, stmt); err != nil {
+			return fmt.Errorf("store: migrate v%d: %w", v, err)
+		}
+	}
+	return nil
 }
 
 var schemaV1 = []string{

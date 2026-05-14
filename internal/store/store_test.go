@@ -382,6 +382,39 @@ func ftsMatches(t *testing.T, s *Store, query string) []string {
 	return ids
 }
 
+// requireMatch asserts that running query against items_fts yields
+// exactly wantIDs (in id-ascending order). Call with no wantIDs to
+// assert "no rows" — ftsMatches returns a nil slice for an empty result
+// and the variadic with zero args is also nil, so DeepEqual works.
+func requireMatch(t *testing.T, s *Store, query string, wantIDs ...string) {
+	t.Helper()
+	got := ftsMatches(t, s, query)
+	if !reflect.DeepEqual(got, wantIDs) {
+		t.Errorf("MATCH %q = %v, want %v", query, got, wantIDs)
+	}
+}
+
+// rollbackStoreToV1 strips the FTS triggers + table and rolls
+// user_version back to 1 so a follow-up Open() exercises the v1->v2
+// migration on a store that already has rows. Batches the five DROP /
+// PRAGMA calls behind a single error-handler.
+func rollbackStoreToV1(t *testing.T, s *Store) {
+	t.Helper()
+	ctx := context.Background()
+	stmts := []string{
+		`DROP TRIGGER IF EXISTS items_au_fts`,
+		`DROP TRIGGER IF EXISTS items_ad_fts`,
+		`DROP TRIGGER IF EXISTS items_ai_fts`,
+		`DROP TABLE items_fts`,
+		`PRAGMA user_version = 1`,
+	}
+	for _, stmt := range stmts {
+		if _, err := s.db.ExecContext(ctx, stmt); err != nil {
+			t.Fatalf("rollbackStoreToV1 %q: %v", stmt, err)
+		}
+	}
+}
+
 func TestFTSInsertPopulatesIndex(t *testing.T) {
 	s := newStore(t)
 	ctx := context.Background()
@@ -401,25 +434,13 @@ func TestFTSInsertPopulatesIndex(t *testing.T) {
 	// unicode61 (the FTS5 default) does not stem, so "fox" matches the
 	// sticky's "fox" and the card's "Fox" but would not match "foxes".
 	// This is intentional — the bead's scope is basic MATCH only.
-	got := ftsMatches(t, s, "fox")
-	want := []string{"i1", "i3"}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("MATCH fox = %v, want %v", got, want)
-	}
-
+	requireMatch(t, s, "fox", "i1", "i3")
 	// Phrase match across two tokens from the card's title — verifies
 	// title is being pulled into the content column by the trigger.
-	got = ftsMatches(t, s, `"Fox Plan"`)
-	if len(got) != 1 || got[0] != "i3" {
-		t.Errorf(`MATCH "Fox Plan" = %v, want [i3]`, got)
-	}
-
+	requireMatch(t, s, `"Fox Plan"`, "i3")
 	// Word from the card description proves description is concatenated
 	// into content alongside title.
-	got = ftsMatches(t, s, "quarterly")
-	if len(got) != 1 || got[0] != "i3" {
-		t.Errorf("MATCH quarterly = %v, want [i3]", got)
-	}
+	requireMatch(t, s, "quarterly", "i3")
 }
 
 func TestFTSUpdateReflectsNewContent(t *testing.T) {
@@ -434,9 +455,7 @@ func TestFTSUpdateReflectsNewContent(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("seed item: %v", err)
 	}
-	if got := ftsMatches(t, s, "alpha"); len(got) != 1 || got[0] != "i1" {
-		t.Fatalf("pre-update MATCH alpha = %v, want [i1]", got)
-	}
+	requireMatch(t, s, "alpha", "i1")
 
 	// Rewrite the same id with new content. The AFTER UPDATE trigger
 	// must drop the old FTS row and insert the new one.
@@ -445,12 +464,8 @@ func TestFTSUpdateReflectsNewContent(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("rewrite item: %v", err)
 	}
-	if got := ftsMatches(t, s, "alpha"); len(got) != 0 {
-		t.Errorf("after rewrite, MATCH alpha = %v, want []", got)
-	}
-	if got := ftsMatches(t, s, "gamma"); len(got) != 1 || got[0] != "i1" {
-		t.Errorf("after rewrite, MATCH gamma = %v, want [i1]", got)
-	}
+	requireMatch(t, s, "alpha")
+	requireMatch(t, s, "gamma", "i1")
 }
 
 func TestFTSDeleteRemovesIndexRow(t *testing.T) {
@@ -465,18 +480,14 @@ func TestFTSDeleteRemovesIndexRow(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("seed item: %v", err)
 	}
-	if got := ftsMatches(t, s, "ephemeral"); len(got) != 1 {
-		t.Fatalf("pre-delete MATCH = %v, want [i1]", got)
-	}
+	requireMatch(t, s, "ephemeral", "i1")
 
 	// Cascade via board delete — verifies the AFTER DELETE trigger on
 	// items fires for cascaded rows, not just explicit DELETE FROM items.
 	if _, err := s.db.ExecContext(ctx, `DELETE FROM boards WHERE id = ?`, "b1"); err != nil {
 		t.Fatalf("delete board: %v", err)
 	}
-	if got := ftsMatches(t, s, "ephemeral"); len(got) != 0 {
-		t.Errorf("after board cascade, MATCH ephemeral = %v, want []", got)
-	}
+	requireMatch(t, s, "ephemeral")
 }
 
 func TestFTSBackfillFromV1(t *testing.T) {
@@ -499,21 +510,7 @@ func TestFTSBackfillFromV1(t *testing.T) {
 	}
 	// Drop the FTS table and triggers and roll the schema back to v1 to
 	// simulate a store written by an older binary that didn't ship FTS.
-	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_au_fts`); err != nil {
-		t.Fatalf("drop trigger au: %v", err)
-	}
-	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_ad_fts`); err != nil {
-		t.Fatalf("drop trigger ad: %v", err)
-	}
-	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_ai_fts`); err != nil {
-		t.Fatalf("drop trigger ai: %v", err)
-	}
-	if _, err := s.db.ExecContext(ctx, `DROP TABLE items_fts`); err != nil {
-		t.Fatalf("drop fts: %v", err)
-	}
-	if _, err := s.db.ExecContext(ctx, `PRAGMA user_version = 1`); err != nil {
-		t.Fatalf("rollback user_version: %v", err)
-	}
+	rollbackStoreToV1(t, s)
 	if err := s.Close(); err != nil {
 		t.Fatalf("Close: %v", err)
 	}
@@ -533,11 +530,7 @@ func TestFTSBackfillFromV1(t *testing.T) {
 	if v != SchemaVersion {
 		t.Errorf("post-migrate SchemaVersion = %d, want %d", v, SchemaVersion)
 	}
-
-	got := ftsMatches(t, s2, "needle")
-	if len(got) != 1 || got[0] != "i1" {
-		t.Errorf("backfilled MATCH needle = %v, want [i1]", got)
-	}
+	requireMatch(t, s2, "needle", "i1")
 }
 
 func TestFTSEmptyContentDoesNotMatch(t *testing.T) {
@@ -554,9 +547,7 @@ func TestFTSEmptyContentDoesNotMatch(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("seed item: %v", err)
 	}
-	if got := ftsMatches(t, s, "anything"); len(got) != 0 {
-		t.Errorf("MATCH against empty content = %v, want []", got)
-	}
+	requireMatch(t, s, "anything")
 }
 
 func TestDefaultPathFallsBackToHome(t *testing.T) {
