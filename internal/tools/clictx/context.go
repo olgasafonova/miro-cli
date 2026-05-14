@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"miro-cli/internal/miro"
 )
@@ -36,6 +37,16 @@ type Globals struct {
 	// initialises this to -1 so users opting out write --rate-limit=0.
 	RateLimit float64
 
+	// CacheTTL is the freshness window for the client's GET response
+	// cache. Negative means "use the package default"; 0 means "no cache"
+	// (equivalent to --no-cache). The root flag initialises this to -1.
+	CacheTTL time.Duration
+
+	// NoCache short-circuits cache construction regardless of CacheTTL.
+	// Users typically set this for one-shot CLI invocations where the
+	// cache can't help anyway and they want certainty about freshness.
+	NoCache bool
+
 	Stdout io.Writer
 	Stderr io.Writer
 
@@ -45,13 +56,15 @@ type Globals struct {
 }
 
 // New returns a Globals with sensible defaults wired to os.Stdout/Stderr.
-// RateLimit starts at -1 so BuildClient applies the package default; the
-// --rate-limit flag overrides this from cmd/miro-cli/root.go.
+// RateLimit and CacheTTL start at -1 so BuildClient applies the package
+// defaults; the --rate-limit and --cache-ttl flags override these from
+// cmd/miro-cli/root.go.
 func New() *Globals {
 	return &Globals{
 		Stdout:    os.Stdout,
 		Stderr:    os.Stderr,
 		RateLimit: -1,
+		CacheTTL:  -1,
 	}
 }
 
@@ -69,12 +82,19 @@ func (g *Globals) Normalize() {
 
 // BuildClient returns the injected *miro.Client if one is set, otherwise
 // loads the token (flag or env) and constructs a fresh client pointed at
-// DefaultBaseURL with a token-bucket rate limiter.
+// DefaultBaseURL with a token-bucket rate limiter and an optional GET
+// response cache.
 //
 // Rate-limit resolution:
 //   - g.RateLimit > 0: use that exact rate
 //   - g.RateLimit == 0: no limiting (the user opted out via --rate-limit=0)
 //   - g.RateLimit < 0: use miro.DefaultRateLimit (the sentinel from New())
+//
+// Cache resolution:
+//   - g.NoCache: no cache (overrides CacheTTL)
+//   - g.CacheTTL > 0: use that TTL with miro.DefaultCacheEntries
+//   - g.CacheTTL == 0: no cache
+//   - g.CacheTTL < 0: use miro.DefaultCacheTTL
 func (g *Globals) BuildClient() (*miro.Client, error) {
 	if g.Client != nil {
 		return g.Client, nil
@@ -87,7 +107,17 @@ func (g *Globals) BuildClient() (*miro.Client, error) {
 	if rate < 0 {
 		rate = miro.DefaultRateLimit
 	}
-	return miro.New(cfg, miro.WithRateLimit(miro.NewLimiter(rate, miro.DefaultRateBurst))), nil
+	ttl := g.CacheTTL
+	if ttl < 0 {
+		ttl = miro.DefaultCacheTTL
+	}
+	if g.NoCache {
+		ttl = 0
+	}
+	return miro.New(cfg,
+		miro.WithRateLimit(miro.NewLimiter(rate, miro.DefaultRateBurst)),
+		miro.WithCache(miro.NewCache(miro.DefaultCacheEntries, ttl)),
+	), nil
 }
 
 // EmitJSON marshals v to JSON, applies --select if set, and writes to

@@ -186,3 +186,126 @@ func TestClientNilReceiver(t *testing.T) {
 		t.Error("expected error on nil receiver")
 	}
 }
+
+func TestClientCachesGet(t *testing.T) {
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"id":"b1","name":"first"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	c := New(
+		&Config{Token: "t", BaseURL: srv.URL},
+		WithHTTPClient(&http.Client{Timeout: time.Second}),
+		WithCache(NewCache(8, time.Minute)),
+	)
+
+	var first, second struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	if err := c.Get(context.Background(), "/v2/boards/b1", &first); err != nil {
+		t.Fatalf("first Get: %v", err)
+	}
+	if err := c.Get(context.Background(), "/v2/boards/b1", &second); err != nil {
+		t.Fatalf("second Get: %v", err)
+	}
+	if hits != 1 {
+		t.Errorf("upstream hits = %d, want 1 (second call must serve from cache)", hits)
+	}
+	if first != second {
+		t.Errorf("cached decode mismatch: first=%+v second=%+v", first, second)
+	}
+}
+
+func TestClientCacheKeysOnPath(t *testing.T) {
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"path":"`+r.URL.Path+`"}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	c := New(
+		&Config{Token: "t", BaseURL: srv.URL},
+		WithHTTPClient(&http.Client{Timeout: time.Second}),
+		WithCache(NewCache(8, time.Minute)),
+	)
+
+	for _, p := range []string{"/v2/boards/a", "/v2/boards/b", "/v2/boards/a"} {
+		if err := c.Get(context.Background(), p, nil); err != nil {
+			t.Fatalf("Get %s: %v", p, err)
+		}
+	}
+	if hits != 2 {
+		t.Errorf("upstream hits = %d, want 2 (distinct paths miss, repeat hits)", hits)
+	}
+}
+
+func TestClientDoesNotCachePostOrError(t *testing.T) {
+	var hits int
+	nextStatus := 200
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(nextStatus)
+		_, _ = io.WriteString(w, `{"ok":true}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	c := New(
+		&Config{Token: "t", BaseURL: srv.URL},
+		WithHTTPClient(&http.Client{Timeout: time.Second}),
+		WithCache(NewCache(8, time.Minute)),
+	)
+
+	// POST twice: cache must not kick in for mutating methods.
+	if err := c.Post(context.Background(), "/v2/items", map[string]string{"x": "y"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Post(context.Background(), "/v2/items", map[string]string{"x": "y"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if hits != 2 {
+		t.Errorf("POST cached: hits = %d, want 2", hits)
+	}
+
+	// GET that errors must not be cached.
+	nextStatus = 500
+	if err := c.Get(context.Background(), "/v2/boards/err", nil); err == nil {
+		t.Fatal("expected 500")
+	}
+	if err := c.Get(context.Background(), "/v2/boards/err", nil); err == nil {
+		t.Fatal("expected 500 on retry")
+	}
+	if hits != 4 {
+		t.Errorf("error response cached: hits = %d, want 4", hits)
+	}
+}
+
+func TestClientCacheDisabledWhenNil(t *testing.T) {
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.WriteHeader(200)
+		_, _ = io.WriteString(w, `{}`)
+	}))
+	t.Cleanup(srv.Close)
+
+	// No WithCache: every call hits upstream.
+	c := New(
+		&Config{Token: "t", BaseURL: srv.URL},
+		WithHTTPClient(&http.Client{Timeout: time.Second}),
+	)
+	for i := 0; i < 3; i++ {
+		if err := c.Get(context.Background(), "/v2/boards/x", nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if hits != 3 {
+		t.Errorf("nil cache cached responses: hits = %d, want 3", hits)
+	}
+}

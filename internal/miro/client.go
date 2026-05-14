@@ -28,6 +28,7 @@ type Client struct {
 	httpClient *http.Client
 	userAgent  string
 	limiter    *Limiter
+	cache      *Cache
 }
 
 // Option configures a Client.
@@ -66,6 +67,16 @@ func WithUserAgent(ua string) Option {
 func WithRateLimit(l *Limiter) Option {
 	return func(c *Client) {
 		c.limiter = l
+	}
+}
+
+// WithCache installs an LRU+TTL response cache for GET requests. Hits skip
+// the network and the rate limiter; non-GET requests bypass the cache
+// entirely. Pass nil (or omit the option) to disable caching — useful in
+// tests and for one-shot CLI invocations where caching can't help.
+func WithCache(cache *Cache) Option {
+	return func(c *Client) {
+		c.cache = cache
 	}
 }
 
@@ -118,6 +129,15 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 		return err
 	}
 	url := c.baseURL + path
+
+	cacheable := method == http.MethodGet && body == nil
+	var cacheKey string
+	if cacheable {
+		cacheKey = method + " " + path
+		if cached, ok := c.cache.Get(cacheKey); ok {
+			return decodeCached(cached, out)
+		}
+	}
 
 	var (
 		bodyReader  io.Reader
@@ -176,11 +196,32 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 		}
 	}
 
+	if cacheable {
+		// Copy the body — respBody backs LimitReader's buffer, and the
+		// cache may outlive this call. Without the copy, a concurrent
+		// reader would race the next call's read into the same buffer.
+		stored := make([]byte, len(respBody))
+		copy(stored, respBody)
+		c.cache.Put(cacheKey, stored)
+	}
+
 	if out == nil || len(respBody) == 0 {
 		return nil
 	}
 	if err := json.Unmarshal(respBody, out); err != nil {
 		return fmt.Errorf("miro: decode response: %w", err)
+	}
+	return nil
+}
+
+// decodeCached unmarshals a cached body into out, matching the contract of
+// the fresh-response path: nil out or empty body returns nil without error.
+func decodeCached(cached []byte, out any) error {
+	if out == nil || len(cached) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(cached, out); err != nil {
+		return fmt.Errorf("miro: decode cached response: %w", err)
 	}
 	return nil
 }
