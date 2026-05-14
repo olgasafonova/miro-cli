@@ -15,6 +15,7 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 	}
 	cmd.AddCommand(
 		newCreateCmd(g),
+		newCreateFlowchartCmd(g),
 		newGetCmd(g),
 		newUpdateCmd(g),
 		newDeleteCmd(g),
