@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"sync"
 	"testing"
 )
@@ -341,6 +342,220 @@ func TestDefaultPathPrefersXDG(t *testing.T) {
 	want := filepath.Join("/custom/xdg", "miro-cli", "store.db")
 	if got != want {
 		t.Errorf("DefaultPath with XDG_DATA_HOME = %q, want %q", got, want)
+	}
+}
+
+// stickyJSON builds a Miro-shaped sticky_note raw_json with the given
+// content string, so FTS tests can drive realistic input through the
+// trigger's json_extract path.
+func stickyJSON(id, content string) []byte {
+	return []byte(fmt.Sprintf(`{"id":%q,"type":"sticky_note","data":{"content":%q}}`, id, content))
+}
+
+// cardJSON builds a card-shaped raw_json with title + description, used
+// to verify the trigger pulls in both fields and concatenates them.
+func cardJSON(id, title, description string) []byte {
+	return []byte(fmt.Sprintf(`{"id":%q,"type":"card","data":{"title":%q,"description":%q}}`, id, title, description))
+}
+
+// ftsMatches runs a MATCH against items_fts and returns the matching
+// item_ids, alphabetically sorted for stable assertions.
+func ftsMatches(t *testing.T, s *Store, query string) []string {
+	t.Helper()
+	rows, err := s.db.QueryContext(context.Background(),
+		`SELECT item_id FROM items_fts WHERE items_fts MATCH ? ORDER BY item_id`, query)
+	if err != nil {
+		t.Fatalf("items_fts MATCH %q: %v", query, err)
+	}
+	defer func() { _ = rows.Close() }()
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			t.Fatalf("scan: %v", err)
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatalf("iterate: %v", err)
+	}
+	return ids
+}
+
+func TestFTSInsertPopulatesIndex(t *testing.T) {
+	s := newStore(t)
+	ctx := context.Background()
+
+	if err := s.UpsertBoard(ctx, Board{ID: "b1", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed board: %v", err)
+	}
+	items := []Item{
+		{ID: "i1", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i1", "the quick brown fox")},
+		{ID: "i2", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i2", "lazy dog naps")},
+		{ID: "i3", BoardID: "b1", Type: "card", RawJSON: cardJSON("i3", "Fox Plan", "quarterly review")},
+	}
+	if err := s.UpsertItems(ctx, items); err != nil {
+		t.Fatalf("UpsertItems: %v", err)
+	}
+
+	// unicode61 (the FTS5 default) does not stem, so "fox" matches the
+	// sticky's "fox" and the card's "Fox" but would not match "foxes".
+	// This is intentional — the bead's scope is basic MATCH only.
+	got := ftsMatches(t, s, "fox")
+	want := []string{"i1", "i3"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("MATCH fox = %v, want %v", got, want)
+	}
+
+	// Phrase match across two tokens from the card's title — verifies
+	// title is being pulled into the content column by the trigger.
+	got = ftsMatches(t, s, `"Fox Plan"`)
+	if len(got) != 1 || got[0] != "i3" {
+		t.Errorf(`MATCH "Fox Plan" = %v, want [i3]`, got)
+	}
+
+	// Word from the card description proves description is concatenated
+	// into content alongside title.
+	got = ftsMatches(t, s, "quarterly")
+	if len(got) != 1 || got[0] != "i3" {
+		t.Errorf("MATCH quarterly = %v, want [i3]", got)
+	}
+}
+
+func TestFTSUpdateReflectsNewContent(t *testing.T) {
+	s := newStore(t)
+	ctx := context.Background()
+
+	if err := s.UpsertBoard(ctx, Board{ID: "b1", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed board: %v", err)
+	}
+	if err := s.UpsertItem(ctx, Item{
+		ID: "i1", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i1", "alpha beta"),
+	}); err != nil {
+		t.Fatalf("seed item: %v", err)
+	}
+	if got := ftsMatches(t, s, "alpha"); len(got) != 1 || got[0] != "i1" {
+		t.Fatalf("pre-update MATCH alpha = %v, want [i1]", got)
+	}
+
+	// Rewrite the same id with new content. The AFTER UPDATE trigger
+	// must drop the old FTS row and insert the new one.
+	if err := s.UpsertItem(ctx, Item{
+		ID: "i1", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i1", "gamma delta"),
+	}); err != nil {
+		t.Fatalf("rewrite item: %v", err)
+	}
+	if got := ftsMatches(t, s, "alpha"); len(got) != 0 {
+		t.Errorf("after rewrite, MATCH alpha = %v, want []", got)
+	}
+	if got := ftsMatches(t, s, "gamma"); len(got) != 1 || got[0] != "i1" {
+		t.Errorf("after rewrite, MATCH gamma = %v, want [i1]", got)
+	}
+}
+
+func TestFTSDeleteRemovesIndexRow(t *testing.T) {
+	s := newStore(t)
+	ctx := context.Background()
+
+	if err := s.UpsertBoard(ctx, Board{ID: "b1", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed board: %v", err)
+	}
+	if err := s.UpsertItem(ctx, Item{
+		ID: "i1", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i1", "ephemeral"),
+	}); err != nil {
+		t.Fatalf("seed item: %v", err)
+	}
+	if got := ftsMatches(t, s, "ephemeral"); len(got) != 1 {
+		t.Fatalf("pre-delete MATCH = %v, want [i1]", got)
+	}
+
+	// Cascade via board delete — verifies the AFTER DELETE trigger on
+	// items fires for cascaded rows, not just explicit DELETE FROM items.
+	if _, err := s.db.ExecContext(ctx, `DELETE FROM boards WHERE id = ?`, "b1"); err != nil {
+		t.Fatalf("delete board: %v", err)
+	}
+	if got := ftsMatches(t, s, "ephemeral"); len(got) != 0 {
+		t.Errorf("after board cascade, MATCH ephemeral = %v, want []", got)
+	}
+}
+
+func TestFTSBackfillFromV1(t *testing.T) {
+	// Build a v1-only store, write items into it, then reopen with the
+	// current binary and verify the v1→v2 migration backfilled FTS.
+	path := filepath.Join(t.TempDir(), "store.db")
+	ctx := context.Background()
+
+	s, err := Open(ctx, path)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	if err := s.UpsertBoard(ctx, Board{ID: "b1", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed board: %v", err)
+	}
+	if err := s.UpsertItem(ctx, Item{
+		ID: "i1", BoardID: "b1", Type: "sticky_note", RawJSON: stickyJSON("i1", "needle haystack"),
+	}); err != nil {
+		t.Fatalf("seed item: %v", err)
+	}
+	// Drop the FTS table and triggers and roll the schema back to v1 to
+	// simulate a store written by an older binary that didn't ship FTS.
+	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_au_fts`); err != nil {
+		t.Fatalf("drop trigger au: %v", err)
+	}
+	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_ad_fts`); err != nil {
+		t.Fatalf("drop trigger ad: %v", err)
+	}
+	if _, err := s.db.ExecContext(ctx, `DROP TRIGGER IF EXISTS items_ai_fts`); err != nil {
+		t.Fatalf("drop trigger ai: %v", err)
+	}
+	if _, err := s.db.ExecContext(ctx, `DROP TABLE items_fts`); err != nil {
+		t.Fatalf("drop fts: %v", err)
+	}
+	if _, err := s.db.ExecContext(ctx, `PRAGMA user_version = 1`); err != nil {
+		t.Fatalf("rollback user_version: %v", err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+
+	// Reopen — migrate should apply v2 (creates table, triggers,
+	// backfills the existing row).
+	s2, err := Open(ctx, path)
+	if err != nil {
+		t.Fatalf("reopen: %v", err)
+	}
+	t.Cleanup(func() { _ = s2.Close() })
+
+	v, err := s2.SchemaVersion(ctx)
+	if err != nil {
+		t.Fatalf("SchemaVersion: %v", err)
+	}
+	if v != SchemaVersion {
+		t.Errorf("post-migrate SchemaVersion = %d, want %d", v, SchemaVersion)
+	}
+
+	got := ftsMatches(t, s2, "needle")
+	if len(got) != 1 || got[0] != "i1" {
+		t.Errorf("backfilled MATCH needle = %v, want [i1]", got)
+	}
+}
+
+func TestFTSEmptyContentDoesNotMatch(t *testing.T) {
+	// An item whose raw_json has no data.content / title / description
+	// should yield an empty content string after trim(); the row goes
+	// into FTS but matches nothing.
+	s := newStore(t)
+	ctx := context.Background()
+	if err := s.UpsertBoard(ctx, Board{ID: "b1", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed board: %v", err)
+	}
+	if err := s.UpsertItem(ctx, Item{
+		ID: "i1", BoardID: "b1", Type: "shape", RawJSON: []byte(`{"id":"i1","type":"shape"}`),
+	}); err != nil {
+		t.Fatalf("seed item: %v", err)
+	}
+	if got := ftsMatches(t, s, "anything"); len(got) != 0 {
+		t.Errorf("MATCH against empty content = %v, want []", got)
 	}
 }
 

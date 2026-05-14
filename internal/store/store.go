@@ -25,7 +25,10 @@ import (
 // stamps it into PRAGMA user_version on fresh databases and refuses to
 // open a database whose stamped version is higher (an older binary
 // against a newer schema would silently misread the data).
-const SchemaVersion = 1
+//
+// v1: boards, items, sync_metadata.
+// v2: items_fts (FTS5 virtual table) + triggers + backfill.
+const SchemaVersion = 2
 
 // ErrSchemaTooNew is returned when the on-disk database was written by a
 // newer binary that bumped SchemaVersion. The caller should refuse to
@@ -175,9 +178,10 @@ func DefaultPath() (string, error) {
 	return filepath.Join(home, ".local", "share", "miro-cli", "store.db"), nil
 }
 
-// migrate applies migrations up to SchemaVersion. The migrations table
-// pattern is overkill for v1; PRAGMA user_version + a switch is enough
-// until a second migration earns the bookkeeping.
+// migrate applies migrations up to SchemaVersion. Each entry in
+// migrations is a self-contained version step; migrate runs every step
+// strictly above the on-disk version inside one transaction so a partial
+// upgrade can't leave the store wedged between versions.
 func (s *Store) migrate(ctx context.Context) error {
 	var current int
 	if err := s.db.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&current); err != nil {
@@ -196,9 +200,15 @@ func (s *Store) migrate(ctx context.Context) error {
 	}
 	defer func() { _ = tx.Rollback() }()
 
-	for _, stmt := range schemaV1 {
-		if _, err := tx.ExecContext(ctx, stmt); err != nil {
-			return fmt.Errorf("store: migrate v1: %w", err)
+	for v := current + 1; v <= SchemaVersion; v++ {
+		stmts, ok := migrations[v]
+		if !ok {
+			return fmt.Errorf("store: no migration registered for v%d", v)
+		}
+		for _, stmt := range stmts {
+			if _, err := tx.ExecContext(ctx, stmt); err != nil {
+				return fmt.Errorf("store: migrate v%d: %w", v, err)
+			}
 		}
 	}
 	// PRAGMA user_version doesn't accept parameters and must be set as a
@@ -211,6 +221,14 @@ func (s *Store) migrate(ctx context.Context) error {
 		return fmt.Errorf("store: commit migration: %w", err)
 	}
 	return nil
+}
+
+// migrations is the version-keyed table migrate consults. Add a new
+// numbered entry for every SchemaVersion bump; never edit a shipped one
+// in place (existing databases have already applied it).
+var migrations = map[int][]string{
+	1: schemaV1,
+	2: schemaV2,
 }
 
 var schemaV1 = []string{
@@ -240,6 +258,71 @@ var schemaV1 = []string{
 		value TEXT NOT NULL,
 		updated_at TEXT NOT NULL
 	)`,
+}
+
+// schemaV2 adds a full-text-search virtual table over the textual fields
+// of items (sticky_note content, card title/description, text content,
+// shape content, frame title — anything Miro models as data.content /
+// data.title / data.description). Triggers keep items_fts in lockstep
+// with items so writers don't need to know it exists; the backfill
+// statement at the tail of the migration populates the FTS table from
+// whatever rows are already on disk before the triggers are installed.
+//
+// item_id, board_id, and item_type are UNINDEXED so they're stored
+// verbatim alongside the indexed content but don't bloat the FTS index.
+// The content column concatenates the three text fields with a separator
+// space; coalesce/json_extract handle items whose JSON omits a field.
+//
+// Query shape: SELECT item_id, board_id FROM items_fts WHERE items_fts
+// MATCH ?. Use item_id to join back to items for richer columns.
+var schemaV2 = []string{
+	`CREATE VIRTUAL TABLE items_fts USING fts5(
+		item_id UNINDEXED,
+		board_id UNINDEXED,
+		item_type UNINDEXED,
+		content,
+		tokenize = 'unicode61'
+	)`,
+	`CREATE TRIGGER items_ai_fts AFTER INSERT ON items BEGIN
+		INSERT INTO items_fts (item_id, board_id, item_type, content)
+		VALUES (
+			NEW.id,
+			NEW.board_id,
+			NEW.type,
+			trim(
+				coalesce(json_extract(NEW.raw_json, '$.data.content'), '') || ' ' ||
+				coalesce(json_extract(NEW.raw_json, '$.data.title'), '') || ' ' ||
+				coalesce(json_extract(NEW.raw_json, '$.data.description'), '')
+			)
+		);
+	END`,
+	`CREATE TRIGGER items_ad_fts AFTER DELETE ON items BEGIN
+		DELETE FROM items_fts WHERE item_id = OLD.id;
+	END`,
+	`CREATE TRIGGER items_au_fts AFTER UPDATE ON items BEGIN
+		DELETE FROM items_fts WHERE item_id = OLD.id;
+		INSERT INTO items_fts (item_id, board_id, item_type, content)
+		VALUES (
+			NEW.id,
+			NEW.board_id,
+			NEW.type,
+			trim(
+				coalesce(json_extract(NEW.raw_json, '$.data.content'), '') || ' ' ||
+				coalesce(json_extract(NEW.raw_json, '$.data.title'), '') || ' ' ||
+				coalesce(json_extract(NEW.raw_json, '$.data.description'), '')
+			)
+		);
+	END`,
+	// Backfill anything that was already in items before this migration ran.
+	// On a fresh database the items table is empty and this is a no-op.
+	`INSERT INTO items_fts (item_id, board_id, item_type, content)
+		SELECT id, board_id, type,
+			trim(
+				coalesce(json_extract(raw_json, '$.data.content'), '') || ' ' ||
+				coalesce(json_extract(raw_json, '$.data.title'), '') || ' ' ||
+				coalesce(json_extract(raw_json, '$.data.description'), '')
+			)
+		FROM items`,
 }
 
 // UpsertBoard writes or replaces a single board row. RawJSON is required;
