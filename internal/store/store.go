@@ -100,6 +100,31 @@ func Open(ctx context.Context, path string) (*Store, error) {
 	return s, nil
 }
 
+// OpenReadOnly opens an existing store at path with a read-only handle.
+// The file: URI prefix + mode=ro tells SQLite to open the underlying file
+// read-only at the OS level; PRAGMA query_only is set on every connection
+// as belt-and-braces against writes leaking through any path that bypasses
+// the file mode. Returns an error if the file does not exist — the read
+// command should never create a store as a side effect.
+func OpenReadOnly(ctx context.Context, path string) (*Store, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, fmt.Errorf("store: open read-only %s: %w", path, err)
+	}
+	dsn := "file:" + path + "?mode=ro&_pragma=query_only(ON)&_pragma=busy_timeout(5000)"
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("store: open read-only %s: %w", path, err)
+	}
+	db.SetMaxOpenConns(1)
+	// Cheap probe so a corrupt or non-SQLite file fails Open, not the
+	// first query the caller runs.
+	if err := db.PingContext(ctx); err != nil {
+		_ = db.Close()
+		return nil, fmt.Errorf("store: ping read-only %s: %w", path, err)
+	}
+	return &Store{db: db, path: path}, nil
+}
+
 // Close releases the underlying database handle.
 func (s *Store) Close() error {
 	return s.db.Close()

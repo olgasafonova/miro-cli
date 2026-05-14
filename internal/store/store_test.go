@@ -287,6 +287,51 @@ func TestConcurrentUpserts(t *testing.T) {
 	}
 }
 
+func TestOpenReadOnlyRejectsWrites(t *testing.T) {
+	// Seed a store with one board, close it, reopen read-only.
+	path := filepath.Join(t.TempDir(), "store.db")
+	ctx := context.Background()
+	w, err := Open(ctx, path)
+	if err != nil {
+		t.Fatalf("Open (write): %v", err)
+	}
+	if err := w.UpsertBoard(ctx, Board{ID: "b1", Name: "seed", RawJSON: []byte(`{}`)}); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	if err := w.Close(); err != nil {
+		t.Fatalf("Close (write): %v", err)
+	}
+
+	r, err := OpenReadOnly(ctx, path)
+	if err != nil {
+		t.Fatalf("OpenReadOnly: %v", err)
+	}
+	t.Cleanup(func() { _ = r.Close() })
+
+	// Read path works.
+	got, err := r.GetBoard(ctx, "b1")
+	if err != nil {
+		t.Fatalf("GetBoard via RO: %v", err)
+	}
+	if got.Name != "seed" {
+		t.Errorf("GetBoard.Name = %q, want seed", got.Name)
+	}
+
+	// Write attempts must fail.
+	_, err = r.DB().ExecContext(ctx, `INSERT INTO boards (id, raw_json, synced_at) VALUES (?, ?, ?)`,
+		"b2", `{}`, "2026-05-14T00:00:00Z")
+	if err == nil {
+		t.Error("INSERT against read-only handle succeeded; want error")
+	}
+}
+
+func TestOpenReadOnlyMissingFile(t *testing.T) {
+	_, err := OpenReadOnly(context.Background(), filepath.Join(t.TempDir(), "does-not-exist.db"))
+	if err == nil {
+		t.Error("OpenReadOnly on missing file succeeded; want error")
+	}
+}
+
 func TestDefaultPathPrefersXDG(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", "/custom/xdg")
 	got, err := DefaultPath()

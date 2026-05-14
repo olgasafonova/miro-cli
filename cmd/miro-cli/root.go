@@ -22,6 +22,7 @@ import (
 	"miro-cli/internal/tools/items"
 	"miro-cli/internal/tools/members"
 	"miro-cli/internal/tools/mindmap"
+	"miro-cli/internal/tools/query"
 	"miro-cli/internal/tools/shapes"
 	"miro-cli/internal/tools/stickies"
 	"miro-cli/internal/tools/tags"
@@ -55,6 +56,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	pf.Float64Var(&g.RateLimit, "rate-limit", -1, "Requests/second cap (0 disables; negative uses the conservative default that stays under Miro's per-org tier-1 budget)")
 	pf.DurationVar(&g.CacheTTL, "cache-ttl", -1, "Freshness window for the GET response cache (0 disables; negative uses the package default of 60s)")
 	pf.BoolVar(&g.NoCache, "no-cache", false, "Bypass the GET response cache for this invocation")
+	pf.StringVar(&g.StorePath, "store-path", "", "Override the default local-store path (defaults to $XDG_DATA_HOME/miro-cli/store.db)")
 
 	cmd.AddCommand(appcards.NewCmd(g))
 	cmd.AddCommand(audit.NewCmd(g))
@@ -71,6 +73,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd.AddCommand(items.NewCmd(g))
 	cmd.AddCommand(members.NewCmd(g))
 	cmd.AddCommand(mindmap.NewCmd(g))
+	cmd.AddCommand(query.NewCmd(g))
 	cmd.AddCommand(shapes.NewCmd(g))
 	cmd.AddCommand(stickies.NewCmd(g))
 	cmd.AddCommand(tags.NewCmd(g))

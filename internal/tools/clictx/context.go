@@ -47,6 +47,12 @@ type Globals struct {
 	// cache can't help anyway and they want certainty about freshness.
 	NoCache bool
 
+	// StorePath overrides the default on-disk location of the local
+	// SQLite store. Empty means "use store.DefaultPath()". The sync and
+	// query commands honour this; commands that don't touch the store
+	// ignore it.
+	StorePath string
+
 	Stdout io.Writer
 	Stderr io.Writer
 
