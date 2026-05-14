@@ -52,6 +52,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	pf.BoolVar(&g.Yes, "yes", false, "Skip confirmation prompts on destructive operations")
 	pf.BoolVar(&g.Idempotent, "idempotent", false, "Treat already-exists as success on create, already-gone as success on delete")
 	pf.StringVar(&g.Select, "select", "", "Comma-separated list of top-level fields to keep in JSON output")
+	pf.Float64Var(&g.RateLimit, "rate-limit", -1, "Requests/second cap (0 disables; negative uses the conservative default that stays under Miro's per-org tier-1 budget)")
 
 	cmd.AddCommand(appcards.NewCmd(g))
 	cmd.AddCommand(audit.NewCmd(g))

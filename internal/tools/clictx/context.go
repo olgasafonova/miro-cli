@@ -30,6 +30,12 @@ type Globals struct {
 	Idempotent bool
 	Select     string
 
+	// RateLimit is the requests-per-second budget passed to the client's
+	// token bucket. Negative means "use the package default"; 0 means
+	// "no rate limiting"; positive sets an explicit rate. The root flag
+	// initialises this to -1 so users opting out write --rate-limit=0.
+	RateLimit float64
+
 	Stdout io.Writer
 	Stderr io.Writer
 
@@ -39,10 +45,13 @@ type Globals struct {
 }
 
 // New returns a Globals with sensible defaults wired to os.Stdout/Stderr.
+// RateLimit starts at -1 so BuildClient applies the package default; the
+// --rate-limit flag overrides this from cmd/miro-cli/root.go.
 func New() *Globals {
 	return &Globals{
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		Stdout:    os.Stdout,
+		Stderr:    os.Stderr,
+		RateLimit: -1,
 	}
 }
 
@@ -60,7 +69,12 @@ func (g *Globals) Normalize() {
 
 // BuildClient returns the injected *miro.Client if one is set, otherwise
 // loads the token (flag or env) and constructs a fresh client pointed at
-// DefaultBaseURL.
+// DefaultBaseURL with a token-bucket rate limiter.
+//
+// Rate-limit resolution:
+//   - g.RateLimit > 0: use that exact rate
+//   - g.RateLimit == 0: no limiting (the user opted out via --rate-limit=0)
+//   - g.RateLimit < 0: use miro.DefaultRateLimit (the sentinel from New())
 func (g *Globals) BuildClient() (*miro.Client, error) {
 	if g.Client != nil {
 		return g.Client, nil
@@ -69,7 +83,11 @@ func (g *Globals) BuildClient() (*miro.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return miro.New(cfg), nil
+	rate := g.RateLimit
+	if rate < 0 {
+		rate = miro.DefaultRateLimit
+	}
+	return miro.New(cfg, miro.WithRateLimit(miro.NewLimiter(rate, miro.DefaultRateBurst))), nil
 }
 
 // EmitJSON marshals v to JSON, applies --select if set, and writes to

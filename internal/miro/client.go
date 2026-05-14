@@ -27,6 +27,7 @@ type Client struct {
 	token      string
 	httpClient *http.Client
 	userAgent  string
+	limiter    *Limiter
 }
 
 // Option configures a Client.
@@ -53,6 +54,18 @@ func WithHTTPClient(h *http.Client) Option {
 func WithUserAgent(ua string) Option {
 	return func(c *Client) {
 		c.userAgent = ua
+	}
+}
+
+// WithRateLimit installs a token-bucket rate limiter. Every call to Do
+// blocks at most until a token is available (or ctx is cancelled).
+// Pass NewLimiter(0, 0) to explicitly disable limiting; the default
+// (no WithRateLimit option) also disables it so tests don't pay the
+// pacing cost. CLI entry points should install one with DefaultRateLimit
+// so scripted use stays under Miro's published per-org rate budget.
+func WithRateLimit(l *Limiter) Option {
+	return func(c *Client) {
+		c.limiter = l
 	}
 }
 
@@ -136,6 +149,10 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 	}
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
+	}
+
+	if err := c.limiter.Wait(ctx); err != nil {
+		return fmt.Errorf("miro: %s %s: %w", method, path, err)
 	}
 
 	resp, err := c.httpClient.Do(req)
