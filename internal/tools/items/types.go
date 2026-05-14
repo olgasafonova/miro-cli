@@ -74,3 +74,24 @@ type listAllResponse struct {
 	Total     int              `json:"total"`
 	Truncated bool             `json:"truncated,omitempty"`
 }
+
+// bulkOpResult is the per-item record emitted by bulk-delete and
+// bulk-update. Status is "success" or "error"; Error carries the
+// per-item failure message when set. Output is one of these per input ID.
+type bulkOpResult struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
+
+// bulkOpResponse is the aggregate envelope returned by bulk-delete and
+// bulk-update. Callers can branch on Failed > 0 instead of inspecting
+// per-item Status, and Requested/Succeeded/Failed give a quick summary
+// without iterating Results.
+type bulkOpResponse struct {
+	BoardID   string         `json:"board_id"`
+	Requested int            `json:"requested"`
+	Succeeded int            `json:"succeeded"`
+	Failed    int            `json:"failed"`
+	Results   []bulkOpResult `json:"results"`
+}

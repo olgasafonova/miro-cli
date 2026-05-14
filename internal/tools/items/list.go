@@ -27,6 +27,8 @@ func NewCmd(g *clictx.Globals) *cobra.Command {
 		newGetByTagCmd(g),
 		newGetWithinFrameCmd(g),
 		newBulkCreateCmd(g),
+		newBulkDeleteCmd(g),
+		newBulkUpdateCmd(g),
 		newAttachTagCmd(g),
 		newDetachTagCmd(g),
 		newGetTagsCmd(g),
