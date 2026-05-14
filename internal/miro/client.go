@@ -118,6 +118,8 @@ func New(cfg *Config, opts ...Option) *Client {
 // body may be:
 //   - nil: no request body
 //   - []byte: sent as-is with Content-Type: application/octet-stream
+//   - *MultipartBody: sent as-is with the supplied Content-Type (used by
+//     file uploads in internal/tools/uploads)
 //   - everything else: JSON-encoded with Content-Type: application/json
 //
 // Context cancellation is honored end-to-end.
@@ -149,6 +151,12 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 	case []byte:
 		bodyReader = bytes.NewReader(v)
 		contentType = "application/octet-stream"
+	case *MultipartBody:
+		if v == nil || v.Body == nil {
+			return errors.New("miro: nil MultipartBody")
+		}
+		bodyReader = v.Body
+		contentType = v.ContentType
 	default:
 		buf, err := json.Marshal(v)
 		if err != nil {
