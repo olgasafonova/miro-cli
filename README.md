@@ -1,7 +1,5 @@
 # Miro Developer Platform CLI
 
-<img src="https://content.pstmn.io/47449ea6-0ef7-4af2-bac1-e58a70e61c58/aW1hZ2UucG5n" width="1685" height="593">
-
 `miro-cli` is a single binary that wraps the Miro REST API as shell commands.
 One verb per endpoint, JSON in and out, plus a local SQLite mirror of your
 boards so you can search and query offline.
