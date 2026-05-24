@@ -1,4 +1,4 @@
-.PHONY: build test lint install clean
+.PHONY: build test lint install clean sync-spec
 
 build:
 	go build -o bin/miro-cli ./cmd/miro-cli
@@ -14,3 +14,7 @@ install:
 
 clean:
 	rm -rf bin/
+
+sync-spec:
+	curl -fsSL https://raw.githubusercontent.com/miroapp/api-clients/main/packages/generator/spec.json -o spec.json
+	@echo "Synced spec.json from miroapp/api-clients ($$(wc -c < spec.json) bytes)"

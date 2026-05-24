@@ -22,7 +22,7 @@ CI (`.github/workflows/ci.yml`) additionally runs `go mod verify`, `go mod tidy`
 - `internal/tools/<resource>/` — one package per Miro resource (boards, items, stickies, shapes, frames, tags, etc.). Each defines its Cobra subcommands and calls into `internal/miro`.
 - `internal/store/` — SQLite mirror + FTS5 search backing `miro-cli sync` / `miro-cli query`.
 - `internal/diagrams/` — sequence / flowchart rendering helpers for `boards diagram`.
-- `spec.json` — Miro OpenAPI spec used at design time for parameter discovery; not embedded in the binary.
+- `spec.json` — Miro Developer Platform OpenAPI spec, bundled verbatim from [miroapp/api-clients](https://github.com/miroapp/api-clients) under MIT (see `NOTICE`). Used at design time for parameter discovery; not embedded in the binary. Refresh with `make sync-spec`.
 
 ## Conventions & Patterns
 
