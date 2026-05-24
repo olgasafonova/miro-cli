@@ -28,9 +28,9 @@ checksum:
 brews:
   - name: miro-cli
     repository:
-      owner: olga-safonova
+      owner: olgasafonova
       name: homebrew-tap
-    homepage: "https://github.com/olga-safonova/miro-cli"
+    homepage: "https://github.com/olgasafonova/miro-cli"
     description: "Hand-authored Cobra CLI for the Miro REST API."
     install: |
       bin.install "miro-cli"

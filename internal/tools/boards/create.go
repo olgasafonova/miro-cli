@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 func newCreateCmd(g *clictx.Globals) *cobra.Command {

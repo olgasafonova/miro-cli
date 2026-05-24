@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"miro-cli/internal/miro"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // stubServer returns a tiny Miro-shaped fake: each call to a POST

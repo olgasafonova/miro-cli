@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/miro"
 )
 
 func TestNormalizeAgentExpands(t *testing.T) {

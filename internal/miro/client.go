@@ -15,7 +15,7 @@ import (
 const (
 	defaultTimeout  = 30 * time.Second
 	maxResponseBody = 10 * 1024 * 1024
-	userAgent       = "miro-cli/0.0"
+	userAgent       = "github.com/olgasafonova/miro-cli/0.0"
 )
 
 // Client is the hand-authored Miro REST client. It owns no goroutines and

@@ -3,7 +3,7 @@ package groups
 import (
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // NewCmd returns the `groups` parent command. Six verbs against

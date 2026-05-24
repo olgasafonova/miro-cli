@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // auditFlags captures the query parameters Miro's /v2/audit/logs

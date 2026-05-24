@@ -3,7 +3,7 @@ package appcards
 import (
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // NewCmd returns the `app-cards` parent command. Phase 3b ships

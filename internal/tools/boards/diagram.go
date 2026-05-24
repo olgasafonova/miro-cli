@@ -9,9 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/diagrams"
-	"miro-cli/internal/miro"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/diagrams"
+	"github.com/olgasafonova/miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // diagramFlags captures every knob on `miro boards diagram`. The

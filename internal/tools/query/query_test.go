@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"miro-cli/internal/store"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/store"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 func TestValidateSelect(t *testing.T) {

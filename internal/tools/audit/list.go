@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // ListLogsFlags carries the query parameters for GET /v2/audit/logs.

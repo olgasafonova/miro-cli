@@ -17,8 +17,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/store"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/store"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // DefaultRowLimit caps the number of rows returned by a single query unless

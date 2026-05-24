@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/miro"
 )
 
 // Allowlists for the two supported upload kinds. Keys are lowercase

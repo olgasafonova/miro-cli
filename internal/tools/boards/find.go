@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // findResult is the JSON envelope emitted by `boards find`. Wraps the

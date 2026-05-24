@@ -1,70 +1,38 @@
 # Project Instructions for AI Agents
 
-This file provides instructions and context for AI coding agents working on this project.
+`miro-cli` is a single-binary Cobra CLI wrapping the Miro REST API. One verb per endpoint, JSON in and out, with a local SQLite mirror (`miro-cli sync` + `miro-cli query`) for offline search.
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
-## Beads Issue Tracker
-
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
-
-### Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
-```
-
-### Rules
-
-- Use `bd` for ALL task tracking — do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge — do NOT use MEMORY.md files
-
-**Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
-
-## Session Completion
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-<!-- END BEADS INTEGRATION -->
-
+Module path: `github.com/olgasafonova/miro-cli`.
 
 ## Build & Test
 
-_Add your build and test commands here_
-
 ```bash
-# Example:
-# npm install
-# npm test
+make build    # binary to ./bin/miro-cli
+make test     # go test -race -failfast ./...
+make lint     # golangci-lint run
+make install  # go install ./cmd/miro-cli
 ```
+
+CI (`.github/workflows/ci.yml`) additionally runs `go mod verify`, `go mod tidy` drift check, `govulncheck`, `go vet`, race-enabled tests with coverage, `gosec`, and a goreleaser cross-platform build matrix.
 
 ## Architecture Overview
 
-_Add a brief overview of your project architecture_
+- `cmd/miro-cli/` — Cobra root + verb registration. Each resource group is a subcommand tree assembled in `root.go`.
+- `internal/miro/` — REST client. Rate limiting (`ratelimit.go`), retry + crash recovery (`recover.go`, `crash.go`), share-domain allowlist (`shareallowlist.go`, gates `boards share` per HG-3 in `~/Projects/claude-code-config/rules/code-review-prompts.md`), config (`config.go`).
+- `internal/tools/<resource>/` — one package per Miro resource (boards, items, stickies, shapes, frames, tags, etc.). Each defines its Cobra subcommands and calls into `internal/miro`.
+- `internal/store/` — SQLite mirror + FTS5 search backing `miro-cli sync` / `miro-cli query`.
+- `internal/diagrams/` — sequence / flowchart rendering helpers for `boards diagram`.
+- `spec.json` — Miro OpenAPI spec used at design time for parameter discovery; not embedded in the binary.
 
 ## Conventions & Patterns
 
-_Add your project-specific conventions here_
+- **Destructive verbs refuse to run without `--yes` (or `--agent`, which implies it).** New destructive verbs MUST follow this gate.
+- **`--idempotent` makes create/delete retries safe** by treating duplicate-resource / already-deleted as success.
+- **`--json`, `--dry-run`, `--select`, `--agent`** are the four agent-facing flags. Preserve their semantics across new commands.
+- **Share-domain allowlist (`MIRO_SHARE_ALLOWED_DOMAINS`)** is fail-closed: unset = deny-all. Do not relax this.
+- **No new `replace` directives in `go.mod`** — they block `pkg.go.dev` indexing.
+- **Tests live next to source** (`*_test.go`) and use the table-driven style established in `internal/miro/` and `internal/tools/boards/`.
+
+## Related repos
+
+- [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) — same author, MCP runtime, overlapping coverage. CLI and MCP are complements, not alternatives (per the dual-path pattern in `mediawiki-mcp-server`).

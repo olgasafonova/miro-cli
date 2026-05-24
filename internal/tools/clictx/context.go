@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/miro"
 )
 
 // Globals captures every persistent flag exposed by the root command,

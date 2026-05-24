@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/miro"
 )
 
 func main() {

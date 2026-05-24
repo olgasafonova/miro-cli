@@ -13,9 +13,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"miro-cli/internal/miro"
-	"miro-cli/internal/store"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/store"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // fakeAPI is a minimal Miro-shaped server: serves a configurable list

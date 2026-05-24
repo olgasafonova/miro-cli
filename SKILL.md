@@ -20,12 +20,12 @@ This skill drives the `miro-cli` binary. **You must verify the CLI is installed 
 
 1. Install from source:
    ```bash
-   go install miro-cli/cmd/miro-cli@latest
+   go install github.com/olgasafonova/miro-cli/cmd/miro-cli@latest
    ```
 2. Verify: `miro-cli --help`
 3. Ensure `$GOPATH/bin` (or `$HOME/go/bin`) is on `$PATH`.
 
-Alternatively, install via Homebrew (`brew install olga-safonova/tap/miro-cli`) or download a pre-built binary from the [latest release](https://github.com/olga-safonova/miro-cli/releases/latest).
+Alternatively, install via Homebrew (`brew install olgasafonova/tap/miro-cli`) or download a pre-built binary from the [latest release](https://github.com/olgasafonova/miro-cli/releases/latest).
 
 If `--help` reports "command not found" after install, the install step did not put the binary on `$PATH`. Do not proceed with skill commands until verification succeeds.
 

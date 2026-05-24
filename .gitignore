@@ -6,6 +6,7 @@ build/
 
 # Go binaries (root-level standalones from `go build`)
 /miro-cli
+bin/
 
 # OS / editor noise
 .DS_Store

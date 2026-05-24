@@ -38,7 +38,7 @@ overlapping coverage, different runtimes. Use both if you want.
 ### From source
 
 ```bash
-go install miro-cli/cmd/miro-cli@latest
+go install github.com/olgasafonova/miro-cli/cmd/miro-cli@latest
 ```
 
 This drops a `miro-cli` binary in `$GOPATH/bin` (typically `~/go/bin`). Make
@@ -47,7 +47,7 @@ sure that directory is on your `PATH`.
 ### Pre-built binary
 
 Download the appropriate archive for your platform from the
-[latest release](https://github.com/olga-safonova/miro-cli/releases/latest)
+[latest release](https://github.com/olgasafonova/miro-cli/releases/latest)
 and extract the `miro-cli` binary into a directory on your `PATH`. On macOS,
 clear the Gatekeeper quarantine: `xattr -d com.apple.quarantine miro-cli`.
 On Unix, mark it executable: `chmod +x miro-cli`.
@@ -55,7 +55,7 @@ On Unix, mark it executable: `chmod +x miro-cli`.
 ### Homebrew
 
 ```bash
-brew install olga-safonova/tap/miro-cli
+brew install olgasafonova/tap/miro-cli
 ```
 
 ## Quick Start

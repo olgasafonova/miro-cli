@@ -1,4 +1,4 @@
-module miro-cli
+module github.com/olgasafonova/miro-cli
 
 go 1.26.3
 

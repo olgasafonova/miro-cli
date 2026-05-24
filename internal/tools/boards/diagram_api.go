@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"miro-cli/internal/diagrams"
-	"miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/diagrams"
+	"github.com/olgasafonova/miro-cli/internal/miro"
 )
 
 // Request/response payloads for the Miro v2 endpoints the diagram

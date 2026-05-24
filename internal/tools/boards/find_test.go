@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"miro-cli/internal/miro"
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/miro"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // ----- match resolution (pure function) -------------------------------------

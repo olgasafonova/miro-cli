@@ -13,7 +13,7 @@ package tables
 import (
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // NewCmd returns the `tables` parent command.

@@ -7,7 +7,7 @@ package audit
 import (
 	"github.com/spf13/cobra"
 
-	"miro-cli/internal/tools/clictx"
+	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 )
 
 // NewCmd returns the `audit` parent command. Single subcommand
