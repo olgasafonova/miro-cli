@@ -26,11 +26,13 @@ endpoint, JSON in and out, with a local SQLite mirror for offline search.
 | Script Miro from bash, CI, or a Makefile | `miro-cli` (this repo) |
 | Drive Miro from Claude Code as a skill | `miro-cli` + the bundled `SKILL.md` |
 | Drive Miro from a Claude Desktop / MCP-compatible agent | [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) |
+| Render Miro data as interactive UI in chat (cards, tables, SVG graphs) | [miro-mcp-apps](https://github.com/olgasafonova/miro-mcp-apps) |
 | Embed Miro into a TypeScript or Python app | The official Miro SDKs |
 | Issue a one-off API call to test a payload | `miro-cli <verb> --dry-run`, or `curl` |
 
-The CLI and the MCP server are complements, not alternatives: same author,
-overlapping coverage, different runtimes. Use both if you want.
+The CLI, the MCP server, and the MCP Apps server are complements, not
+alternatives: same author, overlapping API coverage, different runtimes.
+Use whichever ones fit. They all read the same `MIRO_ACCESS_TOKEN`.
 
 ## Install
 
