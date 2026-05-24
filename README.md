@@ -1,8 +1,8 @@
 # Miro Developer Platform CLI
 
-`miro-cli` is a single binary that wraps the Miro REST API as shell commands.
-One verb per endpoint, JSON in and out, plus a local SQLite mirror of your
-boards so you can search and query offline.
+Drive Miro from your shell. Bulk-migrate stickies between boards, audit
+board access, or script Miro operations in CI. One verb per Miro REST
+endpoint, JSON in and out, with a local SQLite mirror for offline search.
 
 ## Why use it
 
@@ -17,8 +17,7 @@ boards so you can search and query offline.
   `items bulk-delete`, and `stickies create-grid` collapse N HTTP calls
   into one for workshop and migration flows.
 - **Safe defaults.** Destructive verbs refuse to run without `--yes` (or
-  `--agent`, which implies it). `--idempotent` makes create/delete retries
-  safe.
+  `--agent`, which implies it). `--idempotent` makes create retries safe.
 
 ## When to reach for what
 
@@ -247,20 +246,14 @@ will not match `foxes`. Use the `*` suffix for prefix matching: `MATCH 'fox*'`.
 
 This CLI is designed for AI agent consumption:
 
-- **Non-interactive**, never prompts, every input is a flag
-- **Pipeable**, `--json` output to stdout, errors to stderr
-- **Filterable**, `--select id,name` returns only fields you need
-- **Previewable**, `--dry-run` shows the request without sending
-- **Explicit retries**, add `--idempotent` to create retries and
-  `--ignore-missing` to delete retries when a no-op success is acceptable
-- **Confirmable**, `--yes` for explicit confirmation of destructive actions
-- **Piped input**, write commands can accept structured input when their
-  help lists `--stdin`
-- **Offline-friendly**, `miro-cli sync` mirrors boards + items locally;
-  `miro-cli query` runs SQL and FTS5 search against the mirror without
-  network round-trips
-- **Agent-safe by default**, no colors or formatting unless
-  `--human-friendly` is set
+- **Non-interactive.** Never prompts; every input is a flag.
+- **Pipeable.** `--json` writes structured output to stdout; errors go to stderr.
+- **Filterable.** `--select id,name,status` returns only the fields you need.
+- **Previewable.** `--dry-run` prints the request without sending it.
+- **Idempotent create.** `--idempotent` makes create-then-retry safe.
+- **Confirmable.** `--yes` (or `--agent`, which implies it) is required for destructive verbs.
+- **Offline-friendly.** `miro-cli sync` mirrors boards + items locally; `miro-cli query` runs SQL and FTS5 search against the mirror without API round-trips.
+- **Agent-safe by default.** No ANSI colors or formatting in output.
 
 Exit codes: `0` success, `2` usage error, `3` not found, `4` auth error,
 `5` API error, `7` rate limited, `10` config error.
@@ -277,38 +270,27 @@ For Miro MCP tools (board operations, stickies, frames, diagrams), use the
 separate [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server)
 project instead. This CLI is shell + skill only.
 
-## Health Check
-
-```bash
-miro-cli doctor
-```
-
-Verifies configuration, credentials, and connectivity to the API.
-
 ## Configuration
 
-Config file: `~/.config/miro-cli/config.toml`
+`miro-cli` reads credentials from two sources, in precedence order:
 
-Static request headers can be configured under `headers`; per-command
-header overrides take precedence.
+1. `--token <value>` on any command
+2. `MIRO_ACCESS_TOKEN` environment variable
 
-Environment variables:
-
-| Name | Kind | Required | Description |
-| --- | --- | --- | --- |
-| `MIRO_ACCESS_TOKEN` | per_call | Yes | Set to your API credential. |
+A config file is not currently supported.
 
 ## Troubleshooting
 
 **Authentication errors (exit code 4)**
 
-- Run `miro-cli doctor` to check credentials
 - Verify the environment variable is set: `echo $MIRO_ACCESS_TOKEN`
+- Try passing the token explicitly on one command: `miro-cli --token <value> boards list`
+- Generate a fresh token at https://miro.com/app/settings/user-profile/apps
 
 **Not found errors (exit code 3)**
 
 - Check the resource ID is correct
-- Run the `list` command to see available items
+- Run the `list` verb under the relevant group to see available items
 
 ## Further reading
 
