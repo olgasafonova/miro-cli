@@ -1,0 +1,180 @@
+name: Release Binaries
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+          - goos: windows
+            goarch: amd64
+            suffix: windows-amd64.exe
+          - goos: windows
+            goarch: arm64
+            suffix: windows-arm64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -ldflags="-s -w" -o miro-cli-${{ matrix.suffix }} ./cmd/miro-cli
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: miro-cli-${{ matrix.suffix }}
+          path: miro-cli-${{ matrix.suffix }}
+
+  upload-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          REPO="${{ github.repository }}"
+          for dir in artifacts/miro-cli-*/; do
+            for file in "$dir"miro-cli-*; do
+              echo "Uploading $file..."
+              gh release upload "$TAG" "$file" --clobber --repo "$REPO"
+            done
+          done
+
+  update-homebrew:
+    needs: upload-release
+    runs-on: ubuntu-latest
+    # This job will fail checkout step if HOMEBREW_TAP_TOKEN is not set, which is expected
+    continue-on-error: true
+    steps:
+      - name: Checkout homebrew tap
+        uses: actions/checkout@v6
+        with:
+          repository: olgasafonova/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update formula
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix
+
+          # Download macOS + linux-amd64 binaries to compute SHA256 for the formula
+          wget -q "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-darwin-amd64"
+          wget -q "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-darwin-arm64"
+          wget -q "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-linux-amd64"
+
+          SHA_DARWIN_AMD64=$(sha256sum miro-cli-darwin-amd64 | cut -d' ' -f1)
+          SHA_DARWIN_ARM64=$(sha256sum miro-cli-darwin-arm64 | cut -d' ' -f1)
+          SHA_LINUX_AMD64=$(sha256sum miro-cli-linux-amd64 | cut -d' ' -f1)
+
+          cat > homebrew-tap/Formula/miro-cli.rb << EOF
+          # Homebrew Formula for miro-cli
+          # Usage: brew tap olgasafonova/tap && brew install miro-cli
+
+          class MiroCli < Formula
+            desc "Single-binary CLI that wraps the Miro REST API as shell commands"
+            homepage "https://github.com/olgasafonova/miro-cli"
+            version "${VERSION}"
+            license "Apache-2.0"
+
+            on_macos do
+              on_intel do
+                url "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-darwin-amd64"
+                sha256 "${SHA_DARWIN_AMD64}"
+
+                def install
+                  bin.install "miro-cli-darwin-amd64" => "miro-cli"
+                end
+              end
+
+              on_arm do
+                url "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-darwin-arm64"
+                sha256 "${SHA_DARWIN_ARM64}"
+
+                def install
+                  bin.install "miro-cli-darwin-arm64" => "miro-cli"
+                end
+              end
+            end
+
+            on_linux do
+              on_intel do
+                url "https://github.com/olgasafonova/miro-cli/releases/download/${{ github.ref_name }}/miro-cli-linux-amd64"
+                sha256 "${SHA_LINUX_AMD64}"
+
+                def install
+                  bin.install "miro-cli-linux-amd64" => "miro-cli"
+                end
+              end
+            end
+
+            def caveats
+              <<~EOS
+                miro-cli has been installed!
+
+                To use it, you need a Miro access token:
+
+                1. Get a token from: https://miro.com/app/settings/user-profile/apps
+
+                2. Set it as an environment variable:
+                   export MIRO_ACCESS_TOKEN="your_token_here"
+
+                3. Try it: miro-cli --help
+
+                For more information, see:
+                  https://github.com/olgasafonova/miro-cli#readme
+              EOS
+            end
+
+            test do
+              assert_match "Hand-authored CLI for the Miro REST API", shell_output("#{bin}/miro-cli --help")
+            end
+          end
+          EOF
+
+      - name: Commit and push formula update
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/miro-cli.rb
+          git commit -m "Update miro-cli to ${{ github.ref_name }}" || exit 0
+          git push
