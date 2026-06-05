@@ -95,3 +95,19 @@ type bulkOpResponse struct {
 	Failed    int            `json:"failed"`
 	Results   []bulkOpResult `json:"results"`
 }
+
+// tallyBulk builds the aggregate envelope from per-item results,
+// counting success vs error. Results stay in the order miro.FanOut
+// returned them, which is input order, so the envelope is identical
+// whether the run was sequential (--concurrency=1) or fanned out.
+func tallyBulk(boardID string, results []bulkOpResult) bulkOpResponse {
+	out := bulkOpResponse{BoardID: boardID, Requested: len(results), Results: results}
+	for _, r := range results {
+		if r.Status == "success" {
+			out.Succeeded++
+		} else {
+			out.Failed++
+		}
+	}
+	return out
+}

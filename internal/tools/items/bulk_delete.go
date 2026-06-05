@@ -74,27 +74,17 @@ func runBulkDelete(ctx context.Context, g *clictx.Globals, f bulkDeleteFlags) er
 		return err
 	}
 
-	out := bulkOpResponse{
-		BoardID:   f.boardID,
-		Requested: len(ids),
-		Results:   make([]bulkOpResult, 0, len(ids)),
-	}
-	for _, id := range ids {
+	results := miro.FanOut(ctx, ids, g.Concurrency, func(ctx context.Context, _ int, id string) bulkOpResult {
 		if cerr := ctx.Err(); cerr != nil {
-			out.Results = append(out.Results, bulkOpResult{ID: id, Status: "error", Error: cerr.Error()})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: id, Status: "error", Error: cerr.Error()}
 		}
 		path := "/v2/boards/" + f.boardID + "/items/" + id
 		if derr := client.Delete(ctx, path); derr != nil {
-			out.Results = append(out.Results, bulkOpResult{ID: id, Status: "error", Error: derr.Error()})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: id, Status: "error", Error: derr.Error()}
 		}
-		out.Results = append(out.Results, bulkOpResult{ID: id, Status: "success"})
-		out.Succeeded++
-	}
-	return g.EmitJSON(out)
+		return bulkOpResult{ID: id, Status: "success"}
+	})
+	return g.EmitJSON(tallyBulk(f.boardID, results))
 }
 
 // loadIDs parses the three input flags into a single ID slice, enforcing

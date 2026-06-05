@@ -82,39 +82,25 @@ func runBulkUpdate(ctx context.Context, g *clictx.Globals, f bulkUpdateFlags) er
 		return err
 	}
 
-	out := bulkOpResponse{
-		BoardID:   f.boardID,
-		Requested: len(patches),
-		Results:   make([]bulkOpResult, 0, len(patches)),
-	}
-	for i, p := range patches {
+	results := miro.FanOut(ctx, patches, g.Concurrency, func(ctx context.Context, i int, p bulkUpdateItem) bulkOpResult {
 		if cerr := ctx.Err(); cerr != nil {
-			out.Results = append(out.Results, bulkOpResult{ID: p.ID, Status: "error", Error: cerr.Error()})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: p.ID, Status: "error", Error: cerr.Error()}
 		}
 		if p.ID == "" {
-			out.Results = append(out.Results, bulkOpResult{ID: p.ID, Status: "error", Error: fmt.Sprintf("patches[%d]: missing \"id\"", i)})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: p.ID, Status: "error", Error: fmt.Sprintf("patches[%d]: missing \"id\"", i)}
 		}
 		body, ok := buildBulkUpdateBody(p)
 		if !ok {
-			out.Results = append(out.Results, bulkOpResult{ID: p.ID, Status: "error", Error: "no mutable fields set"})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: p.ID, Status: "error", Error: "no mutable fields set"}
 		}
 		path := "/v2/boards/" + f.boardID + "/items/" + p.ID
 		var resp map[string]any
 		if perr := client.Patch(ctx, path, body, &resp); perr != nil {
-			out.Results = append(out.Results, bulkOpResult{ID: p.ID, Status: "error", Error: perr.Error()})
-			out.Failed++
-			continue
+			return bulkOpResult{ID: p.ID, Status: "error", Error: perr.Error()}
 		}
-		out.Results = append(out.Results, bulkOpResult{ID: p.ID, Status: "success"})
-		out.Succeeded++
-	}
-	return g.EmitJSON(out)
+		return bulkOpResult{ID: p.ID, Status: "success"}
+	})
+	return g.EmitJSON(tallyBulk(f.boardID, results))
 }
 
 // loadPatches reads the patches array from --patches-file or
