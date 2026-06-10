@@ -37,6 +37,16 @@ type Globals struct {
 	// initialises this to -1 so users opting out write --rate-limit=0.
 	RateLimit float64
 
+	// Concurrency bounds how many in-flight requests the bulk commands
+	// (items bulk-delete, items bulk-update) issue at once via
+	// miro.FanOut. 1 is a plain sequential loop, identical to the
+	// pre-fan-out behaviour; the root flag initialises it to 1. Higher
+	// values only improve wall-clock when the shared rate limiter is not
+	// the bottleneck — i.e. the user has also raised --rate-limit. The
+	// zero value (0) is treated as 1 by FanOut, so a Globals built in a
+	// test without the root flag still runs sequentially.
+	Concurrency int
+
 	// CacheTTL is the freshness window for the client's GET response
 	// cache. Negative means "use the package default"; 0 means "no cache"
 	// (equivalent to --no-cache). The root flag initialises this to -1.
@@ -67,10 +77,11 @@ type Globals struct {
 // cmd/miro-cli/root.go.
 func New() *Globals {
 	return &Globals{
-		Stdout:    os.Stdout,
-		Stderr:    os.Stderr,
-		RateLimit: -1,
-		CacheTTL:  -1,
+		Stdout:      os.Stdout,
+		Stderr:      os.Stderr,
+		RateLimit:   -1,
+		CacheTTL:    -1,
+		Concurrency: 1,
 	}
 }
 
