@@ -113,46 +113,8 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+	if err := validateUpdateFlags(f); err != nil {
 		return err
-	}
-	if err := miro.ValidateID("connector_id", f.connectorID); err != nil {
-		return err
-	}
-	if f.shapeSet {
-		if err := validateShape(f.shape); err != nil {
-			return err
-		}
-	}
-	if f.startSnapToSet {
-		if err := validateSnapTo(f.startSnapTo, "start-snap-to"); err != nil {
-			return err
-		}
-	}
-	if f.endSnapToSet {
-		if err := validateSnapTo(f.endSnapTo, "end-snap-to"); err != nil {
-			return err
-		}
-	}
-	if f.strokeStyleSet {
-		if err := validateStrokeStyle(f.strokeStyle); err != nil {
-			return err
-		}
-	}
-	if f.startStrokeCapSet {
-		if err := validateStrokeCap(f.startStrokeCap, "start-stroke-cap"); err != nil {
-			return err
-		}
-	}
-	if f.endStrokeCapSet {
-		if err := validateStrokeCap(f.endStrokeCap, "end-stroke-cap"); err != nil {
-			return err
-		}
-	}
-	if f.textOrientationSet {
-		if err := validateTextOrientation(f.textOrientation); err != nil {
-			return err
-		}
 	}
 	req, ok, err := buildUpdateRequest(f)
 	if err != nil {
@@ -176,6 +138,40 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 	return g.EmitJSON(resp)
 }
 
+// validateUpdateFlags checks the required IDs and runs the validator for
+// each style/endpoint flag the user actually set. Each entry pairs a
+// "was this flag set" guard with the validation to run when it was, so
+// adding a validated flag means adding one row, not another if-block.
+func validateUpdateFlags(f updateFlags) error {
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
+	}
+	if err := miro.ValidateID("connector_id", f.connectorID); err != nil {
+		return err
+	}
+	checks := []struct {
+		set      bool
+		validate func() error
+	}{
+		{f.shapeSet, func() error { return validateShape(f.shape) }},
+		{f.startSnapToSet, func() error { return validateSnapTo(f.startSnapTo, "start-snap-to") }},
+		{f.endSnapToSet, func() error { return validateSnapTo(f.endSnapTo, "end-snap-to") }},
+		{f.strokeStyleSet, func() error { return validateStrokeStyle(f.strokeStyle) }},
+		{f.startStrokeCapSet, func() error { return validateStrokeCap(f.startStrokeCap, "start-stroke-cap") }},
+		{f.endStrokeCapSet, func() error { return validateStrokeCap(f.endStrokeCap, "end-stroke-cap") }},
+		{f.textOrientationSet, func() error { return validateTextOrientation(f.textOrientation) }},
+	}
+	for _, c := range checks {
+		if !c.set {
+			continue
+		}
+		if err := c.validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // buildUpdateRequest projects updateFlags into the PATCH body and
 // reports whether any field was set. ok=false means the caller should
 // reject the update — Miro 400s an empty PATCH body anyway, and a
@@ -184,22 +180,32 @@ func buildUpdateRequest(f updateFlags) (updateRequest, bool, error) {
 	var req updateRequest
 	any := false
 
-	if f.startItemIDSet || f.startSnapToSet || f.startPosSet {
-		ep, err := buildUpdateEndpoint(f.startItemID, f.startItemIDSet, f.startSnapTo, f.startSnapToSet, f.startPos, f.startPosSet)
-		if err != nil {
-			return updateRequest{}, false, err
-		}
-		req.StartItem = ep
+	start, ok, err := buildEndpointFromFlags(endpointFlags{
+		itemID: f.startItemID, itemIDSet: f.startItemIDSet,
+		snapTo: f.startSnapTo, snapToSet: f.startSnapToSet,
+		position: f.startPos, positionSet: f.startPosSet,
+	})
+	if err != nil {
+		return updateRequest{}, false, err
+	}
+	if ok {
+		req.StartItem = start
 		any = true
 	}
-	if f.endItemIDSet || f.endSnapToSet || f.endPosSet {
-		ep, err := buildUpdateEndpoint(f.endItemID, f.endItemIDSet, f.endSnapTo, f.endSnapToSet, f.endPos, f.endPosSet)
-		if err != nil {
-			return updateRequest{}, false, err
-		}
-		req.EndItem = ep
+
+	end, ok, err := buildEndpointFromFlags(endpointFlags{
+		itemID: f.endItemID, itemIDSet: f.endItemIDSet,
+		snapTo: f.endSnapTo, snapToSet: f.endSnapToSet,
+		position: f.endPos, positionSet: f.endPosSet,
+	})
+	if err != nil {
+		return updateRequest{}, false, err
+	}
+	if ok {
+		req.EndItem = end
 		any = true
 	}
+
 	if f.shapeSet {
 		req.Shape = f.shape
 		any = true
@@ -220,60 +226,86 @@ func buildUpdateRequest(f updateFlags) (updateRequest, bool, error) {
 	return req, any, nil
 }
 
-// buildUpdateEndpoint constructs an itemEndpoint for a PATCH. Only set
-// fields are populated; the resulting envelope can carry an id alone,
-// just a new snap side, or only a new relative position.
-func buildUpdateEndpoint(itemID string, itemIDSet bool, snapTo string, snapToSet bool, position string, positionSet bool) (*itemEndpoint, error) {
+// endpointFlags groups one endpoint's (item/snap/position) flag values
+// and their presence bits so the builder takes one argument, not six.
+type endpointFlags struct {
+	itemID      string
+	itemIDSet   bool
+	snapTo      string
+	snapToSet   bool
+	position    string
+	positionSet bool
+}
+
+// buildEndpointFromFlags reports whether any of an endpoint's fields were
+// set and, if so, returns the constructed itemEndpoint. ok=false means
+// the caller should leave that endpoint untouched in the PATCH body.
+func buildEndpointFromFlags(ef endpointFlags) (*itemEndpoint, bool, error) {
+	if !ef.itemIDSet && !ef.snapToSet && !ef.positionSet {
+		return nil, false, nil
+	}
 	ep := &itemEndpoint{}
-	if itemIDSet {
-		ep.ID = itemID
+	if ef.itemIDSet {
+		ep.ID = ef.itemID
 	}
-	if snapToSet {
-		ep.SnapTo = snapTo
+	if ef.snapToSet {
+		ep.SnapTo = ef.snapTo
 	}
-	if positionSet {
-		off, err := parsePosition(position)
+	if ef.positionSet {
+		off, err := parsePosition(ef.position)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		ep.Position = off
 	}
-	return ep, nil
+	return ep, true, nil
 }
 
 // buildUpdateStyle assembles the style envelope only when at least one
 // style field was set. The check uses the *Set bools so explicit empty
 // strings can clear individual fields without clobbering the rest.
 func buildUpdateStyle(f updateFlags) *connectorStyle {
-	if !f.strokeColorSet && !f.strokeWidthSet && !f.strokeStyleSet &&
-		!f.startStrokeCapSet && !f.endStrokeCapSet && !f.fontSizeSet &&
-		!f.captionColorSet && !f.textOrientationSet {
+	if !anyStyleFieldSet(f) {
 		return nil
 	}
 	s := &connectorStyle{}
-	if f.strokeColorSet {
-		s.StrokeColor = f.strokeColor
-	}
-	if f.strokeWidthSet {
-		s.StrokeWidth = f.strokeWidth
-	}
-	if f.strokeStyleSet {
-		s.StrokeStyle = f.strokeStyle
-	}
-	if f.startStrokeCapSet {
-		s.StartStrokeCap = f.startStrokeCap
-	}
-	if f.endStrokeCapSet {
-		s.EndStrokeCap = f.endStrokeCap
-	}
-	if f.fontSizeSet {
-		s.FontSize = f.fontSize
-	}
-	if f.captionColorSet {
-		s.Color = f.captionColor
-	}
-	if f.textOrientationSet {
-		s.TextOrientation = f.textOrientation
+	for _, field := range styleFieldSetters(f) {
+		if field.set {
+			field.apply(s)
+		}
 	}
 	return s
+}
+
+// anyStyleFieldSet reports whether at least one style flag was provided,
+// which is the condition for emitting a style envelope at all.
+func anyStyleFieldSet(f updateFlags) bool {
+	for _, field := range styleFieldSetters(f) {
+		if field.set {
+			return true
+		}
+	}
+	return false
+}
+
+// styleFieldSetters maps each style flag's "was it set" guard to the
+// mutation that copies its value onto the style envelope. Centralising
+// the list keeps anyStyleFieldSet and buildUpdateStyle in lockstep.
+func styleFieldSetters(f updateFlags) []struct {
+	set   bool
+	apply func(*connectorStyle)
+} {
+	return []struct {
+		set   bool
+		apply func(*connectorStyle)
+	}{
+		{f.strokeColorSet, func(s *connectorStyle) { s.StrokeColor = f.strokeColor }},
+		{f.strokeWidthSet, func(s *connectorStyle) { s.StrokeWidth = f.strokeWidth }},
+		{f.strokeStyleSet, func(s *connectorStyle) { s.StrokeStyle = f.strokeStyle }},
+		{f.startStrokeCapSet, func(s *connectorStyle) { s.StartStrokeCap = f.startStrokeCap }},
+		{f.endStrokeCapSet, func(s *connectorStyle) { s.EndStrokeCap = f.endStrokeCap }},
+		{f.fontSizeSet, func(s *connectorStyle) { s.FontSize = f.fontSize }},
+		{f.captionColorSet, func(s *connectorStyle) { s.Color = f.captionColor }},
+		{f.textOrientationSet, func(s *connectorStyle) { s.TextOrientation = f.textOrientation }},
+	}
 }
