@@ -47,11 +47,12 @@ func Layout(diagram *Diagram, config LayoutConfig) {
 	calculateBounds(diagram)
 }
 
-// assignLayers assigns each node to a layer using longest path.
-func assignLayers(diagram *Diagram) map[int][]string {
-	// Build adjacency list
-	outgoing := make(map[string][]string)
-	incoming := make(map[string][]string)
+// buildAdjacency builds outgoing/incoming adjacency lists for the
+// diagram's nodes, ignoring edges whose endpoints aren't known nodes.
+// Shared by assignLayers and orderLayers, which both need the same view.
+func buildAdjacency(diagram *Diagram) (outgoing, incoming map[string][]string) {
+	outgoing = make(map[string][]string)
+	incoming = make(map[string][]string)
 
 	for id := range diagram.Nodes {
 		outgoing[id] = []string{}
@@ -68,24 +69,30 @@ func assignLayers(diagram *Diagram) map[int][]string {
 		outgoing[edge.FromID] = append(outgoing[edge.FromID], edge.ToID)
 		incoming[edge.ToID] = append(incoming[edge.ToID], edge.FromID)
 	}
+	return outgoing, incoming
+}
 
-	// Find root nodes (no incoming edges)
+// findRoots returns the nodes with no incoming edges, falling back to a
+// single arbitrary node when the graph is fully cyclic (no true roots).
+func findRoots(diagram *Diagram, incoming map[string][]string) []string {
 	var roots []string
 	for id := range diagram.Nodes {
 		if len(incoming[id]) == 0 {
 			roots = append(roots, id)
 		}
 	}
-
-	// If no roots, pick first node
 	if len(roots) == 0 {
 		for id := range diagram.Nodes {
 			roots = append(roots, id)
 			break
 		}
 	}
+	return roots
+}
 
-	// Assign layers using BFS from roots
+// longestPathLayers assigns each reachable node a layer via BFS from the
+// roots (longest path wins), then drops any unreached node into layer 0.
+func longestPathLayers(diagram *Diagram, outgoing map[string][]string, roots []string) map[string]int {
 	nodeLayer := make(map[string]int)
 	queue := make([]string, 0)
 	for _, root := range roots {
@@ -107,12 +114,19 @@ func assignLayers(diagram *Diagram) map[int][]string {
 		}
 	}
 
-	// Handle nodes not reached (disconnected components)
 	for id := range diagram.Nodes {
 		if _, ok := nodeLayer[id]; !ok {
 			nodeLayer[id] = 0
 		}
 	}
+	return nodeLayer
+}
+
+// assignLayers assigns each node to a layer using longest path.
+func assignLayers(diagram *Diagram) map[int][]string {
+	outgoing, incoming := buildAdjacency(diagram)
+	roots := findRoots(diagram, incoming)
+	nodeLayer := longestPathLayers(diagram, outgoing, roots)
 
 	// Group nodes by layer
 	layers := make(map[int][]string)
@@ -125,113 +139,74 @@ func assignLayers(diagram *Diagram) map[int][]string {
 
 // orderLayers orders nodes within each layer to minimize crossings.
 func orderLayers(diagram *Diagram, layers map[int][]string) {
-	// Build adjacency for ordering
-	outgoing := make(map[string][]string)
-	incoming := make(map[string][]string)
+	outgoing, incoming := buildAdjacency(diagram)
 
-	for id := range diagram.Nodes {
-		outgoing[id] = []string{}
-		incoming[id] = []string{}
-	}
+	layerNums := sortedLayerNums(layers)
 
-	for _, edge := range diagram.Edges {
-		if _, ok := diagram.Nodes[edge.FromID]; !ok {
-			continue
-		}
-		if _, ok := diagram.Nodes[edge.ToID]; !ok {
-			continue
-		}
-		outgoing[edge.FromID] = append(outgoing[edge.FromID], edge.ToID)
-		incoming[edge.ToID] = append(incoming[edge.ToID], edge.FromID)
-	}
-
-	// Get sorted layer indices
-	layerNums := make([]int, 0, len(layers))
-	for l := range layers {
-		layerNums = append(layerNums, l)
-	}
-	sort.Ints(layerNums)
-
-	// Simple barycenter ordering
+	// Simple barycenter ordering, seeded with each node's index in its
+	// layer.
 	nodePos := make(map[string]float64)
-
-	// Initial positions
 	for _, l := range layerNums {
 		for i, id := range layers[l] {
 			nodePos[id] = float64(i)
 		}
 	}
 
-	// Iterate to improve ordering
+	// Iterate forward (order by predecessors) then backward (order by
+	// successors) to improve crossing reduction.
 	for iter := 0; iter < 4; iter++ {
-		// Forward pass
 		for i := 1; i < len(layerNums); i++ {
-			l := layerNums[i]
-			for _, id := range layers[l] {
-				preds := incoming[id]
-				if len(preds) > 0 {
-					sum := 0.0
-					for _, pred := range preds {
-						sum += nodePos[pred]
-					}
-					nodePos[id] = sum / float64(len(preds))
-				}
-			}
-
-			// Sort layer by barycenter
-			sort.Slice(layers[l], func(a, b int) bool {
-				return nodePos[layers[l][a]] < nodePos[layers[l][b]]
-			})
-
-			// Update positions
-			for j, id := range layers[l] {
-				nodePos[id] = float64(j)
-			}
+			reorderLayer(layers, layerNums[i], nodePos, incoming)
 		}
-
-		// Backward pass
 		for i := len(layerNums) - 2; i >= 0; i-- {
-			l := layerNums[i]
-			for _, id := range layers[l] {
-				succs := outgoing[id]
-				if len(succs) > 0 {
-					sum := 0.0
-					for _, succ := range succs {
-						sum += nodePos[succ]
-					}
-					nodePos[id] = sum / float64(len(succs))
-				}
-			}
-
-			// Sort layer by barycenter
-			sort.Slice(layers[l], func(a, b int) bool {
-				return nodePos[layers[l][a]] < nodePos[layers[l][b]]
-			})
-
-			// Update positions
-			for j, id := range layers[l] {
-				nodePos[id] = float64(j)
-			}
+			reorderLayer(layers, layerNums[i], nodePos, outgoing)
 		}
 	}
 }
 
-// positionNodes calculates actual x,y positions for nodes.
-func positionNodes(diagram *Diagram, layers map[int][]string, config LayoutConfig) {
-	// Get sorted layer indices
+// reorderLayer recomputes each node's barycenter from its neighbours in
+// the given adjacency map, sorts the layer by that barycenter, then
+// re-indexes nodePos so the next pass sees a clean 0..n ordering.
+func reorderLayer(layers map[int][]string, l int, nodePos map[string]float64, neighbours map[string][]string) {
+	for _, id := range layers[l] {
+		nodePos[id] = barycenter(id, nodePos, neighbours)
+	}
+	sort.Slice(layers[l], func(a, b int) bool {
+		return nodePos[layers[l][a]] < nodePos[layers[l][b]]
+	})
+	for j, id := range layers[l] {
+		nodePos[id] = float64(j)
+	}
+}
+
+// barycenter returns the mean position of a node's neighbours, or the
+// node's current position when it has none (so isolated nodes hold still).
+func barycenter(id string, nodePos map[string]float64, neighbours map[string][]string) float64 {
+	adj := neighbours[id]
+	if len(adj) == 0 {
+		return nodePos[id]
+	}
+	sum := 0.0
+	for _, n := range adj {
+		sum += nodePos[n]
+	}
+	return sum / float64(len(adj))
+}
+
+// sortedLayerNums returns the layer indices in ascending order.
+func sortedLayerNums(layers map[int][]string) []int {
 	layerNums := make([]int, 0, len(layers))
 	for l := range layers {
 		layerNums = append(layerNums, l)
 	}
 	sort.Ints(layerNums)
+	return layerNums
+}
 
-	// Calculate max width of any layer
-	maxLayerWidth := 0
-	for _, nodes := range layers {
-		if len(nodes) > maxLayerWidth {
-			maxLayerWidth = len(nodes)
-		}
-	}
+// positionNodes calculates actual x,y positions for nodes.
+func positionNodes(diagram *Diagram, layers map[int][]string, config LayoutConfig) {
+	layerNums := sortedLayerNums(layers)
+	maxLayerWidth := maxLayerWidthOf(layers)
 
 	// Position based on direction
 	isHorizontal := diagram.Direction == LeftToRight || diagram.Direction == RightToLeft
@@ -243,32 +218,64 @@ func positionNodes(diagram *Diagram, layers map[int][]string, config LayoutConfi
 		if isReversed {
 			layerIndex = len(layerNums) - 1 - l
 		}
-
+		slot := layerSlot{
+			layerIndex:   layerIndex,
+			offset:       centeringOffset(len(nodes), maxLayerWidth, config),
+			isHorizontal: isHorizontal,
+			config:       config,
+		}
 		for i, nodeID := range nodes {
 			node := diagram.Nodes[nodeID]
 			if node == nil {
 				continue
 			}
-
-			// Set node dimensions
-			node.Width = config.NodeWidth
-			node.Height = config.NodeHeight
-
-			// Calculate position
-			nodeIndex := float64(i)
-
-			// Center the layer
-			layerWidth := float64(len(nodes)) * (config.NodeWidth + config.NodeSpacingX)
-			offset := (float64(maxLayerWidth)*(config.NodeWidth+config.NodeSpacingX) - layerWidth) / 2
-
-			if isHorizontal {
-				node.X = config.StartX + float64(layerIndex)*(config.NodeWidth+config.NodeSpacingY)
-				node.Y = config.StartY + offset + nodeIndex*(config.NodeHeight+config.NodeSpacingX)
-			} else {
-				node.X = config.StartX + offset + nodeIndex*(config.NodeWidth+config.NodeSpacingX)
-				node.Y = config.StartY + float64(layerIndex)*(config.NodeHeight+config.NodeSpacingY)
-			}
+			slot.place(node, i)
 		}
+	}
+}
+
+// layerSlot bundles the per-layer placement context so node positioning
+// doesn't pass six positional arguments per node.
+type layerSlot struct {
+	layerIndex   int
+	offset       float64
+	isHorizontal bool
+	config       LayoutConfig
+}
+
+// maxLayerWidthOf returns the node count of the widest layer.
+func maxLayerWidthOf(layers map[int][]string) int {
+	maxLayerWidth := 0
+	for _, nodes := range layers {
+		if len(nodes) > maxLayerWidth {
+			maxLayerWidth = len(nodes)
+		}
+	}
+	return maxLayerWidth
+}
+
+// centeringOffset returns the cross-axis offset that centres a layer of
+// nodeCount nodes against the widest layer in the diagram.
+func centeringOffset(nodeCount, maxLayerWidth int, config LayoutConfig) float64 {
+	layerWidth := float64(nodeCount) * (config.NodeWidth + config.NodeSpacingX)
+	return (float64(maxLayerWidth)*(config.NodeWidth+config.NodeSpacingX) - layerWidth) / 2
+}
+
+// place sets a node's dimensions and x,y position from its index within
+// the layer plus the slot's layer index, centering offset, and flow
+// direction.
+func (s layerSlot) place(node *Node, nodeIndexInLayer int) {
+	config := s.config
+	node.Width = config.NodeWidth
+	node.Height = config.NodeHeight
+
+	nodeIndex := float64(nodeIndexInLayer)
+	if s.isHorizontal {
+		node.X = config.StartX + float64(s.layerIndex)*(config.NodeWidth+config.NodeSpacingY)
+		node.Y = config.StartY + s.offset + nodeIndex*(config.NodeHeight+config.NodeSpacingX)
+	} else {
+		node.X = config.StartX + s.offset + nodeIndex*(config.NodeWidth+config.NodeSpacingX)
+		node.Y = config.StartY + float64(s.layerIndex)*(config.NodeHeight+config.NodeSpacingY)
 	}
 }
 

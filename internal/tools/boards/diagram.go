@@ -85,32 +85,14 @@ func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID
 	if err := miro.ValidateID("board_id", boardID); err != nil {
 		return err
 	}
-	source, err := loadDiagramSource(stdin, f)
+	diagram, err := parseDiagram(stdin, f)
 	if err != nil {
 		return err
 	}
-	if err := diagrams.ValidateDiagramInput(source); err != nil {
-		return err
-	}
 
-	diagram, err := diagrams.ParseMermaid(source)
+	mode, err := resolveOutputMode(f.outputMode)
 	if err != nil {
-		if hint := diagrams.DiagramTypeHint(source); hint != "" {
-			return fmt.Errorf("parse diagram: %w (hint: %s)", err, hint)
-		}
-		return fmt.Errorf("parse diagram: %w", err)
-	}
-
-	config := buildLayoutConfig(f)
-	if diagram.Type == diagrams.TypeSequence {
-		applySequenceDiagramOffset(diagram, config)
-	} else {
-		diagrams.Layout(diagram, config)
-	}
-
-	mode := normalizeOutputMode(f.outputMode)
-	if mode != "discrete" && mode != "grouped" && mode != "framed" {
-		return fmt.Errorf("invalid --output-mode %q: want discrete|grouped|framed", f.outputMode)
+		return err
 	}
 
 	out := diagrams.ConvertToMiroWithOptions(diagram, f.useStencils)
@@ -126,19 +108,48 @@ func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID
 		return err
 	}
 
+	result := createDiagramItems(ctx, g, client, boardID, diagram, out, f, mode)
+	return g.EmitJSON(result)
+}
+
+// parseDiagram resolves and validates the Mermaid source, parses it, and
+// applies layout (sequence diagrams get a manual offset; everything else
+// uses the auto-layout pass).
+func parseDiagram(stdin io.Reader, f diagramFlags) (*diagrams.Diagram, error) {
+	source, err := loadDiagramSource(stdin, f)
+	if err != nil {
+		return nil, err
+	}
+	if err := diagrams.ValidateDiagramInput(source); err != nil {
+		return nil, err
+	}
+
+	diagram, err := diagrams.ParseMermaid(source)
+	if err != nil {
+		if hint := diagrams.DiagramTypeHint(source); hint != "" {
+			return nil, fmt.Errorf("parse diagram: %w (hint: %s)", err, hint)
+		}
+		return nil, fmt.Errorf("parse diagram: %w", err)
+	}
+
+	config := buildLayoutConfig(f)
+	if diagram.Type == diagrams.TypeSequence {
+		applySequenceDiagramOffset(diagram, config)
+	} else {
+		diagrams.Layout(diagram, config)
+	}
+	return diagram, nil
+}
+
+// createDiagramItems creates the shapes, connectors, and frames on the
+// board, emits any per-group warnings, and assembles the result envelope
+// (applying the grouped/framed finalisation for those output modes).
+func createDiagramItems(ctx context.Context, g *clictx.Globals, client *miro.Client, boardID string, diagram *diagrams.Diagram, out *diagrams.MiroOutput, f diagramFlags, mode string) diagramResult {
 	frameIDs, frameWarnings := createDiagramFrames(ctx, client, boardID, out.Frames)
 	nodeIDs, shapeIDMap, shapeWarnings := createDiagramShapes(ctx, client, boardID, out.Shapes, f)
 	connectorIDs, connectorWarnings := createDiagramConnectors(ctx, client, boardID, out.Connectors, shapeIDMap)
 
-	for _, w := range frameWarnings {
-		_, _ = fmt.Fprintln(g.Stderr, "miro: "+w)
-	}
-	for _, w := range shapeWarnings {
-		_, _ = fmt.Fprintln(g.Stderr, "miro: "+w)
-	}
-	for _, w := range connectorWarnings {
-		_, _ = fmt.Fprintln(g.Stderr, "miro: "+w)
-	}
+	emitWarnings(g.Stderr, frameWarnings, shapeWarnings, connectorWarnings)
 
 	totalItems := len(nodeIDs) + len(connectorIDs)
 	result := diagramResult{
@@ -162,29 +173,37 @@ func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID
 	default:
 		result.Message = buildDiscreteMessage(len(nodeIDs), len(connectorIDs), len(frameIDs))
 	}
+	return result
+}
 
-	return g.EmitJSON(result)
+// resolveOutputMode normalises and validates the --output-mode flag,
+// returning the canonical mode or an error naming the accepted values.
+func resolveOutputMode(raw string) (string, error) {
+	mode := normalizeOutputMode(raw)
+	switch mode {
+	case "discrete", "grouped", "framed":
+		return mode, nil
+	default:
+		return "", fmt.Errorf("invalid --output-mode %q: want discrete|grouped|framed", raw)
+	}
+}
+
+// emitWarnings prints each warning group to stderr with the "miro:"
+// prefix. Failures to write are ignored — warnings are best-effort.
+func emitWarnings(stderr io.Writer, groups ...[]string) {
+	for _, group := range groups {
+		for _, w := range group {
+			_, _ = fmt.Fprintln(stderr, "miro: "+w)
+		}
+	}
 }
 
 // loadDiagramSource resolves the Mermaid input from exactly one of the
 // three sources. Mutual exclusion is enforced up-front so users get a
 // clear error instead of silent flag precedence.
 func loadDiagramSource(stdin io.Reader, f diagramFlags) (string, error) {
-	count := 0
-	if f.diagram != "" {
-		count++
-	}
-	if f.diagramFile != "" {
-		count++
-	}
-	if f.diagramStdin {
-		count++
-	}
-	if count == 0 {
-		return "", fmt.Errorf("one of --diagram, --diagram-file, or --diagram-stdin is required")
-	}
-	if count > 1 {
-		return "", fmt.Errorf("--diagram, --diagram-file, and --diagram-stdin are mutually exclusive")
+	if err := validateSourceSelection(f); err != nil {
+		return "", err
 	}
 	switch {
 	case f.diagram != "":
@@ -202,6 +221,24 @@ func loadDiagramSource(stdin io.Reader, f diagramFlags) (string, error) {
 		}
 		return strings.TrimSpace(string(b)), nil
 	}
+}
+
+// validateSourceSelection enforces that exactly one of the three source
+// flags is set, returning a clear error for the zero and many cases.
+func validateSourceSelection(f diagramFlags) error {
+	count := 0
+	for _, set := range []bool{f.diagram != "", f.diagramFile != "", f.diagramStdin} {
+		if set {
+			count++
+		}
+	}
+	if count == 0 {
+		return fmt.Errorf("one of --diagram, --diagram-file, or --diagram-stdin is required")
+	}
+	if count > 1 {
+		return fmt.Errorf("--diagram, --diagram-file, and --diagram-stdin are mutually exclusive")
+	}
+	return nil
 }
 
 func buildLayoutConfig(f diagramFlags) diagrams.LayoutConfig {

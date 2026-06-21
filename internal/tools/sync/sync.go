@@ -128,23 +128,9 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 	}
 
 	startedAt := time.Now().UTC()
-	watermark := ""
-	if !opts.full {
-		switch {
-		case opts.since != "":
-			// Caller-supplied watermark — keep the string verbatim so the
-			// comparison logic stays string-based (RFC3339 sorts as
-			// timestamps under lexical comparison, which is the whole
-			// point of using it on the wire).
-			watermark = opts.since
-		default:
-			w, err := s.GetSyncMetadata(ctx, boardsLastSyncKey)
-			if err == nil {
-				watermark = w
-			} else if !errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("sync: read watermark: %w", err)
-			}
-		}
+	watermark, err := resolveWatermark(ctx, s, opts)
+	if err != nil {
+		return err
 	}
 	fullSweep := opts.full || watermark == ""
 
@@ -160,6 +146,47 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 	}
 	result.BoardsScanned = len(boards)
 
+	if err := syncBoards(ctx, client, s, boards, fullSweep, watermark, &result); err != nil {
+		return err
+	}
+
+	// Stamp the new watermark only after every board has been processed
+	// successfully. A mid-run failure leaves the previous watermark in
+	// place, so the next run can resume by re-syncing the boards the
+	// failed run didn't reach.
+	if err := s.SetSyncMetadata(ctx, boardsLastSyncKey, startedAt.Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("sync: stamp watermark: %w", err)
+	}
+	result.FinishedAt = time.Now().UTC().Format(time.RFC3339)
+
+	return g.EmitJSON(result)
+}
+
+// resolveWatermark determines the incremental watermark for this run.
+// --full ignores it entirely (empty), --since pins it verbatim (RFC3339
+// sorts lexically, which the comparison relies on), otherwise it comes
+// from sync_metadata — a missing key is a first run, not an error.
+func resolveWatermark(ctx context.Context, s *store.Store, opts runOptions) (string, error) {
+	if opts.full {
+		return "", nil
+	}
+	if opts.since != "" {
+		return opts.since, nil
+	}
+	w, err := s.GetSyncMetadata(ctx, boardsLastSyncKey)
+	if err == nil {
+		return w, nil
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	return "", fmt.Errorf("sync: read watermark: %w", err)
+}
+
+// syncBoards upserts each board and, when it has changed since the
+// watermark (or on a full sweep), downloads its items. Counts accumulate
+// into result. Honours context cancellation between boards.
+func syncBoards(ctx context.Context, client *miro.Client, s *store.Store, boards []map[string]any, fullSweep bool, watermark string, result *Result) error {
 	for _, raw := range boards {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -171,17 +198,7 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 			// response body for debugging if needed.
 			continue
 		}
-		rawJSON, err := json.Marshal(raw)
-		if err != nil {
-			return fmt.Errorf("sync: marshal board %s: %w", bp.ID, err)
-		}
-		if err := s.UpsertBoard(ctx, store.Board{
-			ID:         bp.ID,
-			Name:       bp.Name,
-			OwnerID:    bp.OwnerID,
-			ModifiedAt: bp.ModifiedAt,
-			RawJSON:    rawJSON,
-		}); err != nil {
+		if err := upsertBoard(ctx, s, bp, raw); err != nil {
 			return err
 		}
 		result.Boards++
@@ -197,17 +214,23 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 		}
 		result.Items += fetched
 	}
+	return nil
+}
 
-	// Stamp the new watermark only after every board has been processed
-	// successfully. A mid-run failure leaves the previous watermark in
-	// place, so the next run can resume by re-syncing the boards the
-	// failed run didn't reach.
-	if err := s.SetSyncMetadata(ctx, boardsLastSyncKey, startedAt.Format(time.RFC3339)); err != nil {
-		return fmt.Errorf("sync: stamp watermark: %w", err)
+// upsertBoard marshals the raw board JSON and upserts the denormalised
+// row plus the verbatim blob into the store.
+func upsertBoard(ctx context.Context, s *store.Store, bp boardProjection, raw map[string]any) error {
+	rawJSON, err := json.Marshal(raw)
+	if err != nil {
+		return fmt.Errorf("sync: marshal board %s: %w", bp.ID, err)
 	}
-	result.FinishedAt = time.Now().UTC().Format(time.RFC3339)
-
-	return g.EmitJSON(result)
+	return s.UpsertBoard(ctx, store.Board{
+		ID:         bp.ID,
+		Name:       bp.Name,
+		OwnerID:    bp.OwnerID,
+		ModifiedAt: bp.ModifiedAt,
+		RawJSON:    rawJSON,
+	})
 }
 
 // boardProjection holds the denormalised fields lifted out of a board
@@ -343,20 +366,11 @@ func fetchAndStoreItems(ctx context.Context, client *miro.Client, s *store.Store
 		if err != nil {
 			return total, fmt.Errorf("sync: list items for %s: %w", boardID, err)
 		}
-		if len(resp.Data) > 0 {
-			batch := make([]store.Item, 0, len(resp.Data))
-			for _, raw := range resp.Data {
-				it := projectItem(boardID, raw)
-				if it.ID == "" {
-					continue
-				}
-				rawJSON, err := json.Marshal(raw)
-				if err != nil {
-					return total, fmt.Errorf("sync: marshal item %s on board %s: %w", it.ID, boardID, err)
-				}
-				it.RawJSON = rawJSON
-				batch = append(batch, it)
-			}
+		batch, err := projectItemBatch(boardID, resp.Data)
+		if err != nil {
+			return total, err
+		}
+		if len(batch) > 0 {
 			if err := s.UpsertItems(ctx, batch); err != nil {
 				return total, err
 			}
@@ -367,4 +381,23 @@ func fetchAndStoreItems(ctx context.Context, client *miro.Client, s *store.Store
 		}
 		cursor = resp.Cursor
 	}
+}
+
+// projectItemBatch converts a page of raw item JSON into store.Item rows,
+// dropping entries without an id and attaching the verbatim blob to each.
+func projectItemBatch(boardID string, rawItems []map[string]any) ([]store.Item, error) {
+	batch := make([]store.Item, 0, len(rawItems))
+	for _, raw := range rawItems {
+		it := projectItem(boardID, raw)
+		if it.ID == "" {
+			continue
+		}
+		rawJSON, err := json.Marshal(raw)
+		if err != nil {
+			return nil, fmt.Errorf("sync: marshal item %s on board %s: %w", it.ID, boardID, err)
+		}
+		it.RawJSON = rawJSON
+		batch = append(batch, it)
+	}
+	return batch, nil
 }
