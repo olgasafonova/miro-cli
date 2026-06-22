@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -75,7 +76,7 @@ func runBulkUpdate(ctx context.Context, g *clictx.Globals, f bulkUpdateFlags) er
 		return err
 	}
 	if g.DryRun {
-		return g.EmitDryRun("PATCH", "/v2/boards/"+f.boardID+"/items/{item_id} x "+itoa(len(patches)))
+		return g.EmitDryRun("PATCH", "/v2/boards/"+f.boardID+"/items/{item_id} x "+strconv.Itoa(len(patches)))
 	}
 	client, err := g.BuildClient()
 	if err != nil {

@@ -18,7 +18,7 @@ CI (`.github/workflows/ci.yml`) additionally runs `go mod verify`, `go mod tidy`
 ## Architecture Overview
 
 - `cmd/miro-cli/` — Cobra root + verb registration. Each resource group is a subcommand tree assembled in `root.go`.
-- `internal/miro/` — REST client. Rate limiting (`ratelimit.go`), retry + crash recovery (`recover.go`, `crash.go`), share-domain allowlist (`shareallowlist.go`, gates `boards share` per HG-3 in `~/Projects/claude-code-config/rules/code-review-prompts.md`), config (`config.go`).
+- `internal/miro/` — REST client. Rate limiting (`ratelimit.go`), transient-failure retry with backoff + `Retry-After` (`client.go`), panic recovery (`recover.go`), share allowlist (`shareallowlist.go`, gates `boards share` per HG-3 in `~/Projects/claude-code-config/rules/code-review-prompts.md`), config (`config.go`).
 - `internal/tools/<resource>/` — one package per Miro resource (boards, items, stickies, shapes, frames, tags, etc.). Each defines its Cobra subcommands and calls into `internal/miro`.
 - `internal/store/` — SQLite mirror + FTS5 search backing `miro-cli sync` / `miro-cli query`.
 - `internal/diagrams/` — sequence / flowchart rendering helpers for `boards diagram`.
@@ -29,7 +29,7 @@ CI (`.github/workflows/ci.yml`) additionally runs `go mod verify`, `go mod tidy`
 - **Destructive verbs refuse to run without `--yes` (or `--agent`, which implies it).** New destructive verbs MUST follow this gate.
 - **`--idempotent` makes create/delete retries safe** by treating duplicate-resource / already-deleted as success.
 - **`--json`, `--dry-run`, `--select`, `--agent`** are the four agent-facing flags. Preserve their semantics across new commands.
-- **Share-domain allowlist (`MIRO_SHARE_ALLOWED_DOMAINS`)** is fail-closed: unset = deny-all. Do not relax this.
+- **Share allowlist is fail-closed: unset = deny-all. Do not relax this.** `MIRO_SHARE_ALLOWED_DOMAINS` gates by recipient domain; `MIRO_SHARE_ALLOWED_EMAILS`, when set, is authoritative (exact-address match, domain layer ignored — a strict tightening, never an OR-widening).
 - **No new `replace` directives in `go.mod`** — they block `pkg.go.dev` indexing.
 - **Tests live next to source** (`*_test.go`) and use the table-driven style established in `internal/miro/` and `internal/tools/boards/`.
 

@@ -1,5 +1,7 @@
 package diagrams
 
+import "sort"
+
 // MiroShape represents a shape to be created in Miro.
 type MiroShape struct {
 	Shape       string  // Miro shape type
@@ -360,13 +362,9 @@ func orderedParticipants(diagram *Diagram) []participantInfo {
 	for id, node := range diagram.Nodes {
 		participants = append(participants, participantInfo{id: id, node: node})
 	}
-	for i := 0; i < len(participants); i++ {
-		for j := i + 1; j < len(participants); j++ {
-			if participants[i].node.X > participants[j].node.X {
-				participants[i], participants[j] = participants[j], participants[i]
-			}
-		}
-	}
+	sort.SliceStable(participants, func(i, j int) bool {
+		return participants[i].node.X < participants[j].node.X
+	})
 	return participants
 }
 

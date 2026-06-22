@@ -153,3 +153,40 @@ func TestShareAllowlistRejectsEmptyAllowlistEvenForObviouslyValidEmail(t *testin
 		t.Fatal("empty allowlist accepted a share — fail-closed default violated")
 	}
 }
+
+// TestShareAllowlistExactEmailLayer verifies that the exact-email allowlist is
+// authoritative when configured: it overrides (never widens) the domain layer.
+func TestShareAllowlistExactEmailLayer(t *testing.T) {
+	t.Run("exact match allowed, case-insensitive", func(t *testing.T) {
+		t.Setenv(EnvShareAllowedDomains, "")
+		t.Setenv(EnvShareAllowedEmails, "alice@example.com, BOB@example.com")
+		a := LoadShareAllowlistFromEnv()
+		if err := a.Validate("alice@example.com"); err != nil {
+			t.Errorf("exact email rejected: %v", err)
+		}
+		if err := a.Validate("Bob@Example.com"); err != nil {
+			t.Errorf("exact email (mixed case) rejected: %v", err)
+		}
+	})
+	t.Run("non-listed email blocked even if domain would match", func(t *testing.T) {
+		// Domain layer permits example.com, but the email layer is set and
+		// authoritative — only carol@example.com is listed, so dave is blocked.
+		t.Setenv(EnvShareAllowedDomains, "example.com")
+		t.Setenv(EnvShareAllowedEmails, "carol@example.com")
+		a := LoadShareAllowlistFromEnv()
+		if err := a.Validate("dave@example.com"); err == nil {
+			t.Error("email layer did not override domain layer — _NoWeakening violated")
+		}
+		if err := a.Validate("carol@example.com"); err != nil {
+			t.Errorf("listed email rejected: %v", err)
+		}
+	})
+	t.Run("configured-but-empty email layer fails closed", func(t *testing.T) {
+		t.Setenv(EnvShareAllowedDomains, "example.com")
+		t.Setenv(EnvShareAllowedEmails, "")
+		a := LoadShareAllowlistFromEnv()
+		if err := a.Validate("alice@example.com"); err == nil {
+			t.Error("empty-but-configured email allowlist accepted a share — fail-closed violated")
+		}
+	})
+}
