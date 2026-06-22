@@ -20,12 +20,25 @@ import (
 // miro-mcp-server/tools/share_allowlist.go.
 const EnvShareAllowedDomains = "MIRO_SHARE_ALLOWED_DOMAINS"
 
-// ShareAllowlist holds the set of email domains that share-board invitations
-// may target. Domains are stored lowercased and compared case-insensitively.
-// A zero-value allowlist rejects every email — that is the safe default.
+// EnvShareAllowedEmails configures an exact-email allowlist. When set (even to
+// an empty string), it is authoritative: only the listed addresses may receive
+// a share invitation and the domain allowlist is ignored entirely. This is a
+// strict tightening of the domain layer, never an OR-widening of it — a domain
+// match cannot rescue an address the operator did not list. Mirrors the
+// identity-binding gate shipped in miro-mcp-server (review-patterns.md).
+const EnvShareAllowedEmails = "MIRO_SHARE_ALLOWED_EMAILS"
+
+// ShareAllowlist holds the addresses share-board invitations may target. Two
+// layers: a domain allowlist (default) and an exact-email allowlist. When the
+// email layer is configured it overrides the domain layer. Both are stored
+// lowercased and compared case-insensitively. A zero-value allowlist rejects
+// every email — that is the safe default.
 type ShareAllowlist struct {
-	domains map[string]struct{}
-	source  string
+	domains          map[string]struct{}
+	source           string
+	emails           map[string]struct{}
+	emailsConfigured bool
+	emailSource      string
 }
 
 // NewShareAllowlist builds an allowlist from an explicit list of domains.
@@ -50,11 +63,34 @@ func NewShareAllowlist(domains []string, source string) *ShareAllowlist {
 // a clear error. This is a deliberate fail-closed default: an agent cannot
 // quietly invite external parties unless the operator opts in.
 func LoadShareAllowlistFromEnv() *ShareAllowlist {
-	raw := strings.TrimSpace(os.Getenv(EnvShareAllowedDomains))
-	if raw != "" {
-		return NewShareAllowlist(strings.Split(raw, ","), EnvShareAllowedDomains)
+	var a *ShareAllowlist
+	if raw := strings.TrimSpace(os.Getenv(EnvShareAllowedDomains)); raw != "" {
+		a = NewShareAllowlist(strings.Split(raw, ","), EnvShareAllowedDomains)
+	} else {
+		a = NewShareAllowlist(nil, "unset")
 	}
-	return NewShareAllowlist(nil, "unset")
+	// The exact-email layer is authoritative the moment the env var is
+	// present, even if it is empty (which fails closed).
+	if raw, ok := os.LookupEnv(EnvShareAllowedEmails); ok {
+		a.emails = normalizeEmailSet(strings.Split(raw, ","))
+		a.emailsConfigured = true
+		a.emailSource = EnvShareAllowedEmails
+	}
+	return a
+}
+
+// normalizeEmailSet trims, lowercases, and deduplicates email addresses,
+// skipping empty entries.
+func normalizeEmailSet(emails []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(emails))
+	for _, e := range emails {
+		e = strings.TrimSpace(strings.ToLower(e))
+		if e == "" {
+			continue
+		}
+		set[e] = struct{}{}
+	}
+	return set
 }
 
 // IsEmpty reports whether the allowlist has no domains (blocks all sharing).
@@ -79,6 +115,26 @@ func (a *ShareAllowlist) Validate(email string) error {
 	domain, ok := extractEmailDomain(email)
 	if !ok {
 		return fmt.Errorf("invalid email address %q: missing '@' or domain", email)
+	}
+
+	// Exact-email layer is authoritative when configured; the domain layer
+	// is ignored entirely so a permitted domain can't widen it.
+	if a.emailsConfigured {
+		if len(a.emails) == 0 {
+			return fmt.Errorf(
+				"share blocked: the email allowlist is empty (source: %s). "+
+					"Set %s to a comma-separated list of permitted addresses (e.g. \"alice@tietoevry.com,bob@example.com\") and try again",
+				a.emailSource, EnvShareAllowedEmails,
+			)
+		}
+		if _, allowed := a.emails[strings.ToLower(email)]; !allowed {
+			return fmt.Errorf(
+				"email %q is not in the share allowlist (source: %s). "+
+					"Add it to %s and try again, or ask the operator to do so",
+				email, a.emailSource, EnvShareAllowedEmails,
+			)
+		}
+		return nil
 	}
 
 	if len(a.domains) == 0 {

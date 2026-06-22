@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -64,7 +65,7 @@ func runBulkDelete(ctx context.Context, g *clictx.Globals, f bulkDeleteFlags) er
 	if g.DryRun {
 		// Preview the first path so the user can confirm shape; the
 		// envelope itself is just len(ids) of these.
-		return g.EmitDryRun("DELETE", "/v2/boards/"+f.boardID+"/items/{item_id} x "+itoa(len(ids)))
+		return g.EmitDryRun("DELETE", "/v2/boards/"+f.boardID+"/items/{item_id} x "+strconv.Itoa(len(ids)))
 	}
 	if !g.Yes {
 		return &miro.ConfigError{Reason: fmt.Sprintf("refusing to bulk-delete %d items without --yes; pass --yes to confirm or --dry-run to preview", len(ids))}
@@ -147,7 +148,3 @@ func splitTrim(s string) []string {
 	}
 	return out
 }
-
-// itoa wraps strconv.Itoa via fmt to avoid importing strconv here.
-// Tiny helper; intentionally local rather than a util package.
-func itoa(n int) string { return fmt.Sprintf("%d", n) }
