@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -61,7 +60,7 @@ func newBulkUpdateCmd(g *clictx.Globals) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&f.boardID, "board-id", "", "Board ID (required)")
-	cmd.Flags().StringVar(&f.patchesFile, "patches-file", "", "Path to a JSON array of patch objects")
+	cmd.Flags().StringVar(&f.patchesFile, "patches-file", "", "Path to a JSON array of patch objects (use - to read from stdin)")
 	cmd.Flags().StringVar(&f.patchesJSON, "patches-json", "", "Inline JSON array of patch objects")
 	_ = cmd.MarkFlagRequired("board-id")
 	return cmd
@@ -117,7 +116,7 @@ func loadPatches(f bulkUpdateFlags) ([]bulkUpdateItem, error) {
 	var raw []byte
 	if f.patchesFile != "" {
 		var err error
-		raw, err = os.ReadFile(f.patchesFile) //nolint:gosec // G304: path is operator-supplied; bulk verbs exist to load operator-curated payloads
+		raw, err = clictx.ReadFileOrStdin(f.patchesFile)
 		if err != nil {
 			return nil, fmt.Errorf("read --patches-file: %w", err)
 		}

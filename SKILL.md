@@ -63,7 +63,7 @@ run `miro-cli <group> --help` for the exact verbs and flags of that group, and
 | Group | What it covers |
 |-------|----------------|
 | `boards` | Create, copy, get, update, delete boards; also `boards diagram` (render a sequence/flowchart from text) |
-| `items` | Generic board items: get, list, update, delete, and bulk update/delete via `--ids-file` / `--patches-file` |
+| `items` | Generic board items: get, list, update, delete, and bulk update/delete via `--ids-file` / `--patches-file` (pass `-` to read the JSON payload from stdin, e.g. `... \| miro items bulk-delete --ids-file -`) |
 | `stickies` | Sticky notes |
 | `shapes` | Shapes |
 | `texts` | Text items |

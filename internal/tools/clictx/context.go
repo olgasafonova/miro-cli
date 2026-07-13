@@ -167,6 +167,17 @@ func (g *Globals) EmitJSON(v any) error {
 	return err
 }
 
+// ReadFileOrStdin reads the file at path, or reads all of stdin when path is
+// "-". This implements the Unix convention that "-" means "read from standard
+// input", letting bulk verbs compose in a pipe — e.g.
+// `... | miro items bulk-delete --ids-file -` — without staging a temp file.
+func ReadFileOrStdin(path string) ([]byte, error) {
+	if path == "-" {
+		return io.ReadAll(os.Stdin)
+	}
+	return os.ReadFile(path) //nolint:gosec // G304: path is operator-supplied on the CLI
+}
+
 // EmitDryRun writes a single "DRY-RUN METHOD PATH" line to Stdout
 // without making any API call. Used by subcommands to preview the
 // request a real invocation would send.

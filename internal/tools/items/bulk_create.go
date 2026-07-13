@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 
@@ -38,7 +37,7 @@ func newBulkCreateCmd(g *clictx.Globals) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&f.boardID, "board-id", "", "Board ID (required)")
-	cmd.Flags().StringVar(&f.itemsFile, "items-file", "", "Path to a JSON file containing the items array")
+	cmd.Flags().StringVar(&f.itemsFile, "items-file", "", "Path to a JSON file containing the items array (use - to read from stdin)")
 	cmd.Flags().StringVar(&f.itemsJSON, "items-json", "", "Inline JSON array of items")
 	_ = cmd.MarkFlagRequired("board-id")
 	return cmd
@@ -82,7 +81,7 @@ func loadBulkItems(f bulkCreateFlags) ([]json.RawMessage, error) {
 	var raw []byte
 	if f.itemsFile != "" {
 		var err error
-		raw, err = os.ReadFile(f.itemsFile) //nolint:gosec // G304: path is operator-supplied; bulk-create exists to load operator-curated payloads
+		raw, err = clictx.ReadFileOrStdin(f.itemsFile)
 		if err != nil {
 			return nil, fmt.Errorf("read --items-file: %w", err)
 		}

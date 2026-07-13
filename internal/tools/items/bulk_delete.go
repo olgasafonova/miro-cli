@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -48,7 +47,7 @@ func newBulkDeleteCmd(g *clictx.Globals) *cobra.Command {
 	}
 	cmd.Flags().StringVar(&f.boardID, "board-id", "", "Board ID (required)")
 	cmd.Flags().StringVar(&f.ids, "ids", "", "Comma-separated list of item IDs")
-	cmd.Flags().StringVar(&f.idsFile, "ids-file", "", "Path to a JSON array of item IDs")
+	cmd.Flags().StringVar(&f.idsFile, "ids-file", "", "Path to a JSON array of item IDs (use - to read from stdin)")
 	cmd.Flags().StringVar(&f.idsJSON, "ids-json", "", "Inline JSON array of item IDs")
 	_ = cmd.MarkFlagRequired("board-id")
 	return cmd
@@ -120,7 +119,7 @@ func loadIDs(f bulkDeleteFlags) ([]string, error) {
 	var raw []byte
 	if f.idsFile != "" {
 		var err error
-		raw, err = os.ReadFile(f.idsFile) //nolint:gosec // G304: path is operator-supplied; bulk verbs exist to load operator-curated payloads
+		raw, err = clictx.ReadFileOrStdin(f.idsFile)
 		if err != nil {
 			return nil, fmt.Errorf("read --ids-file: %w", err)
 		}
