@@ -4,6 +4,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/olgasafonova/miro-cli/internal/tools/appcards"
@@ -31,6 +33,31 @@ import (
 	"github.com/olgasafonova/miro-cli/internal/tools/texts"
 )
 
+// version is the build version, injected at release time via
+// -X main.version={{.Version}} (see .goreleaser.yaml). It stays "dev" for
+// plain `go build`/`go install` builds so an agent can tell a local build
+// from a tagged release.
+var version = "dev"
+
+// newVersionCmd prints the installed build version. Plain text by default,
+// or a machine-readable {"installed_version": ...} object under --json /
+// --agent so an agent can record exactly which binary it is driving
+// (Agent-Friendly CLI Checklist §8).
+func newVersionCmd(g *clictx.Globals) *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print the installed miro-cli version",
+		Args:  cobra.NoArgs,
+		RunE: func(_ *cobra.Command, _ []string) error {
+			if g.JSON {
+				return g.EmitJSON(map[string]string{"installed_version": version})
+			}
+			_, err := fmt.Fprintf(g.Stdout, "miro-cli %s\n", version)
+			return err
+		},
+	}
+}
+
 // newRootCmd builds the root *cobra.Command and the Globals it backs.
 // Returning both lets main override Stdout/Stderr for tests later, and
 // keeps the wiring testable from within the package.
@@ -39,6 +66,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd := &cobra.Command{
 		Use:           "miro",
 		Short:         "Hand-authored CLI for the Miro REST API",
+		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -83,5 +111,7 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd.AddCommand(tables.NewCmd(g))
 	cmd.AddCommand(tags.NewCmd(g))
 	cmd.AddCommand(texts.NewCmd(g))
+	cmd.AddCommand(newVersionCmd(g))
+	cmd.AddCommand(newAuthCmd(g))
 	return cmd, g
 }
