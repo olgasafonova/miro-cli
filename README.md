@@ -281,11 +281,24 @@ project instead. This CLI is shell + skill only.
 
 A config file is not currently supported.
 
+Check what the CLI resolved without touching a board:
+
+```bash
+miro-cli auth status            # is a token configured, and from where?
+miro-cli auth status --verify   # also confirm the token is currently valid
+miro-cli auth status --json     # machine-readable {token_present, source, verified, status}
+```
+
+`auth status` exits `0` when a token is present (and, with `--verify`, valid),
+`10` when none is configured, and `4` when `--verify` is rejected by the API.
+Print the installed build with `miro-cli --version` or `miro-cli version --json`.
+
 ## Troubleshooting
 
 **Authentication errors (exit code 4)**
 
 - Verify the environment variable is set: `echo $MIRO_ACCESS_TOKEN`
+- Confirm the CLI sees a valid token: `miro-cli auth status --verify --json`
 - Try passing the token explicitly on one command: `miro-cli --token <value> boards list`
 - Generate a fresh token at https://miro.com/app/settings/user-profile/apps
 

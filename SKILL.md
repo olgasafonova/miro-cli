@@ -22,7 +22,7 @@ This skill drives the `miro-cli` binary. **You must verify the CLI is installed 
    ```bash
    go install github.com/olgasafonova/miro-cli/cmd/miro-cli@latest
    ```
-2. Verify: `miro-cli --help`
+2. Verify: `miro-cli --help` (and `miro-cli --version` to record the build; a source/`go install` build reports `dev`, a release reports its tag).
 3. Ensure `$GOPATH/bin` (or `$HOME/go/bin`) is on `$PATH`.
 
 Alternatively, install via Homebrew (`brew install olgasafonova/tap/miro-cli`) or download a pre-built binary from the [latest release](https://github.com/olgasafonova/miro-cli/releases/latest).
@@ -63,7 +63,7 @@ run `miro-cli <group> --help` for the exact verbs and flags of that group, and
 | Group | What it covers |
 |-------|----------------|
 | `boards` | Create, copy, get, update, delete boards; also `boards diagram` (render a sequence/flowchart from text) |
-| `items` | Generic board items: get, list, update, delete, and bulk update/delete via `--ids-file` / `--patches-file` |
+| `items` | Generic board items: get, list, update, delete, and bulk update/delete via `--ids-file` / `--patches-file` (pass `-` to read the JSON payload from stdin, e.g. `... \| miro items bulk-delete --ids-file -`) |
 | `stickies` | Sticky notes |
 | `shapes` | Shapes |
 | `texts` | Text items |
@@ -104,9 +104,19 @@ exists, run `miro-cli <group> --help` rather than guessing.
 2. `$MIRO_ACCESS_TOKEN` environment variable
 
 If neither is set, commands that hit the API exit with a config error (exit
-code 10). There is no interactive login. To check your setup, run any read
-command (e.g. `miro-cli boards get --json`) and confirm it returns data rather
-than an auth error.
+code 10). There is no interactive login.
+
+Check the setup directly with `miro-cli auth status`:
+
+```bash
+miro-cli auth status --json           # {token_present, source, verified, status}, no network
+miro-cli auth status --verify --json  # also confirms the token works right now
+```
+
+Exit codes: `0` token present (and valid, with `--verify`), `10` no token,
+`4` token rejected. Under `--verify`, `status` reports `ok`,
+`invalid_or_expired`, or `insufficient_scope` so you can tell a bad token from
+a scope problem. Prefer this over probing with a read command.
 
 ## Agent Mode and agent-facing flags
 
