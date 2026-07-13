@@ -48,7 +48,9 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
-          go build -ldflags="-s -w" -o miro-cli-${{ matrix.suffix }} ./cmd/miro-cli
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          go build -ldflags="-s -w -X main.version=${VERSION}" -o miro-cli-${{ matrix.suffix }} ./cmd/miro-cli
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
