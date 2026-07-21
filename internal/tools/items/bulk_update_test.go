@@ -190,8 +190,54 @@ func TestRunBulkUpdateMissingIDIsPerItemError(t *testing.T) {
 	if out.Failed != 1 || out.Succeeded != 1 {
 		t.Errorf("summary = %+v, want 1 failed + 1 succeeded", out)
 	}
-	if out.Results[0].Status != "error" || !strings.Contains(out.Results[0].Error, "missing") {
+	if out.Results[0].Status != "error" || !strings.Contains(out.Results[0].Error, "patches[0]: id is required") {
 		t.Errorf("results[0] = %+v", out.Results[0])
+	}
+}
+
+// TestRunBulkUpdateUnsafeIDIsPerItemError proves a path-traversal item ID
+// is rejected before any HTTP request is built for it, while sibling
+// patches still go through. Companion to the board_id ValidateID gate;
+// per-item IDs are spliced into the URL path the same way.
+func TestRunBulkUpdateUnsafeIDIsPerItemError(t *testing.T) {
+	var (
+		mu   sync.Mutex
+		seen []string
+	)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		seen = append(seen, r.URL.Path)
+		mu.Unlock()
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+
+	var stdout bytes.Buffer
+	g := &clictx.Globals{
+		Stdout: &stdout,
+		Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}),
+	}
+	err := runBulkUpdate(context.Background(), g, bulkUpdateFlags{
+		boardID:     "b1",
+		patchesJSON: `[{"id":"../../evil","x":1},{"id":"ok-1","x":2}]`,
+	})
+	if err != nil {
+		t.Fatalf("runBulkUpdate: %v", err)
+	}
+	var out bulkOpResponse
+	if err := json.Unmarshal(stdout.Bytes(), &out); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if out.Failed != 1 || out.Succeeded != 1 {
+		t.Errorf("summary = %+v, want 1 failed + 1 succeeded", out)
+	}
+	if out.Results[0].Status != "error" || !strings.Contains(out.Results[0].Error, "patches[0]:") {
+		t.Errorf("results[0] = %+v", out.Results[0])
+	}
+	for _, p := range seen {
+		if strings.Contains(p, "evil") {
+			t.Errorf("unsafe ID reached the server: %s", p)
+		}
 	}
 }
 

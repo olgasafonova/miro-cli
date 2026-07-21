@@ -74,9 +74,12 @@ func runBulkDelete(ctx context.Context, g *clictx.Globals, f bulkDeleteFlags) er
 		return err
 	}
 
-	results := miro.FanOut(ctx, ids, g.Concurrency, func(ctx context.Context, _ int, id string) bulkOpResult {
+	results := miro.FanOut(ctx, ids, g.Concurrency, func(ctx context.Context, i int, id string) bulkOpResult {
 		if cerr := ctx.Err(); cerr != nil {
 			return bulkOpResult{ID: id, Status: "error", Error: cerr.Error()}
+		}
+		if verr := miro.ValidateID("id", id); verr != nil {
+			return bulkOpResult{ID: id, Status: "error", Error: fmt.Sprintf("ids[%d]: %s", i, verr)}
 		}
 		path := "/v2/boards/" + f.boardID + "/items/" + id
 		if derr := client.Delete(ctx, path); derr != nil {
