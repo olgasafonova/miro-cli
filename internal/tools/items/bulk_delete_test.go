@@ -203,6 +203,50 @@ func TestRunBulkDeletePartialFailure(t *testing.T) {
 	}
 }
 
+// TestRunBulkDeleteUnsafeIDIsPerItemError proves a path-traversal item ID
+// is rejected before any HTTP request is built for it, while sibling
+// deletes still go through. Companion to the board_id ValidateID gate;
+// per-item IDs are spliced into the URL path the same way.
+func TestRunBulkDeleteUnsafeIDIsPerItemError(t *testing.T) {
+	var (
+		mu   sync.Mutex
+		seen []string
+	)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		seen = append(seen, r.URL.Path)
+		mu.Unlock()
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer srv.Close()
+
+	var stdout bytes.Buffer
+	g := &clictx.Globals{
+		Stdout: &stdout,
+		Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}),
+		Yes:    true,
+	}
+	err := runBulkDelete(context.Background(), g, bulkDeleteFlags{boardID: "b1", ids: "ok-1,../../evil,ok-2"})
+	if err != nil {
+		t.Fatalf("runBulkDelete: %v", err)
+	}
+	var out bulkOpResponse
+	if err := json.Unmarshal(stdout.Bytes(), &out); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if out.Requested != 3 || out.Succeeded != 2 || out.Failed != 1 {
+		t.Errorf("summary = %+v, want requested=3 succeeded=2 failed=1", out)
+	}
+	if out.Results[1].Status != "error" || !strings.Contains(out.Results[1].Error, "ids[1]:") {
+		t.Errorf("results[1] = %+v", out.Results[1])
+	}
+	for _, p := range seen {
+		if strings.Contains(p, "evil") {
+			t.Errorf("unsafe ID reached the server: %s", p)
+		}
+	}
+}
+
 // TestRunBulkDeleteConcurrentPreservesOrder drives the real fan-out path
 // (Concurrency=8) through the actual client + an httptest server and
 // asserts the order-sensitive envelope still maps Results[i] back to the

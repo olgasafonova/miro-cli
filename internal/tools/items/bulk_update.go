@@ -86,8 +86,8 @@ func runBulkUpdate(ctx context.Context, g *clictx.Globals, f bulkUpdateFlags) er
 		if cerr := ctx.Err(); cerr != nil {
 			return bulkOpResult{ID: p.ID, Status: "error", Error: cerr.Error()}
 		}
-		if p.ID == "" {
-			return bulkOpResult{ID: p.ID, Status: "error", Error: fmt.Sprintf("patches[%d]: missing \"id\"", i)}
+		if verr := miro.ValidateID("id", p.ID); verr != nil {
+			return bulkOpResult{ID: p.ID, Status: "error", Error: fmt.Sprintf("patches[%d]: %s", i, verr)}
 		}
 		body, ok := buildBulkUpdateBody(p)
 		if !ok {
