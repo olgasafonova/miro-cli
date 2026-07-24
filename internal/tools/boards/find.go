@@ -80,36 +80,26 @@ func runFind(ctx context.Context, g *clictx.Globals, query string) error {
 // HTTP layer.
 func resolveFindMatch(boards []map[string]any, query string) (map[string]any, string) {
 	q := strings.ToLower(query)
+	if i := indexOfNameMatch(boards, func(name string) bool { return name == q }); i >= 0 {
+		return boards[i], "exact"
+	}
+	if i := indexOfNameMatch(boards, func(name string) bool { return strings.HasPrefix(name, q) }); i >= 0 {
+		return boards[i], "prefix"
+	}
+	if i := indexOfNameMatch(boards, func(name string) bool { return strings.Contains(name, q) }); i >= 0 {
+		return boards[i], "contains"
+	}
+	return boards[0], "fallback"
+}
 
-	exact := -1
-	prefix := -1
-	contains := -1
+// indexOfNameMatch returns the index of the first board whose lowercased
+// name satisfies the predicate, or -1 when none does.
+func indexOfNameMatch(boards []map[string]any, match func(string) bool) int {
 	for i, b := range boards {
 		name, _ := b["name"].(string)
-		nameLower := strings.ToLower(name)
-		switch {
-		case nameLower == q:
-			if exact < 0 {
-				exact = i
-			}
-		case strings.HasPrefix(nameLower, q):
-			if prefix < 0 {
-				prefix = i
-			}
-		case strings.Contains(nameLower, q):
-			if contains < 0 {
-				contains = i
-			}
+		if match(strings.ToLower(name)) {
+			return i
 		}
 	}
-	switch {
-	case exact >= 0:
-		return boards[exact], "exact"
-	case prefix >= 0:
-		return boards[prefix], "prefix"
-	case contains >= 0:
-		return boards[contains], "contains"
-	default:
-		return boards[0], "fallback"
-	}
+	return -1
 }

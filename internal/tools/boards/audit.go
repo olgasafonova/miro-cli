@@ -69,15 +69,20 @@ func runAudit(ctx context.Context, g *clictx.Globals, af auditFlags) error {
 // pay an API round-trip. Empty values are fine — the endpoint applies
 // its own defaults.
 func validateAuditTimestamps(af auditFlags) error {
-	if af.createdAfter != "" {
-		if _, err := time.Parse(time.RFC3339, af.createdAfter); err != nil {
-			return errors.New("--created-after must be RFC3339 (e.g. 2026-05-01T00:00:00Z): " + err.Error())
-		}
+	if err := validateRFC3339Flag("--created-after", af.createdAfter); err != nil {
+		return err
 	}
-	if af.createdBefore != "" {
-		if _, err := time.Parse(time.RFC3339, af.createdBefore); err != nil {
-			return errors.New("--created-before must be RFC3339 (e.g. 2026-05-01T00:00:00Z): " + err.Error())
-		}
+	return validateRFC3339Flag("--created-before", af.createdBefore)
+}
+
+// validateRFC3339Flag rejects a non-empty flag value that fails to
+// parse as RFC3339, naming the offending flag in the error.
+func validateRFC3339Flag(flag, value string) error {
+	if value == "" {
+		return nil
+	}
+	if _, err := time.Parse(time.RFC3339, value); err != nil {
+		return errors.New(flag + " must be RFC3339 (e.g. 2026-05-01T00:00:00Z): " + err.Error())
 	}
 	return nil
 }

@@ -96,10 +96,19 @@ type diagItemResponse struct {
 	ID string `json:"id"`
 }
 
-// createDiagramFrames creates each frame and returns the IDs that succeeded.
+// diagramWriter owns the board-scoped API calls the diagram command
+// issues. Bundling the client, target board, and invocation flags keeps
+// the per-step helpers' signatures small and cohesive.
+type diagramWriter struct {
+	client  *miro.Client
+	boardID string
+	flags   diagramFlags
+}
+
+// createFrames creates each frame and returns the IDs that succeeded.
 // Failures are accumulated as warnings rather than aborting — partial
 // progress on a diagram is more useful than nothing.
-func createDiagramFrames(ctx context.Context, client *miro.Client, boardID string, frames []diagrams.MiroFrame) ([]string, []string) {
+func (w diagramWriter) createFrames(ctx context.Context, frames []diagrams.MiroFrame) ([]string, []string) {
 	ids := make([]string, 0, len(frames))
 	warnings := make([]string, 0)
 	for _, frame := range frames {
@@ -116,7 +125,7 @@ func createDiagramFrames(ctx context.Context, client *miro.Client, boardID strin
 			req.Style = &diagFrameStyle{FillColor: frame.Color}
 		}
 		var resp diagItemResponse
-		if err := client.Post(ctx, "/v2/boards/"+boardID+"/frames", req, &resp); err != nil {
+		if err := w.client.Post(ctx, "/v2/boards/"+w.boardID+"/frames", req, &resp); err != nil {
 			warnings = append(warnings, fmt.Sprintf("create frame %q: %v", frame.Title, err))
 			continue
 		}
@@ -125,15 +134,15 @@ func createDiagramFrames(ctx context.Context, client *miro.Client, boardID strin
 	return ids, warnings
 }
 
-// createDiagramShapes creates each shape (standard or experimental
-// stencil endpoint per IsStencil) and returns the IDs plus the
-// index→ID map needed to resolve connector endpoints.
-func createDiagramShapes(ctx context.Context, client *miro.Client, boardID string, shapes []diagrams.MiroShape, f diagramFlags) ([]string, map[int]string, []string) {
+// createShapes creates each shape (standard or experimental stencil
+// endpoint per IsStencil) and returns the IDs plus the index→ID map
+// needed to resolve connector endpoints.
+func (w diagramWriter) createShapes(ctx context.Context, shapes []diagrams.MiroShape) ([]string, map[int]string, []string) {
 	nodeIDs := make([]string, 0, len(shapes))
 	idMap := make(map[int]string, len(shapes))
 	warnings := make([]string, 0)
 	for i, shape := range shapes {
-		id, err := createOneDiagramShape(ctx, client, boardID, shape, f.parentID)
+		id, err := w.createOneShape(ctx, shape)
 		if err != nil {
 			warnings = append(warnings, fmt.Sprintf("create shape %q: %v", shape.Content, err))
 			continue
@@ -144,7 +153,7 @@ func createDiagramShapes(ctx context.Context, client *miro.Client, boardID strin
 	return nodeIDs, idMap, warnings
 }
 
-func createOneDiagramShape(ctx context.Context, client *miro.Client, boardID string, shape diagrams.MiroShape, parentID string) (string, error) {
+func (w diagramWriter) createOneShape(ctx context.Context, shape diagrams.MiroShape) (string, error) {
 	req := diagShapeRequest{
 		Data:     diagShapeData{Content: shape.Content, Shape: shape.Shape},
 		Position: &diagPosition{X: shape.X, Y: shape.Y, Origin: "center"},
@@ -155,26 +164,26 @@ func createOneDiagramShape(ctx context.Context, client *miro.Client, boardID str
 	if shape.Color != "" || shape.BorderColor != "" {
 		req.Style = &diagShapeStyle{FillColor: shape.Color, BorderColor: shape.BorderColor}
 	}
-	if parentID != "" {
-		req.Parent = &diagParentRef{ID: parentID}
+	if w.flags.parentID != "" {
+		req.Parent = &diagParentRef{ID: w.flags.parentID}
 	}
 
-	path := "/v2/boards/" + boardID + "/shapes"
+	path := "/v2/boards/" + w.boardID + "/shapes"
 	if shape.IsStencil {
-		path = "/v2-experimental/boards/" + boardID + "/shapes"
+		path = "/v2-experimental/boards/" + w.boardID + "/shapes"
 	}
 
 	var resp diagItemResponse
-	if err := client.Post(ctx, path, req, &resp); err != nil {
+	if err := w.client.Post(ctx, path, req, &resp); err != nil {
 		return "", err
 	}
 	return resp.ID, nil
 }
 
-// createDiagramConnectors creates connectors using the index map. A
-// connector whose endpoint shape failed to create is silently skipped:
-// the underlying node never made it onto the board.
-func createDiagramConnectors(ctx context.Context, client *miro.Client, boardID string, connectors []diagrams.MiroConnector, idMap map[int]string) ([]string, []string) {
+// createConnectors creates connectors using the index map. A connector
+// whose endpoint shape failed to create is silently skipped: the
+// underlying node never made it onto the board.
+func (w diagramWriter) createConnectors(ctx context.Context, connectors []diagrams.MiroConnector, idMap map[int]string) ([]string, []string) {
 	ids := make([]string, 0, len(connectors))
 	warnings := make([]string, 0)
 	for _, c := range connectors {
@@ -195,7 +204,7 @@ func createDiagramConnectors(ctx context.Context, client *miro.Client, boardID s
 			req.Style = &diagConnectorStyle{StartStrokeCap: c.StartCap, EndStrokeCap: c.EndCap}
 		}
 		var resp diagItemResponse
-		if err := client.Post(ctx, "/v2/boards/"+boardID+"/connectors", req, &resp); err != nil {
+		if err := w.client.Post(ctx, "/v2/boards/"+w.boardID+"/connectors", req, &resp); err != nil {
 			warnings = append(warnings, fmt.Sprintf("create connector: %v", err))
 			continue
 		}
@@ -204,33 +213,35 @@ func createDiagramConnectors(ctx context.Context, client *miro.Client, boardID s
 	return ids, warnings
 }
 
-// finalizeGroupedDiagram bundles every created item into one Miro group.
+// finalizeGrouped bundles every created item into one Miro group.
 // Skips when fewer than two items exist (groups of one are noisy and
-// the API rejects empty groups).
-func finalizeGroupedDiagram(ctx context.Context, client *miro.Client, boardID string, allItemIDs []string, totalItems int, result *diagramResult) {
+// the API rejects empty groups). Reads the already-computed
+// result.TotalItems for its messages.
+func (w diagramWriter) finalizeGrouped(ctx context.Context, allItemIDs []string, result *diagramResult) {
 	if len(allItemIDs) < 2 {
-		result.Message = fmt.Sprintf("Created diagram with %d items (too few to group)", totalItems)
+		result.Message = fmt.Sprintf("Created diagram with %d items (too few to group)", result.TotalItems)
 		return
 	}
 	req := diagGroupRequest{Data: diagGroupData{Items: allItemIDs, Type: "normal"}}
 	var resp diagItemResponse
-	if err := client.Post(ctx, "/v2/boards/"+boardID+"/groups", req, &resp); err != nil {
-		result.Message = fmt.Sprintf("Created diagram with %d items (grouping failed: %v)", totalItems, err)
+	if err := w.client.Post(ctx, "/v2/boards/"+w.boardID+"/groups", req, &resp); err != nil {
+		result.Message = fmt.Sprintf("Created diagram with %d items (grouping failed: %v)", result.TotalItems, err)
 		return
 	}
 	result.DiagramID = resp.ID
 	result.DiagramType = "group"
-	result.Message = fmt.Sprintf("Created grouped diagram with %d items", totalItems)
+	result.Message = fmt.Sprintf("Created grouped diagram with %d items", result.TotalItems)
 }
 
-// finalizeFramedDiagram wraps every created item in a single containing
-// frame sized to the diagram bounds plus a margin.
-func finalizeFramedDiagram(ctx context.Context, client *miro.Client, boardID string, diagram *diagrams.Diagram, f diagramFlags, totalItems int, result *diagramResult) {
+// finalizeFramed wraps every created item in a single containing frame
+// sized to the diagram bounds plus a margin, positioned from the
+// writer's start-x/start-y flags.
+func (w diagramWriter) finalizeFramed(ctx context.Context, diagram *diagrams.Diagram, result *diagramResult) {
 	const padding = 40.0
 	frameWidth := diagram.Width + padding*2
 	frameHeight := diagram.Height + padding*2
-	centerX := f.startX + diagram.Width/2
-	centerY := f.startY + diagram.Height/2
+	centerX := w.flags.startX + diagram.Width/2
+	centerY := w.flags.startY + diagram.Height/2
 
 	req := diagFrameRequest{
 		Data:     diagFrameData{Title: "Diagram", Type: "freeform", Format: "custom"},
@@ -238,13 +249,13 @@ func finalizeFramedDiagram(ctx context.Context, client *miro.Client, boardID str
 		Geometry: &diagGeometry{Width: frameWidth, Height: frameHeight},
 	}
 	var resp diagItemResponse
-	if err := client.Post(ctx, "/v2/boards/"+boardID+"/frames", req, &resp); err != nil {
-		result.Message = fmt.Sprintf("Created diagram with %d items (framing failed: %v)", totalItems, err)
+	if err := w.client.Post(ctx, "/v2/boards/"+w.boardID+"/frames", req, &resp); err != nil {
+		result.Message = fmt.Sprintf("Created diagram with %d items (framing failed: %v)", result.TotalItems, err)
 		return
 	}
 	result.DiagramID = resp.ID
 	result.DiagramType = "frame"
 	result.FrameIDs = append(result.FrameIDs, resp.ID)
 	result.FramesCreated++
-	result.Message = fmt.Sprintf("Created framed diagram with %d items", totalItems)
+	result.Message = fmt.Sprintf("Created framed diagram with %d items", result.TotalItems)
 }

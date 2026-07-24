@@ -95,43 +95,47 @@ func runContent(ctx context.Context, g *clictx.Globals, boardID string, maxItems
 //
 // Pure function — tested independently from HTTP.
 func buildFrameSummaries(rawItems []map[string]any) []frameSummary {
-	frames := make(map[string]*frameSummary)
-	order := make([]string, 0)
-
-	for _, it := range rawItems {
-		t, _ := it["type"].(string)
-		if t != "frame" {
-			continue
-		}
-		id, _ := it["id"].(string)
-		if id == "" {
-			continue
-		}
-		fs := &frameSummary{ID: id, Title: extractFrameTitle(it)}
-		frames[id] = fs
-		order = append(order, id)
-	}
-
-	for _, it := range rawItems {
-		parentID := extractParentID(it)
-		if parentID == "" {
-			continue
-		}
-		fs, ok := frames[parentID]
-		if !ok {
-			continue
-		}
-		childID, _ := it["id"].(string)
-		if childID != "" {
-			fs.ItemIDs = append(fs.ItemIDs, childID)
-		}
-	}
+	frames, order := collectFrames(rawItems)
+	attachFrameChildren(rawItems, frames)
 
 	out := make([]frameSummary, 0, len(order))
 	for _, id := range order {
 		out = append(out, *frames[id])
 	}
 	return out
+}
+
+// collectFrames seeds a summary for every frame item, keyed by frame ID,
+// and records first-seen order so the output stays stable across runs.
+func collectFrames(rawItems []map[string]any) (map[string]*frameSummary, []string) {
+	frames := make(map[string]*frameSummary)
+	order := make([]string, 0)
+	for _, it := range rawItems {
+		t, _ := it["type"].(string)
+		id, _ := it["id"].(string)
+		if t != "frame" || id == "" {
+			continue
+		}
+		frames[id] = &frameSummary{ID: id, Title: extractFrameTitle(it)}
+		order = append(order, id)
+	}
+	return frames, order
+}
+
+// attachFrameChildren appends each item's ID to the summary of the frame
+// it parents to. Items without a parent.id, or parented to something
+// that isn't a collected frame, are left out — the items[] array remains
+// the authoritative complete list.
+func attachFrameChildren(rawItems []map[string]any, frames map[string]*frameSummary) {
+	for _, it := range rawItems {
+		fs, ok := frames[extractParentID(it)]
+		if !ok {
+			continue
+		}
+		if childID, _ := it["id"].(string); childID != "" {
+			fs.ItemIDs = append(fs.ItemIDs, childID)
+		}
+	}
 }
 
 // extractFrameTitle pulls .data.title from a frame item. Falls back to

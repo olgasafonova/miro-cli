@@ -108,8 +108,18 @@ func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID
 		return err
 	}
 
-	result := createDiagramItems(ctx, g, client, boardID, diagram, out, f, mode)
+	w := diagramWriter{client: client, boardID: boardID, flags: f}
+	result := createDiagramItems(ctx, g, w, diagramPlan{diagram: diagram, out: out, mode: mode})
 	return g.EmitJSON(result)
+}
+
+// diagramPlan is the parsed diagram, its Miro projection, and the
+// resolved output mode — everything createDiagramItems needs beyond the
+// writer itself.
+type diagramPlan struct {
+	diagram *diagrams.Diagram
+	out     *diagrams.MiroOutput
+	mode    string
 }
 
 // parseDiagram resolves and validates the Mermaid source, parses it, and
@@ -144,14 +154,13 @@ func parseDiagram(stdin io.Reader, f diagramFlags) (*diagrams.Diagram, error) {
 // createDiagramItems creates the shapes, connectors, and frames on the
 // board, emits any per-group warnings, and assembles the result envelope
 // (applying the grouped/framed finalisation for those output modes).
-func createDiagramItems(ctx context.Context, g *clictx.Globals, client *miro.Client, boardID string, diagram *diagrams.Diagram, out *diagrams.MiroOutput, f diagramFlags, mode string) diagramResult {
-	frameIDs, frameWarnings := createDiagramFrames(ctx, client, boardID, out.Frames)
-	nodeIDs, shapeIDMap, shapeWarnings := createDiagramShapes(ctx, client, boardID, out.Shapes, f)
-	connectorIDs, connectorWarnings := createDiagramConnectors(ctx, client, boardID, out.Connectors, shapeIDMap)
+func createDiagramItems(ctx context.Context, g *clictx.Globals, w diagramWriter, plan diagramPlan) diagramResult {
+	frameIDs, frameWarnings := w.createFrames(ctx, plan.out.Frames)
+	nodeIDs, shapeIDMap, shapeWarnings := w.createShapes(ctx, plan.out.Shapes)
+	connectorIDs, connectorWarnings := w.createConnectors(ctx, plan.out.Connectors, shapeIDMap)
 
 	emitWarnings(g.Stderr, frameWarnings, shapeWarnings, connectorWarnings)
 
-	totalItems := len(nodeIDs) + len(connectorIDs)
 	result := diagramResult{
 		NodesCreated:      len(nodeIDs),
 		ConnectorsCreated: len(connectorIDs),
@@ -159,17 +168,17 @@ func createDiagramItems(ctx context.Context, g *clictx.Globals, client *miro.Cli
 		NodeIDs:           nodeIDs,
 		ConnectorIDs:      connectorIDs,
 		FrameIDs:          frameIDs,
-		DiagramWidth:      diagram.Width,
-		DiagramHeight:     diagram.Height,
-		TotalItems:        totalItems,
-		OutputMode:        mode,
+		DiagramWidth:      plan.diagram.Width,
+		DiagramHeight:     plan.diagram.Height,
+		TotalItems:        len(nodeIDs) + len(connectorIDs),
+		OutputMode:        plan.mode,
 	}
 
-	switch mode {
+	switch plan.mode {
 	case "grouped":
-		finalizeGroupedDiagram(ctx, client, boardID, append(nodeIDs, connectorIDs...), totalItems, &result)
+		w.finalizeGrouped(ctx, append(nodeIDs, connectorIDs...), &result)
 	case "framed":
-		finalizeFramedDiagram(ctx, client, boardID, diagram, f, totalItems, &result)
+		w.finalizeFramed(ctx, plan.diagram, &result)
 	default:
 		result.Message = buildDiscreteMessage(len(nodeIDs), len(connectorIDs), len(frameIDs))
 	}

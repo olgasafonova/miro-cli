@@ -106,10 +106,7 @@ func scanItems(rawItems []map[string]any, query string) []itemMatch {
 	out := make([]itemMatch, 0, len(rawItems))
 	for _, it := range rawItems {
 		content := extractContent(it)
-		if content == "" {
-			continue
-		}
-		if !strings.Contains(strings.ToLower(content), q) {
+		if content == "" || !strings.Contains(strings.ToLower(content), q) {
 			continue
 		}
 		m := itemMatch{
@@ -118,14 +115,11 @@ func scanItems(rawItems []map[string]any, query string) []itemMatch {
 			Content: content,
 			Snippet: makeSnippet(content, query, 50),
 		}
-		if pos, ok := it["position"].(map[string]any); ok {
-			if x, ok := pos["x"].(float64); ok {
-				m.X = x
-			}
-			if y, ok := pos["y"].(float64); ok {
-				m.Y = y
-			}
-		}
+		// A missing/malformed position leaves the zero-value pair; a
+		// nil pos map is safe to index and yields the same zero values.
+		pos, _ := it["position"].(map[string]any)
+		m.X, _ = pos["x"].(float64)
+		m.Y, _ = pos["y"].(float64)
 		out = append(out, m)
 	}
 	return out
