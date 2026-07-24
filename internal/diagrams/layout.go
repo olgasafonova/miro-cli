@@ -75,26 +75,46 @@ func buildAdjacency(diagram *Diagram) (outgoing, incoming map[string][]string) {
 // findRoots returns the nodes with no incoming edges, falling back to a
 // single arbitrary node when the graph is fully cyclic (no true roots).
 func findRoots(diagram *Diagram, incoming map[string][]string) []string {
+	roots := nodesWithoutIncoming(diagram, incoming)
+	if len(roots) == 0 {
+		return anyNodeAsRoot(diagram)
+	}
+	return roots
+}
+
+// nodesWithoutIncoming returns the IDs of nodes with no incoming edges.
+func nodesWithoutIncoming(diagram *Diagram, incoming map[string][]string) []string {
 	var roots []string
 	for id := range diagram.Nodes {
 		if len(incoming[id]) == 0 {
 			roots = append(roots, id)
 		}
 	}
-	if len(roots) == 0 {
-		for id := range diagram.Nodes {
-			roots = append(roots, id)
-			break
-		}
-	}
 	return roots
+}
+
+// anyNodeAsRoot picks an arbitrary node as the sole root, used when the
+// graph is fully cyclic.
+func anyNodeAsRoot(diagram *Diagram) []string {
+	for id := range diagram.Nodes {
+		return []string{id}
+	}
+	return nil
 }
 
 // longestPathLayers assigns each reachable node a layer via BFS from the
 // roots (longest path wins), then drops any unreached node into layer 0.
 func longestPathLayers(diagram *Diagram, outgoing map[string][]string, roots []string) map[string]int {
+	nodeLayer := bfsLongestPath(outgoing, roots)
+	assignUnreachedToLayerZero(diagram, nodeLayer)
+	return nodeLayer
+}
+
+// bfsLongestPath walks the graph from the roots, assigning each node the
+// longest layer distance found so far.
+func bfsLongestPath(outgoing map[string][]string, roots []string) map[string]int {
 	nodeLayer := make(map[string]int)
-	queue := make([]string, 0)
+	queue := make([]string, 0, len(roots))
 	for _, root := range roots {
 		nodeLayer[root] = 0
 		queue = append(queue, root)
@@ -103,23 +123,34 @@ func longestPathLayers(diagram *Diagram, outgoing map[string][]string, roots []s
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = queue[1:]
-		layer := nodeLayer[node]
-
-		for _, neighbor := range outgoing[node] {
-			newLayer := layer + 1
-			if existingLayer, ok := nodeLayer[neighbor]; !ok || existingLayer < newLayer {
-				nodeLayer[neighbor] = newLayer
-				queue = append(queue, neighbor)
-			}
-		}
+		queue = raiseNeighborLayers(node, outgoing, nodeLayer, queue)
 	}
 
+	return nodeLayer
+}
+
+// raiseNeighborLayers moves each neighbor of node one layer deeper when the
+// path through node is longer than its current layer, queueing it for
+// another visit. Returns the updated queue.
+func raiseNeighborLayers(node string, outgoing map[string][]string, nodeLayer map[string]int, queue []string) []string {
+	newLayer := nodeLayer[node] + 1
+	for _, neighbor := range outgoing[node] {
+		if existingLayer, ok := nodeLayer[neighbor]; !ok || existingLayer < newLayer {
+			nodeLayer[neighbor] = newLayer
+			queue = append(queue, neighbor)
+		}
+	}
+	return queue
+}
+
+// assignUnreachedToLayerZero drops any node the BFS never reached into
+// layer 0.
+func assignUnreachedToLayerZero(diagram *Diagram, nodeLayer map[string]int) {
 	for id := range diagram.Nodes {
 		if _, ok := nodeLayer[id]; !ok {
 			nodeLayer[id] = 0
 		}
 	}
-	return nodeLayer
 }
 
 // assignLayers assigns each node to a layer using longest path.
@@ -140,27 +171,40 @@ func assignLayers(diagram *Diagram) map[int][]string {
 // orderLayers orders nodes within each layer to minimize crossings.
 func orderLayers(diagram *Diagram, layers map[int][]string) {
 	outgoing, incoming := buildAdjacency(diagram)
-
 	layerNums := sortedLayerNums(layers)
+	nodePos := seedLayerPositions(layers, layerNums)
 
-	// Simple barycenter ordering, seeded with each node's index in its
-	// layer.
+	// Iterate forward (order by predecessors) then backward (order by
+	// successors) to improve crossing reduction.
+	for iter := 0; iter < 4; iter++ {
+		sweepForward(layers, layerNums, nodePos, incoming)
+		sweepBackward(layers, layerNums, nodePos, outgoing)
+	}
+}
+
+// seedLayerPositions seeds the barycenter ordering with each node's index in
+// its layer.
+func seedLayerPositions(layers map[int][]string, layerNums []int) map[string]float64 {
 	nodePos := make(map[string]float64)
 	for _, l := range layerNums {
 		for i, id := range layers[l] {
 			nodePos[id] = float64(i)
 		}
 	}
+	return nodePos
+}
 
-	// Iterate forward (order by predecessors) then backward (order by
-	// successors) to improve crossing reduction.
-	for iter := 0; iter < 4; iter++ {
-		for i := 1; i < len(layerNums); i++ {
-			reorderLayer(layers, layerNums[i], nodePos, incoming)
-		}
-		for i := len(layerNums) - 2; i >= 0; i-- {
-			reorderLayer(layers, layerNums[i], nodePos, outgoing)
-		}
+// sweepForward reorders each layer after the first by its predecessors.
+func sweepForward(layers map[int][]string, layerNums []int, nodePos map[string]float64, incoming map[string][]string) {
+	for i := 1; i < len(layerNums); i++ {
+		reorderLayer(layers, layerNums[i], nodePos, incoming)
+	}
+}
+
+// sweepBackward reorders each layer before the last by its successors.
+func sweepBackward(layers map[int][]string, layerNums []int, nodePos map[string]float64, outgoing map[string][]string) {
+	for i := len(layerNums) - 2; i >= 0; i-- {
+		reorderLayer(layers, layerNums[i], nodePos, outgoing)
 	}
 }
 
@@ -213,22 +257,30 @@ func positionNodes(diagram *Diagram, layers map[int][]string, config LayoutConfi
 	isReversed := diagram.Direction == BottomToTop || diagram.Direction == RightToLeft
 
 	for _, l := range layerNums {
-		nodes := layers[l]
-		layerIndex := l
-		if isReversed {
-			layerIndex = len(layerNums) - 1 - l
-		}
 		slot := layerSlot{
-			layerIndex:   layerIndex,
-			offset:       centeringOffset(len(nodes), maxLayerWidth, config),
+			layerIndex:   visualLayerIndex(l, len(layerNums), isReversed),
+			offset:       centeringOffset(len(layers[l]), maxLayerWidth, config),
 			isHorizontal: isHorizontal,
 			config:       config,
 		}
-		for i, nodeID := range nodes {
-			node := diagram.Nodes[nodeID]
-			if node == nil {
-				continue
-			}
+		placeLayerNodes(diagram, layers[l], slot)
+	}
+}
+
+// visualLayerIndex maps a logical layer to its visual index, flipping the
+// order for bottom-to-top and right-to-left diagrams.
+func visualLayerIndex(layer, layerCount int, isReversed bool) int {
+	if isReversed {
+		return layerCount - 1 - layer
+	}
+	return layer
+}
+
+// placeLayerNodes places each node of one layer at its slot position,
+// skipping IDs with no backing node.
+func placeLayerNodes(diagram *Diagram, nodeIDs []string, slot layerSlot) {
+	for i, nodeID := range nodeIDs {
+		if node := diagram.Nodes[nodeID]; node != nil {
 			slot.place(node, i)
 		}
 	}

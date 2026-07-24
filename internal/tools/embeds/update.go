@@ -74,16 +74,8 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+	if err := validateUpdateArgs(f); err != nil {
 		return err
-	}
-	if err := miro.ValidateID("item_id", f.itemID); err != nil {
-		return err
-	}
-	if f.modeSet {
-		if err := validateMode(f.mode); err != nil {
-			return err
-		}
 	}
 	req, ok := buildUpdateRequest(f)
 	if !ok {
@@ -104,53 +96,101 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 	return g.EmitJSON(resp)
 }
 
+// validateUpdateArgs checks the identifying IDs and any enum-valued
+// flags before the request body is built.
+func validateUpdateArgs(f updateFlags) error {
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
+	}
+	if err := miro.ValidateID("item_id", f.itemID); err != nil {
+		return err
+	}
+	if f.modeSet {
+		return validateMode(f.mode)
+	}
+	return nil
+}
+
 // buildUpdateRequest projects the updateFlags into the wire body and
 // reports whether any field was set. ok=false means the caller should
 // reject the update — Miro 400s an empty PATCH body anyway, and a
 // pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	applied := f.applyData(&req)
+	applied = f.applyPosition(&req) || applied
+	applied = f.applyGeometry(&req) || applied
+	applied = f.applyParent(&req) || applied
+	return req, applied
+}
 
-	if f.urlSet || f.modeSet || f.previewURLSet {
-		req.Data = &dataField{}
-		if f.urlSet {
-			req.Data.URL = f.url
-		}
-		if f.modeSet {
-			req.Data.Mode = f.mode
-		}
-		if f.previewURLSet {
-			req.Data.PreviewURL = f.previewURL
-		}
-		any = true
+// dataChanged reports whether any field of the data envelope was set.
+func (f updateFlags) dataChanged() bool {
+	return f.urlSet || f.modeSet || f.previewURLSet
+}
+
+func (f updateFlags) positionChanged() bool {
+	return f.xSet || f.ySet
+}
+
+func (f updateFlags) geometryChanged() bool {
+	return f.widthSet || f.heightSet
+}
+
+// applyData fills the data envelope with the changed content fields
+// and reports whether it set anything.
+func (f updateFlags) applyData(req *updateRequest) bool {
+	if !f.dataChanged() {
+		return false
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	req.Data = &dataField{}
+	if f.urlSet {
+		req.Data.URL = f.url
 	}
-	if f.widthSet || f.heightSet {
-		req.Geometry = &geometryData{}
-		if f.widthSet {
-			req.Geometry.Width = f.width
-		}
-		if f.heightSet {
-			req.Geometry.Height = f.height
-		}
-		any = true
+	if f.modeSet {
+		req.Data.Mode = f.mode
 	}
-	if f.parentIDSet {
-		// Empty string detaches; non-empty re-parents. Both flow
-		// through a non-nil parentRef so the JSON encoder emits the
-		// envelope.
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	if f.previewURLSet {
+		req.Data.PreviewURL = f.previewURL
 	}
-	return req, any
+	return true
+}
+
+func (f updateFlags) applyPosition(req *updateRequest) bool {
+	if !f.positionChanged() {
+		return false
+	}
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+func (f updateFlags) applyGeometry(req *updateRequest) bool {
+	if !f.geometryChanged() {
+		return false
+	}
+	req.Geometry = &geometryData{}
+	if f.widthSet {
+		req.Geometry.Width = f.width
+	}
+	if f.heightSet {
+		req.Geometry.Height = f.height
+	}
+	return true
+}
+
+// applyParent re-parents the item. An empty string detaches; non-empty
+// re-parents. Both flow through a non-nil parentRef so the JSON
+// encoder emits the envelope.
+func (f updateFlags) applyParent(req *updateRequest) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }

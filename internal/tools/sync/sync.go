@@ -108,17 +108,9 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 		return g.EmitDryRun("GET", "/v2/boards?limit="+strconv.Itoa(boardsPageSize))
 	}
 
-	path := g.StorePath
-	if path == "" {
-		p, err := store.DefaultPath()
-		if err != nil {
-			return err
-		}
-		path = p
-	}
-	s, err := store.Open(ctx, path)
+	s, err := openStore(ctx, g)
 	if err != nil {
-		return fmt.Errorf("sync: %w", err)
+		return err
 	}
 	defer func() { _ = s.Close() }()
 
@@ -132,7 +124,7 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 	if err != nil {
 		return err
 	}
-	fullSweep := opts.full || watermark == ""
+	fullSweep := isFullSweep(opts, watermark)
 
 	result := Result{
 		StartedAt: startedAt.Format(time.RFC3339),
@@ -160,6 +152,31 @@ func run(ctx context.Context, g *clictx.Globals, opts runOptions) error {
 	result.FinishedAt = time.Now().UTC().Format(time.RFC3339)
 
 	return g.EmitJSON(result)
+}
+
+// openStore resolves the store location (--store-path or the package
+// default) and opens it read-write for the sync run.
+func openStore(ctx context.Context, g *clictx.Globals) (*store.Store, error) {
+	path := g.StorePath
+	if path == "" {
+		p, err := store.DefaultPath()
+		if err != nil {
+			return nil, err
+		}
+		path = p
+	}
+	s, err := store.Open(ctx, path)
+	if err != nil {
+		return nil, fmt.Errorf("sync: %w", err)
+	}
+	return s, nil
+}
+
+// isFullSweep reports whether this run must fetch every board's items:
+// either the user forced it with --full, or there is no watermark yet
+// (first run, or a --since override that resolved to empty).
+func isFullSweep(opts runOptions, watermark string) bool {
+	return opts.full || watermark == ""
 }
 
 // resolveWatermark determines the incremental watermark for this run.
@@ -323,33 +340,53 @@ func fetchAllBoards(ctx context.Context, client *miro.Client) ([]map[string]any,
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		q := url.Values{}
-		q.Set("limit", strconv.Itoa(boardsPageSize))
-		if offset > 0 {
-			q.Set("offset", strconv.Itoa(offset))
+		data, total, err := fetchBoardsPage(ctx, client, offset)
+		if err != nil {
+			return nil, err
 		}
-		path := "/v2/boards?" + q.Encode()
-
-		var resp struct {
-			Data  []map[string]any `json:"data"`
-			Total int              `json:"total"`
-			Size  int              `json:"size"`
-		}
-		if err := client.Get(ctx, path, &resp); err != nil {
-			return nil, fmt.Errorf("sync: list boards: %w", err)
-		}
-		out = append(out, resp.Data...)
-		if len(resp.Data) == 0 || len(resp.Data) < boardsPageSize {
+		out = append(out, data...)
+		if isLastBoardsPage(len(data)) {
 			return out, nil
 		}
-		offset += len(resp.Data)
+		offset += len(data)
 		// total==0 happens on accounts where the count field is omitted;
 		// the page-size guard above is the real terminator. Belt-and-
 		// braces: stop if total is present and we've reached it.
-		if resp.Total > 0 && len(out) >= resp.Total {
+		if reachedReportedTotal(len(out), total) {
 			return out, nil
 		}
 	}
+}
+
+// fetchBoardsPage requests one offset-paginated page of /v2/boards and
+// returns its data rows plus the reported total (0 when omitted).
+func fetchBoardsPage(ctx context.Context, client *miro.Client, offset int) ([]map[string]any, int, error) {
+	q := url.Values{}
+	q.Set("limit", strconv.Itoa(boardsPageSize))
+	if offset > 0 {
+		q.Set("offset", strconv.Itoa(offset))
+	}
+	var resp struct {
+		Data  []map[string]any `json:"data"`
+		Total int              `json:"total"`
+		Size  int              `json:"size"`
+	}
+	if err := client.Get(ctx, "/v2/boards?"+q.Encode(), &resp); err != nil {
+		return nil, 0, fmt.Errorf("sync: list boards: %w", err)
+	}
+	return resp.Data, resp.Total, nil
+}
+
+// isLastBoardsPage reports whether the pagination loop can stop: an empty
+// or short page means the server has run out of boards.
+func isLastBoardsPage(pageLen int) bool {
+	return pageLen == 0 || pageLen < boardsPageSize
+}
+
+// reachedReportedTotal is the belt-and-braces terminator for accounts
+// that do report a total: stop once we've accumulated that many boards.
+func reachedReportedTotal(fetched, total int) bool {
+	return total > 0 && fetched >= total
 }
 
 // fetchAndStoreItems streams every item for a board into the store via
@@ -366,21 +403,33 @@ func fetchAndStoreItems(ctx context.Context, client *miro.Client, s *store.Store
 		if err != nil {
 			return total, fmt.Errorf("sync: list items for %s: %w", boardID, err)
 		}
-		batch, err := projectItemBatch(boardID, resp.Data)
+		stored, err := storeItemPage(ctx, s, boardID, resp.Data)
 		if err != nil {
 			return total, err
 		}
-		if len(batch) > 0 {
-			if err := s.UpsertItems(ctx, batch); err != nil {
-				return total, err
-			}
-			total += len(batch)
-		}
+		total += stored
 		if resp.Cursor == "" {
 			return total, nil
 		}
 		cursor = resp.Cursor
 	}
+}
+
+// storeItemPage projects one page of raw item JSON and upserts it in a
+// single transaction, returning how many rows were written. An empty
+// page (or one where every entry lacked an id) writes nothing.
+func storeItemPage(ctx context.Context, s *store.Store, boardID string, rawItems []map[string]any) (int, error) {
+	batch, err := projectItemBatch(boardID, rawItems)
+	if err != nil {
+		return 0, err
+	}
+	if len(batch) == 0 {
+		return 0, nil
+	}
+	if err := s.UpsertItems(ctx, batch); err != nil {
+		return 0, err
+	}
+	return len(batch), nil
 }
 
 // projectItemBatch converts a page of raw item JSON into store.Item rows,

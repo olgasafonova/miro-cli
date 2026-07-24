@@ -40,10 +40,13 @@ func newShareCmd(g *clictx.Globals) *cobra.Command {
 			"call.",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runShare(cmd.Context(), g, shareDeps{}, args[0], shareRequest{
-				Emails:  []string{email},
-				Role:    role,
-				Message: message,
+			return runShare(cmd.Context(), g, shareParams{
+				boardID: args[0],
+				req: shareRequest{
+					Emails:  []string{email},
+					Role:    role,
+					Message: message,
+				},
 			})
 		},
 	}
@@ -54,40 +57,70 @@ func newShareCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-// runShare is the testable entry point. deps.allowlist may be nil, in
+// shareParams bundles the runShare inputs: the injectable deps, the
+// target board, and the invitation request.
+type shareParams struct {
+	deps    shareDeps
+	boardID string
+	req     shareRequest
+}
+
+// runShare is the testable entry point. p.deps.allowlist may be nil, in
 // which case we lazily load from the env. Tests inject a pre-built
 // allowlist to avoid depending on process-wide env state.
-func runShare(ctx context.Context, g *clictx.Globals, deps shareDeps, boardID string, req shareRequest) error {
-	if err := miro.ValidateID("board_id", boardID); err != nil {
+//
+// Gate order is load-bearing: input validation, then the fail-closed
+// allowlist (so --dry-run still validates config), then dry-run, then
+// the --yes confirmation, then the real POST.
+func runShare(ctx context.Context, g *clictx.Globals, p shareParams) error {
+	if err := validateShareInput(p.boardID, p.req); err != nil {
 		return err
 	}
-	if len(req.Emails) != 1 || req.Emails[0] == "" {
-		return errors.New("--email is required")
-	}
-	if err := validateShareRole(req.Role); err != nil {
+	if err := authorizeShare(p.deps, p.req.Emails[0]); err != nil {
 		return err
 	}
 
-	allowlist := deps.allowlist
-	if allowlist == nil {
-		allowlist = miro.LoadShareAllowlistFromEnv()
-	}
-	if err := allowlist.Validate(req.Emails[0]); err != nil {
-		// Map allowlist refusals to ExitConfig (10) rather than the
-		// default ExitAPI (5): the user can't fix this by retrying,
-		// they need to adjust MIRO_SHARE_ALLOWED_DOMAINS (or accept
-		// the gate). Matches the delete-without-yes refusal shape.
-		return &miro.ConfigError{Reason: err.Error()}
-	}
-
-	path := "/v2/boards/" + boardID + "/members"
+	path := "/v2/boards/" + p.boardID + "/members"
 	if g.DryRun {
 		return g.EmitDryRun("POST", path)
 	}
 	if !g.Yes {
 		return &miro.ConfigError{Reason: "refusing to share board without --yes; pass --yes to confirm or --dry-run to preview"}
 	}
+	return postShare(ctx, g, path, p.req)
+}
 
+// validateShareInput rejects malformed board IDs, missing emails, and
+// unsupported roles before any gating or network work happens.
+func validateShareInput(boardID string, req shareRequest) error {
+	if err := miro.ValidateID("board_id", boardID); err != nil {
+		return err
+	}
+	if len(req.Emails) != 1 || req.Emails[0] == "" {
+		return errors.New("--email is required")
+	}
+	return validateShareRole(req.Role)
+}
+
+// authorizeShare runs the fail-closed allowlist gate. A nil injected
+// allowlist means "load from env", and an unset env var denies all.
+func authorizeShare(deps shareDeps, email string) error {
+	allowlist := deps.allowlist
+	if allowlist == nil {
+		allowlist = miro.LoadShareAllowlistFromEnv()
+	}
+	if err := allowlist.Validate(email); err != nil {
+		// Map allowlist refusals to ExitConfig (10) rather than the
+		// default ExitAPI (5): the user can't fix this by retrying,
+		// they need to adjust MIRO_SHARE_ALLOWED_DOMAINS (or accept
+		// the gate). Matches the delete-without-yes refusal shape.
+		return &miro.ConfigError{Reason: err.Error()}
+	}
+	return nil
+}
+
+// postShare issues the confirmed POST and emits the API response.
+func postShare(ctx context.Context, g *clictx.Globals, path string, req shareRequest) error {
 	client, err := g.BuildClient()
 	if err != nil {
 		return err

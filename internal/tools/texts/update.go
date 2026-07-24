@@ -92,39 +92,73 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	dataSet := applyDataField(&req, f)
+	styleSet := applyStyleFields(&req, f)
+	positionSet := applyPositionFields(&req, f)
+	geometrySet := applyGeometryField(&req, f)
+	parentSet := applyParentField(&req, f)
+	return req, dataSet || styleSet || positionSet || geometrySet || parentSet
+}
 
-	if f.contentSet {
-		req.Data = &dataField{Content: f.content}
-		any = true
+// applyDataField fills the data envelope when --content was passed.
+// It reports whether req.Data was set.
+func applyDataField(req *updateRequest, f updateFlags) bool {
+	if !f.contentSet {
+		return false
 	}
-	if f.colorSet || f.fontSizeSet {
-		req.Style = &styleField{}
-		if f.colorSet {
-			req.Style.Color = f.color
-		}
-		if f.fontSizeSet {
-			req.Style.FontSize = fontSizeString(f.fontSize)
-		}
-		any = true
+	req.Data = &dataField{Content: f.content}
+	return true
+}
+
+// applyStyleFields fills the style envelope when --color or
+// --font-size was passed. It reports whether req.Style was set.
+func applyStyleFields(req *updateRequest, f updateFlags) bool {
+	if !f.colorSet && !f.fontSizeSet {
+		return false
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	req.Style = &styleField{}
+	if f.colorSet {
+		req.Style.Color = f.color
 	}
-	if f.widthSet {
-		req.Geometry = &geometryData{Width: f.width}
-		any = true
+	if f.fontSizeSet {
+		req.Style.FontSize = fontSizeString(f.fontSize)
 	}
-	if f.parentIDSet {
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	return true
+}
+
+// applyPositionFields fills the position envelope when --x or --y was
+// passed. It reports whether req.Position was set.
+func applyPositionFields(req *updateRequest, f updateFlags) bool {
+	if !f.xSet && !f.ySet {
+		return false
 	}
-	return req, any
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+// applyGeometryField fills the geometry envelope when --width was
+// passed. It reports whether req.Geometry was set.
+func applyGeometryField(req *updateRequest, f updateFlags) bool {
+	if !f.widthSet {
+		return false
+	}
+	req.Geometry = &geometryData{Width: f.width}
+	return true
+}
+
+// applyParentField fills the parent envelope when --parent-id was
+// passed. Empty string detaches; non-empty re-parents. It reports
+// whether req.Parent was set.
+func applyParentField(req *updateRequest, f updateFlags) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }

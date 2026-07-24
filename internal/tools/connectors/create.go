@@ -79,37 +79,7 @@ func newCreateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCreate(ctx context.Context, g *clictx.Globals, f createFlags) error {
-	if err := miro.ValidateID("board_id", f.boardID); err != nil {
-		return err
-	}
-	if err := miro.ValidateID("start_item_id", f.startItemID); err != nil {
-		return err
-	}
-	if err := miro.ValidateID("end_item_id", f.endItemID); err != nil {
-		return err
-	}
-	if f.startItemID == f.endItemID {
-		return errors.New("--start-item-id and --end-item-id must differ")
-	}
-	if err := validateShape(f.shape); err != nil {
-		return err
-	}
-	if err := validateSnapTo(f.startSnapTo, "start-snap-to"); err != nil {
-		return err
-	}
-	if err := validateSnapTo(f.endSnapTo, "end-snap-to"); err != nil {
-		return err
-	}
-	if err := validateStrokeStyle(f.strokeStyle); err != nil {
-		return err
-	}
-	if err := validateStrokeCap(f.startStrokeCap, "start-stroke-cap"); err != nil {
-		return err
-	}
-	if err := validateStrokeCap(f.endStrokeCap, "end-stroke-cap"); err != nil {
-		return err
-	}
-	if err := validateTextOrientation(f.textOrientation); err != nil {
+	if err := validateCreateFlags(f); err != nil {
 		return err
 	}
 	req, err := buildCreateRequest(f)
@@ -129,6 +99,41 @@ func runCreate(ctx context.Context, g *clictx.Globals, f createFlags) error {
 		return err
 	}
 	return g.EmitJSON(resp)
+}
+
+// validateCreateFlags runs the required-ID checks followed by the enum
+// validators, in the same order errors surfaced before the checks moved
+// into a table. Mirrors the validateUpdateFlags style in update.go: one
+// row per validated flag, so adding a flag means adding a row.
+func validateCreateFlags(f createFlags) error {
+	checks := []func() error{
+		func() error { return miro.ValidateID("board_id", f.boardID) },
+		func() error { return miro.ValidateID("start_item_id", f.startItemID) },
+		func() error { return miro.ValidateID("end_item_id", f.endItemID) },
+		f.validateDistinctEndpoints,
+		func() error { return validateShape(f.shape) },
+		func() error { return validateSnapTo(f.startSnapTo, "start-snap-to") },
+		func() error { return validateSnapTo(f.endSnapTo, "end-snap-to") },
+		func() error { return validateStrokeStyle(f.strokeStyle) },
+		func() error { return validateStrokeCap(f.startStrokeCap, "start-stroke-cap") },
+		func() error { return validateStrokeCap(f.endStrokeCap, "end-stroke-cap") },
+		func() error { return validateTextOrientation(f.textOrientation) },
+	}
+	for _, check := range checks {
+		if err := check(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateDistinctEndpoints rejects self-connections. The API requires
+// the connector to join two different items.
+func (f createFlags) validateDistinctEndpoints() error {
+	if f.startItemID == f.endItemID {
+		return errors.New("--start-item-id and --end-item-id must differ")
+	}
+	return nil
 }
 
 // buildCreateRequest projects createFlags into the wire body. Split out
@@ -154,7 +159,7 @@ func buildCreateRequest(f createFlags) (createRequest, error) {
 		Shape:     f.shape,
 		Captions:  captions,
 	}
-	if style := buildStyle(f.strokeColor, f.strokeWidth, f.strokeStyle, f.startStrokeCap, f.endStrokeCap, f.fontSize, f.captionColor, f.textOrientation); style != nil {
+	if style := buildStyle(f); style != nil {
 		req.Style = style
 	}
 	return req, nil
@@ -196,23 +201,23 @@ func buildCaptions(raw []string) ([]captionData, error) {
 	return out, nil
 }
 
-// buildStyle returns a *connectorStyle only when at least one style
-// field was set. Empty fields are omitted from the wire body via the
-// omitempty tags on connectorStyle.
-func buildStyle(strokeColor, strokeWidth, strokeStyle, startCap, endCap, fontSize, captionColor, textOrientation string) *connectorStyle {
-	if strokeColor == "" && strokeWidth == "" && strokeStyle == "" &&
-		startCap == "" && endCap == "" && fontSize == "" &&
-		captionColor == "" && textOrientation == "" {
+// buildStyle returns a *connectorStyle only when at least one style flag
+// was set. The zero-value comparison stands in for checking each flag
+// individually: an all-empty style envelope means "no style flags", and
+// empty fields are omitted from the wire body via the omitempty tags.
+func buildStyle(f createFlags) *connectorStyle {
+	style := connectorStyle{
+		Color:           f.captionColor,
+		StrokeColor:     f.strokeColor,
+		StrokeWidth:     f.strokeWidth,
+		StrokeStyle:     f.strokeStyle,
+		StartStrokeCap:  f.startStrokeCap,
+		EndStrokeCap:    f.endStrokeCap,
+		FontSize:        f.fontSize,
+		TextOrientation: f.textOrientation,
+	}
+	if style == (connectorStyle{}) {
 		return nil
 	}
-	return &connectorStyle{
-		Color:           captionColor,
-		StrokeColor:     strokeColor,
-		StrokeWidth:     strokeWidth,
-		StrokeStyle:     strokeStyle,
-		StartStrokeCap:  startCap,
-		EndStrokeCap:    endCap,
-		FontSize:        fontSize,
-		TextOrientation: textOrientation,
-	}
+	return &style
 }

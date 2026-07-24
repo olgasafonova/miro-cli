@@ -82,7 +82,15 @@ func runBulkUpdate(ctx context.Context, g *clictx.Globals, f bulkUpdateFlags) er
 		return err
 	}
 
-	results := miro.FanOut(ctx, patches, g.Concurrency, func(ctx context.Context, i int, p bulkUpdateItem) bulkOpResult {
+	results := miro.FanOut(ctx, patches, g.Concurrency, bulkUpdateWorker(client, f.boardID))
+	return g.EmitJSON(tallyBulk(f.boardID, results))
+}
+
+// bulkUpdateWorker returns the per-patch FanOut callback. Each call
+// validates the patch ID before building the PATCH body, so a malformed
+// ID never reaches the URL path (same per-item gate as bulk-delete).
+func bulkUpdateWorker(client *miro.Client, boardID string) func(context.Context, int, bulkUpdateItem) bulkOpResult {
+	return func(ctx context.Context, i int, p bulkUpdateItem) bulkOpResult {
 		if cerr := ctx.Err(); cerr != nil {
 			return bulkOpResult{ID: p.ID, Status: "error", Error: cerr.Error()}
 		}
@@ -93,35 +101,25 @@ func runBulkUpdate(ctx context.Context, g *clictx.Globals, f bulkUpdateFlags) er
 		if !ok {
 			return bulkOpResult{ID: p.ID, Status: "error", Error: "no mutable fields set"}
 		}
-		path := "/v2/boards/" + f.boardID + "/items/" + p.ID
+		path := "/v2/boards/" + boardID + "/items/" + p.ID
 		var resp map[string]any
 		if perr := client.Patch(ctx, path, body, &resp); perr != nil {
 			return bulkOpResult{ID: p.ID, Status: "error", Error: perr.Error()}
 		}
 		return bulkOpResult{ID: p.ID, Status: "success"}
-	})
-	return g.EmitJSON(tallyBulk(f.boardID, results))
+	}
 }
 
 // loadPatches reads the patches array from --patches-file or
 // --patches-json and decodes it. Exactly-one enforcement matches
 // bulk-delete's loadIDs.
 func loadPatches(f bulkUpdateFlags) ([]bulkUpdateItem, error) {
-	if f.patchesFile == "" && f.patchesJSON == "" {
-		return nil, errors.New("one of --patches-file or --patches-json is required")
+	if err := requireExactlyOneSource("patches-file", "patches-json", f.patchesFile, f.patchesJSON); err != nil {
+		return nil, err
 	}
-	if f.patchesFile != "" && f.patchesJSON != "" {
-		return nil, errors.New("--patches-file and --patches-json are mutually exclusive")
-	}
-	var raw []byte
-	if f.patchesFile != "" {
-		var err error
-		raw, err = clictx.ReadFileOrStdin(f.patchesFile)
-		if err != nil {
-			return nil, fmt.Errorf("read --patches-file: %w", err)
-		}
-	} else {
-		raw = []byte(f.patchesJSON)
+	raw, err := readRawJSONSource("patches-file", f.patchesFile, f.patchesJSON)
+	if err != nil {
+		return nil, err
 	}
 	var arr []bulkUpdateItem
 	if err := json.Unmarshal(raw, &arr); err != nil {
@@ -139,34 +137,47 @@ func loadPatches(f bulkUpdateFlags) ([]bulkUpdateItem, error) {
 // an empty PATCH anyway, and the pre-flight skip yields a clearer
 // per-item error.
 func buildBulkUpdateBody(p bulkUpdateItem) (updateRequest, bool) {
-	var req updateRequest
-	any := false
-
-	if p.X != nil || p.Y != nil {
-		req.Position = &positionData{Origin: "center"}
-		if p.X != nil {
-			req.Position.X = *p.X
-		}
-		if p.Y != nil {
-			req.Position.Y = *p.Y
-		}
-		any = true
-	}
-	if p.Width != nil || p.Height != nil {
-		req.Geometry = &geometryData{}
-		if p.Width != nil {
-			req.Geometry.Width = *p.Width
-		}
-		if p.Height != nil {
-			req.Geometry.Height = *p.Height
-		}
-		any = true
+	req := updateRequest{
+		Position: patchPosition(p),
+		Geometry: patchGeometry(p),
 	}
 	if p.ParentID != nil {
 		// Same detach semantic as `items update`: empty string detaches,
 		// non-empty re-parents. Both paths emit the envelope.
 		req.Parent = &parentRef{ID: *p.ParentID}
-		any = true
 	}
-	return req, any
+	set := req.Position != nil || req.Geometry != nil || req.Parent != nil
+	return req, set
+}
+
+// patchPosition maps the x/y pointers onto a position section, or nil
+// when neither is set so the PATCH leaves position untouched.
+func patchPosition(p bulkUpdateItem) *positionData {
+	if p.X == nil && p.Y == nil {
+		return nil
+	}
+	pos := &positionData{Origin: "center"}
+	if p.X != nil {
+		pos.X = *p.X
+	}
+	if p.Y != nil {
+		pos.Y = *p.Y
+	}
+	return pos
+}
+
+// patchGeometry maps the width/height pointers onto a geometry section,
+// or nil when neither is set so the PATCH leaves geometry untouched.
+func patchGeometry(p bulkUpdateItem) *geometryData {
+	if p.Width == nil && p.Height == nil {
+		return nil
+	}
+	geo := &geometryData{}
+	if p.Width != nil {
+		geo.Width = *p.Width
+	}
+	if p.Height != nil {
+		geo.Height = *p.Height
+	}
+	return geo
 }

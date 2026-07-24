@@ -72,21 +72,12 @@ func runBulkCreate(ctx context.Context, g *clictx.Globals, f bulkCreateFlags) er
 // also rejects the empty-string / both-flags-set cases the API would
 // 400 on anyway.
 func loadBulkItems(f bulkCreateFlags) ([]json.RawMessage, error) {
-	if f.itemsFile == "" && f.itemsJSON == "" {
-		return nil, errors.New("one of --items-file or --items-json is required")
+	if err := requireExactlyOneSource("items-file", "items-json", f.itemsFile, f.itemsJSON); err != nil {
+		return nil, err
 	}
-	if f.itemsFile != "" && f.itemsJSON != "" {
-		return nil, errors.New("--items-file and --items-json are mutually exclusive")
-	}
-	var raw []byte
-	if f.itemsFile != "" {
-		var err error
-		raw, err = clictx.ReadFileOrStdin(f.itemsFile)
-		if err != nil {
-			return nil, fmt.Errorf("read --items-file: %w", err)
-		}
-	} else {
-		raw = []byte(f.itemsJSON)
+	raw, err := readRawJSONSource("items-file", f.itemsFile, f.itemsJSON)
+	if err != nil {
+		return nil, err
 	}
 	var arr []json.RawMessage
 	if err := json.Unmarshal(raw, &arr); err != nil {

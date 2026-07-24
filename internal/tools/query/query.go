@@ -56,13 +56,9 @@ func run(ctx context.Context, g *clictx.Globals, sqlText string, limit int) erro
 	if err := validateSelect(sqlText); err != nil {
 		return err
 	}
-	path := g.StorePath
-	if path == "" {
-		var err error
-		path, err = store.DefaultPath()
-		if err != nil {
-			return err
-		}
+	path, err := resolveStorePath(g)
+	if err != nil {
+		return err
 	}
 
 	s, err := store.OpenReadOnly(ctx, path)
@@ -71,18 +67,7 @@ func run(ctx context.Context, g *clictx.Globals, sqlText string, limit int) erro
 	}
 	defer func() { _ = s.Close() }()
 
-	rows, err := s.DB().QueryContext(ctx, sqlText)
-	if err != nil {
-		return fmt.Errorf("query: execute: %w", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	cols, err := rows.Columns()
-	if err != nil {
-		return fmt.Errorf("query: columns: %w", err)
-	}
-
-	results, err := collect(rows, cols, limit)
+	cols, results, err := executeQuery(ctx, s, sqlText, limit)
 	if err != nil {
 		return err
 	}
@@ -93,6 +78,36 @@ func run(ctx context.Context, g *clictx.Globals, sqlText string, limit int) erro
 	return emitTable(g.Stdout, cols, results)
 }
 
+// resolveStorePath honours --store-path when set and falls back to the
+// package default location otherwise.
+func resolveStorePath(g *clictx.Globals) (string, error) {
+	if g.StorePath != "" {
+		return g.StorePath, nil
+	}
+	return store.DefaultPath()
+}
+
+// executeQuery runs the statement against the read-only store and collects
+// the capped result set together with its column names.
+func executeQuery(ctx context.Context, s *store.Store, sqlText string, limit int) ([]string, []row, error) {
+	rows, err := s.DB().QueryContext(ctx, sqlText)
+	if err != nil {
+		return nil, nil, fmt.Errorf("query: execute: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, nil, fmt.Errorf("query: columns: %w", err)
+	}
+
+	results, err := collect(rows, cols, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	return cols, results, nil
+}
+
 // validateSelect refuses anything other than a SELECT (or a CTE that wraps
 // a SELECT). PRAGMA query_only is the actual enforcement; this check is
 // for friendlier error messages and to refuse multi-statement input early.
@@ -101,35 +116,54 @@ func validateSelect(sqlText string) error {
 	if trimmed == "" {
 		return errors.New("query: empty SQL")
 	}
-	// Strip a single leading line comment so `-- name: foo\nselect ...`
-	// patterns still pass. Anything more elaborate is the user's problem.
-	if strings.HasPrefix(trimmed, "--") {
-		if nl := strings.IndexByte(trimmed, '\n'); nl > 0 {
-			trimmed = strings.TrimSpace(trimmed[nl+1:])
-		}
-	}
+	trimmed = stripLeadingLineComment(trimmed)
 	lower := strings.ToLower(trimmed)
 	if !strings.HasPrefix(lower, "select") && !strings.HasPrefix(lower, "with") {
 		return fmt.Errorf("query: only SELECT statements are allowed (got %q)", firstWord(trimmed))
 	}
-	// Refuse trailing-semicolon-then-statement combos. One trailing
-	// semicolon is fine; anything after it is rejected.
-	if idx := strings.IndexByte(trimmed, ';'); idx >= 0 {
-		tail := strings.TrimSpace(trimmed[idx+1:])
-		if tail != "" {
-			return errors.New("query: multiple statements not allowed")
-		}
+	if hasTrailingStatement(trimmed) {
+		return errors.New("query: multiple statements not allowed")
 	}
 	return nil
 }
 
+// stripLeadingLineComment strips a single leading line comment so
+// `-- name: foo\nselect ...` patterns still pass. Anything more elaborate
+// is the user's problem.
+func stripLeadingLineComment(s string) string {
+	if !strings.HasPrefix(s, "--") {
+		return s
+	}
+	nl := strings.IndexByte(s, '\n')
+	if nl <= 0 {
+		return s
+	}
+	return strings.TrimSpace(s[nl+1:])
+}
+
+// hasTrailingStatement reports whether another statement follows the first
+// semicolon. One trailing semicolon is fine; anything after it is rejected.
+func hasTrailingStatement(s string) bool {
+	idx := strings.IndexByte(s, ';')
+	if idx < 0 {
+		return false
+	}
+	return strings.TrimSpace(s[idx+1:]) != ""
+}
+
 func firstWord(s string) string {
 	for i, r := range s {
-		if r == ' ' || r == '\t' || r == '\n' {
+		if isWordBreak(r) {
 			return s[:i]
 		}
 	}
 	return s
+}
+
+// isWordBreak reports whether r ends the leading SQL keyword. Only the
+// whitespace forms SQL treats as token separators count here.
+func isWordBreak(r rune) bool {
+	return r == ' ' || r == '\t' || r == '\n'
 }
 
 // row is the map shape used for both JSON and table output. Column ordering

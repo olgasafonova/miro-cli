@@ -98,21 +98,29 @@ func runList(ctx context.Context, g *clictx.Globals, lf listFlags) error {
 }
 
 func buildListPath(lf listFlags) string {
+	path := "/v2/boards"
+	if encoded := listQueryValues(lf).Encode(); encoded != "" {
+		path += "?" + encoded
+	}
+	return path
+}
+
+// listQueryValues maps the set flags to their /v2/boards query
+// parameters. Unset filters (empty strings, non-positive pagination
+// values) are omitted so the API applies its own defaults.
+func listQueryValues(lf listFlags) url.Values {
 	q := url.Values{}
-	if lf.teamID != "" {
-		q.Set("team_id", lf.teamID)
+	filters := map[string]string{
+		"team_id":    lf.teamID,
+		"project_id": lf.projectID,
+		"query":      lf.query,
+		"owner":      lf.owner,
+		"sort":       lf.sort,
 	}
-	if lf.projectID != "" {
-		q.Set("project_id", lf.projectID)
-	}
-	if lf.query != "" {
-		q.Set("query", lf.query)
-	}
-	if lf.owner != "" {
-		q.Set("owner", lf.owner)
-	}
-	if lf.sort != "" {
-		q.Set("sort", lf.sort)
+	for key, value := range filters {
+		if value != "" {
+			q.Set(key, value)
+		}
 	}
 	if lf.limit > 0 {
 		q.Set("limit", strconv.Itoa(lf.limit))
@@ -120,9 +128,5 @@ func buildListPath(lf listFlags) string {
 	if lf.offset > 0 {
 		q.Set("offset", strconv.Itoa(lf.offset))
 	}
-	path := "/v2/boards"
-	if encoded := q.Encode(); encoded != "" {
-		path += "?" + encoded
-	}
-	return path
+	return q
 }

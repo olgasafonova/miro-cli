@@ -28,22 +28,30 @@ func ValidateID(name, val string) error {
 	if len(val) > MaxIDLength {
 		return fmt.Errorf("%s exceeds %d characters", name, MaxIDLength)
 	}
-	for _, r := range val {
-		if r == '/' {
-			return fmt.Errorf("%s must not contain '/'", name)
-		}
-		if r == '\x00' {
-			return fmt.Errorf("%s must not contain null bytes", name)
-		}
-		if unicode.IsControl(r) {
-			return fmt.Errorf("%s must not contain control characters", name)
-		}
-		if unicode.IsSpace(r) {
-			return fmt.Errorf("%s must not contain whitespace", name)
-		}
+	if err := validateIDRunes(name, val); err != nil {
+		return err
 	}
 	if strings.Contains(val, "..") {
 		return fmt.Errorf("%s must not contain '..'", name)
+	}
+	return nil
+}
+
+// validateIDRunes rejects the characters that would change the URL's path
+// structure (slashes), hide content in a transcript (control characters,
+// whitespace), or smuggle a null byte into the request line.
+func validateIDRunes(name, val string) error {
+	for _, r := range val {
+		switch {
+		case r == '/':
+			return fmt.Errorf("%s must not contain '/'", name)
+		case r == '\x00':
+			return fmt.Errorf("%s must not contain null bytes", name)
+		case unicode.IsControl(r):
+			return fmt.Errorf("%s must not contain control characters", name)
+		case unicode.IsSpace(r):
+			return fmt.Errorf("%s must not contain whitespace", name)
+		}
 	}
 	return nil
 }

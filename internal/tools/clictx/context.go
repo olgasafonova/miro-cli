@@ -213,21 +213,27 @@ func applySelect(raw []byte, fields string) ([]byte, error) {
 		return raw, nil
 	}
 	if trimmed[0] == '[' {
-		var arr []json.RawMessage
-		if err := json.Unmarshal(raw, &arr); err != nil {
-			return nil, fmt.Errorf("miro: apply --select to array: %w", err)
-		}
-		out := make([]json.RawMessage, 0, len(arr))
-		for _, elem := range arr {
-			filtered, err := filterObject(elem, wanted)
-			if err != nil {
-				return nil, err
-			}
-			out = append(out, filtered)
-		}
-		return json.Marshal(out)
+		return filterArray(raw, wanted)
 	}
 	return filterObject(raw, wanted)
+}
+
+// filterArray applies the --select projection to every element of a JSON
+// array, preserving element order.
+func filterArray(raw []byte, wanted map[string]struct{}) ([]byte, error) {
+	var arr []json.RawMessage
+	if err := json.Unmarshal(raw, &arr); err != nil {
+		return nil, fmt.Errorf("miro: apply --select to array: %w", err)
+	}
+	out := make([]json.RawMessage, 0, len(arr))
+	for _, elem := range arr {
+		filtered, err := filterObject(elem, wanted)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, filtered)
+	}
+	return json.Marshal(out)
 }
 
 func filterObject(raw []byte, wanted map[string]struct{}) ([]byte, error) {

@@ -95,6 +95,19 @@ func newParseState() *parseState {
 	return &parseState{participants: make(map[string]*Participant)}
 }
 
+// pushGroup records entry into a loop/alt/opt style group.
+func (s *parseState) pushGroup(kind string) {
+	s.groupStack = append(s.groupStack, kind)
+}
+
+// popGroup records exit from the innermost group; a stray 'end' with no open
+// group is ignored.
+func (s *parseState) popGroup() {
+	if len(s.groupStack) > 0 {
+		s.groupStack = s.groupStack[:len(s.groupStack)-1]
+	}
+}
+
 // ensureParticipant adds a participant with the given id and label if absent.
 // Returns false when the id was already known.
 func (s *parseState) ensureParticipant(id, label, pType string) {
@@ -149,38 +162,75 @@ func isIgnorableLine(line string) bool {
 	return line == "" || strings.HasPrefix(line, "%%")
 }
 
+// lineHandler attempts to parse one kind of sequence-diagram line, returning
+// true when the line was recognized and consumed.
+type lineHandler func(line string, state *parseState) bool
+
 // dispatchLine matches line against each known pattern in priority order and
 // updates state accordingly. Lines that match nothing are silently dropped
 // (matches the Mermaid-permissive behavior the original Parse had).
 func (p *SequenceParser) dispatchLine(line string, state *parseState) {
-	if p.headerPattern.MatchString(line) {
-		state.foundHeader = true
-		return
+	handlers := []lineHandler{
+		p.tryParseHeader,
+		p.tryParseParticipant,
+		p.tryParseMessage,
+		p.tryParseNote,
+		p.tryParseActivation,
+		p.tryParseGroupStart,
+		p.tryParseElse,
+		p.tryParseGroupEnd,
 	}
-	if p.tryParseParticipant(line, state) {
-		return
+	for _, handle := range handlers {
+		if handle(line, state) {
+			return
+		}
 	}
-	if p.tryParseMessage(line, state) {
-		return
+}
+
+// tryParseHeader attempts to match the 'sequenceDiagram' header line.
+func (p *SequenceParser) tryParseHeader(line string, state *parseState) bool {
+	if !p.headerPattern.MatchString(line) {
+		return false
 	}
-	if p.notePattern.MatchString(line) {
-		// Notes are visual enhancements; skipped in basic implementation.
-		return
+	state.foundHeader = true
+	return true
+}
+
+// tryParseNote matches note lines. Notes are visual enhancements; skipped in
+// the basic implementation.
+func (p *SequenceParser) tryParseNote(line string, _ *parseState) bool {
+	return p.notePattern.MatchString(line)
+}
+
+// tryParseActivation matches activate/deactivate lines. Activation bars are
+// visual enhancements; skipped.
+func (p *SequenceParser) tryParseActivation(line string, _ *parseState) bool {
+	return p.activatePattern.MatchString(line)
+}
+
+// tryParseGroupStart matches loop/rect/opt/alt/par/critical group openers and
+// pushes the group onto the stack.
+func (p *SequenceParser) tryParseGroupStart(line string, state *parseState) bool {
+	matches := p.loopStartPattern.FindStringSubmatch(line)
+	if matches == nil {
+		return false
 	}
-	if p.activatePattern.MatchString(line) {
-		// Activation bars are visual enhancements; skipped.
-		return
+	state.pushGroup(strings.ToLower(matches[1]))
+	return true
+}
+
+// tryParseElse matches 'else' branch lines inside alt/opt groups.
+func (p *SequenceParser) tryParseElse(line string, _ *parseState) bool {
+	return p.elsePattern.MatchString(line)
+}
+
+// tryParseGroupEnd matches 'end' lines and pops the innermost group.
+func (p *SequenceParser) tryParseGroupEnd(line string, state *parseState) bool {
+	if !p.loopEndPattern.MatchString(line) {
+		return false
 	}
-	if matches := p.loopStartPattern.FindStringSubmatch(line); matches != nil {
-		state.groupStack = append(state.groupStack, strings.ToLower(matches[1]))
-		return
-	}
-	if p.elsePattern.MatchString(line) {
-		return
-	}
-	if p.loopEndPattern.MatchString(line) && len(state.groupStack) > 0 {
-		state.groupStack = state.groupStack[:len(state.groupStack)-1]
-	}
+	state.popGroup()
+	return true
 }
 
 // tryParseParticipant attempts to match a "participant X" / "actor X as Y"

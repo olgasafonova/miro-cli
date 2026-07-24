@@ -172,7 +172,7 @@ func TestRunSearchHappyPath(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runSearch(context.Background(), g, "abc", "sprint", "", 50); err != nil {
+	if err := runSearch(context.Background(), g, searchParams{boardID: "abc", query: "sprint", limit: 50}); err != nil {
 		t.Fatalf("runSearch: %v", err)
 	}
 	var out searchResult
@@ -189,14 +189,14 @@ func TestRunSearchHappyPath(t *testing.T) {
 
 func TestRunSearchEmptyQueryIsUsageError(t *testing.T) {
 	g := &clictx.Globals{Stdout: io.Discard}
-	if err := runSearch(context.Background(), g, "abc", "   ", "", 50); err == nil {
+	if err := runSearch(context.Background(), g, searchParams{boardID: "abc", query: "   ", limit: 50}); err == nil {
 		t.Fatal("runSearch with blank query returned nil, want error")
 	}
 }
 
 func TestRunSearchEmptyBoardIDIsUsageError(t *testing.T) {
 	g := &clictx.Globals{Stdout: io.Discard}
-	if err := runSearch(context.Background(), g, "", "sprint", "", 50); err == nil {
+	if err := runSearch(context.Background(), g, searchParams{query: "sprint", limit: 50}); err == nil {
 		t.Fatal("runSearch with empty board_id returned nil, want error")
 	}
 }
@@ -210,7 +210,7 @@ func TestRunSearchAppliesTypeFilter(t *testing.T) {
 	defer srv.Close()
 
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runSearch(context.Background(), g, "abc", "x", "sticky_note", 25); err != nil {
+	if err := runSearch(context.Background(), g, searchParams{boardID: "abc", query: "x", itemType: "sticky_note", limit: 25}); err != nil {
 		t.Fatalf("runSearch: %v", err)
 	}
 	if !strings.Contains(gotQuery, "type=sticky_note") {
@@ -229,7 +229,7 @@ func TestRunSearchDryRunSkipsHTTP(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), DryRun: true}
-	if err := runSearch(context.Background(), g, "abc", "alpha", "", 0); err != nil {
+	if err := runSearch(context.Background(), g, searchParams{boardID: "abc", query: "alpha"}); err != nil {
 		t.Fatalf("runSearch: %v", err)
 	}
 	if !strings.Contains(stdout.String(), "DRY-RUN GET /v2/boards/abc/items") {
@@ -246,7 +246,7 @@ func TestRunSearchZeroLimitFallsBackToDefault(t *testing.T) {
 	defer srv.Close()
 
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runSearch(context.Background(), g, "abc", "x", "", 0); err != nil {
+	if err := runSearch(context.Background(), g, searchParams{boardID: "abc", query: "x"}); err != nil {
 		t.Fatalf("runSearch: %v", err)
 	}
 	if !strings.Contains(gotQuery, "limit=50") {

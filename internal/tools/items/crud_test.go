@@ -517,7 +517,7 @@ func TestRunAttachTagHappyPath(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runAttachTag(context.Background(), g, "b", "i1", "tag-1"); err != nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "b", itemID: "i1", tagID: "tag-1"}); err != nil {
 		t.Fatalf("runAttachTag: %v", err)
 	}
 	if gotMethod != http.MethodPost {
@@ -540,7 +540,7 @@ func TestRunAttachTagDoesNotRequireYes(t *testing.T) {
 
 	// Note: --yes is NOT set; attach-tag is non-destructive.
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runAttachTag(context.Background(), g, "b", "i", "t"); err != nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "b", itemID: "i", tagID: "t"}); err != nil {
 		t.Fatalf("runAttachTag without --yes: %v", err)
 	}
 }
@@ -548,13 +548,13 @@ func TestRunAttachTagDoesNotRequireYes(t *testing.T) {
 func TestRunAttachTagRejectsEmpty(t *testing.T) {
 	t.Parallel()
 	g := &clictx.Globals{Stdout: io.Discard}
-	if err := runAttachTag(context.Background(), g, "", "i", "t"); err == nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "", itemID: "i", tagID: "t"}); err == nil {
 		t.Error("empty board ID should error")
 	}
-	if err := runAttachTag(context.Background(), g, "b", "", "t"); err == nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "b", itemID: "", tagID: "t"}); err == nil {
 		t.Error("empty item ID should error")
 	}
-	if err := runAttachTag(context.Background(), g, "b", "i", ""); err == nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "b", itemID: "i", tagID: ""}); err == nil {
 		t.Error("empty tag ID should error")
 	}
 }
@@ -568,7 +568,7 @@ func TestRunAttachTagDryRunSkipsHTTP(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), DryRun: true}
-	if err := runAttachTag(context.Background(), g, "b", "i", "t"); err != nil {
+	if err := runAttachTag(context.Background(), g, attachTagParams{boardID: "b", itemID: "i", tagID: "t"}); err != nil {
 		t.Fatalf("runAttachTag: %v", err)
 	}
 	if !strings.Contains(stdout.String(), "DRY-RUN POST /v2/boards/b/items/i?tag_id=t") {
@@ -586,7 +586,7 @@ func TestRunDetachTagRefusesWithoutYes(t *testing.T) {
 	defer srv.Close()
 
 	g := &clictx.Globals{Stdout: io.Discard, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	err := runDetachTag(context.Background(), g, "b", "i", "t")
+	err := runDetachTag(context.Background(), g, detachTagParams{boardID: "b", itemID: "i", tagID: "t"})
 	if err == nil {
 		t.Fatal("detach-tag without --yes returned nil, want refusal")
 	}
@@ -610,7 +610,7 @@ func TestRunDetachTagWithYesCallsAPI(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), Yes: true}
-	if err := runDetachTag(context.Background(), g, "b", "i1", "tag-1"); err != nil {
+	if err := runDetachTag(context.Background(), g, detachTagParams{boardID: "b", itemID: "i1", tagID: "tag-1"}); err != nil {
 		t.Fatalf("runDetachTag: %v", err)
 	}
 	if gotMethod != http.MethodDelete {
@@ -633,7 +633,7 @@ func TestRunDetachTagDryRunSkipsHTTP(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), DryRun: true}
-	if err := runDetachTag(context.Background(), g, "b", "i", "t"); err != nil {
+	if err := runDetachTag(context.Background(), g, detachTagParams{boardID: "b", itemID: "i", tagID: "t"}); err != nil {
 		t.Fatalf("runDetachTag: %v", err)
 	}
 	if !strings.Contains(stdout.String(), "DRY-RUN DELETE /v2/boards/b/items/i?tag_id=t") {

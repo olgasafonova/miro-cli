@@ -26,7 +26,11 @@ func newDetachTagCmd(g *clictx.Globals) *cobra.Command {
 			"--yes). Use --dry-run to preview without sending.",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDetachTag(cmd.Context(), g, boardID, itemID, tagID)
+			return runDetachTag(cmd.Context(), g, detachTagParams{
+				boardID: boardID,
+				itemID:  itemID,
+				tagID:   tagID,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&boardID, "board-id", "", "Board ID (required)")
@@ -38,19 +42,27 @@ func newDetachTagCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-func runDetachTag(ctx context.Context, g *clictx.Globals, boardID, itemID, tagID string) error {
-	if err := miro.ValidateID("board_id", boardID); err != nil {
+// detachTagParams bundles the runDetachTag inputs: the board, the item
+// carrying the tag, and the tag to detach.
+type detachTagParams struct {
+	boardID string
+	itemID  string
+	tagID   string
+}
+
+func runDetachTag(ctx context.Context, g *clictx.Globals, p detachTagParams) error {
+	if err := miro.ValidateID("board_id", p.boardID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("item_id", itemID); err != nil {
+	if err := miro.ValidateID("item_id", p.itemID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("tag_id", tagID); err != nil {
+	if err := miro.ValidateID("tag_id", p.tagID); err != nil {
 		return err
 	}
 	q := url.Values{}
-	q.Set("tag_id", tagID)
-	path := "/v2/boards/" + boardID + "/items/" + itemID + "?" + q.Encode()
+	q.Set("tag_id", p.tagID)
+	path := "/v2/boards/" + p.boardID + "/items/" + p.itemID + "?" + q.Encode()
 	if g.DryRun {
 		return g.EmitDryRun("DELETE", path)
 	}
@@ -64,5 +76,5 @@ func runDetachTag(ctx context.Context, g *clictx.Globals, boardID, itemID, tagID
 	if err := client.Delete(ctx, path); err != nil {
 		return err
 	}
-	return g.EmitJSON(detachTagResult{Detached: true, ItemID: itemID, TagID: tagID})
+	return g.EmitJSON(detachTagResult{Detached: true, ItemID: p.itemID, TagID: p.tagID})
 }

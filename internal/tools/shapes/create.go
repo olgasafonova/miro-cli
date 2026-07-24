@@ -25,6 +25,13 @@ type createFlags struct {
 	parentID          string
 }
 
+// hasStyleOverrides reports whether any style-affecting flag was set. The
+// request omits the style block entirely otherwise, so the API applies its
+// own defaults instead of receiving empty strings.
+func (f createFlags) hasStyleOverrides() bool {
+	return f.color != "" || f.textColor != "" || f.textAlign != "" || f.textAlignVertical != ""
+}
+
 func newCreateCmd(g *clictx.Globals) *cobra.Command {
 	var f createFlags
 	cmd := &cobra.Command{
@@ -81,7 +88,7 @@ func buildCreateRequest(f createFlags) createRequest {
 	req := createRequest{
 		Data: dataField{Content: f.content, Shape: f.shape},
 	}
-	if f.color != "" || f.textColor != "" || f.textAlign != "" || f.textAlignVertical != "" {
+	if f.hasStyleOverrides() {
 		req.Style = &styleField{
 			FillColor:         f.color,
 			Color:             f.textColor,

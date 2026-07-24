@@ -74,60 +74,76 @@ func runBulkDelete(ctx context.Context, g *clictx.Globals, f bulkDeleteFlags) er
 		return err
 	}
 
-	results := miro.FanOut(ctx, ids, g.Concurrency, func(ctx context.Context, i int, id string) bulkOpResult {
+	results := miro.FanOut(ctx, ids, g.Concurrency, bulkDeleteWorker(client, f.boardID))
+	return g.EmitJSON(tallyBulk(f.boardID, results))
+}
+
+// bulkDeleteWorker returns the per-ID FanOut callback. Each call
+// validates the ID before it is spliced into the URL path, so a
+// malformed ID fails item-locally instead of reaching the API.
+func bulkDeleteWorker(client *miro.Client, boardID string) func(context.Context, int, string) bulkOpResult {
+	return func(ctx context.Context, i int, id string) bulkOpResult {
 		if cerr := ctx.Err(); cerr != nil {
 			return bulkOpResult{ID: id, Status: "error", Error: cerr.Error()}
 		}
 		if verr := miro.ValidateID("id", id); verr != nil {
 			return bulkOpResult{ID: id, Status: "error", Error: fmt.Sprintf("ids[%d]: %s", i, verr)}
 		}
-		path := "/v2/boards/" + f.boardID + "/items/" + id
+		path := "/v2/boards/" + boardID + "/items/" + id
 		if derr := client.Delete(ctx, path); derr != nil {
 			return bulkOpResult{ID: id, Status: "error", Error: derr.Error()}
 		}
 		return bulkOpResult{ID: id, Status: "success"}
-	})
-	return g.EmitJSON(tallyBulk(f.boardID, results))
+	}
 }
 
 // loadIDs parses the three input flags into a single ID slice, enforcing
 // exactly-one. Empty / duplicate IDs are kept as-is so the per-call API
 // surfaces the same error a single delete would.
 func loadIDs(f bulkDeleteFlags) ([]string, error) {
-	set := 0
+	if err := validateIDSource(f); err != nil {
+		return nil, err
+	}
 	if f.ids != "" {
-		set++
+		return parseCommaIDs(f.ids)
 	}
-	if f.idsFile != "" {
-		set++
-	}
-	if f.idsJSON != "" {
-		set++
+	return parseJSONIDs(f)
+}
+
+// validateIDSource enforces that exactly one of the three ID input flags
+// is set. bulk-delete has a third source (--ids shorthand) on top of the
+// file/inline pair, so it carries its own three-way messages instead of
+// requireExactlyOneSource.
+func validateIDSource(f bulkDeleteFlags) error {
+	set := 0
+	for _, v := range []string{f.ids, f.idsFile, f.idsJSON} {
+		if v != "" {
+			set++
+		}
 	}
 	if set == 0 {
-		return nil, errors.New("one of --ids, --ids-file, or --ids-json is required")
+		return errors.New("one of --ids, --ids-file, or --ids-json is required")
 	}
 	if set > 1 {
-		return nil, errors.New("--ids, --ids-file, and --ids-json are mutually exclusive")
+		return errors.New("--ids, --ids-file, and --ids-json are mutually exclusive")
 	}
+	return nil
+}
 
-	if f.ids != "" {
-		out := splitTrim(f.ids)
-		if len(out) == 0 {
-			return nil, errors.New("--ids parsed to an empty list")
-		}
-		return out, nil
+// parseCommaIDs parses the --ids comma-separated shorthand.
+func parseCommaIDs(s string) ([]string, error) {
+	out := splitTrim(s)
+	if len(out) == 0 {
+		return nil, errors.New("--ids parsed to an empty list")
 	}
+	return out, nil
+}
 
-	var raw []byte
-	if f.idsFile != "" {
-		var err error
-		raw, err = clictx.ReadFileOrStdin(f.idsFile)
-		if err != nil {
-			return nil, fmt.Errorf("read --ids-file: %w", err)
-		}
-	} else {
-		raw = []byte(f.idsJSON)
+// parseJSONIDs decodes the JSON-array form from --ids-file or --ids-json.
+func parseJSONIDs(f bulkDeleteFlags) ([]string, error) {
+	raw, err := readRawJSONSource("ids-file", f.idsFile, f.idsJSON)
+	if err != nil {
+		return nil, err
 	}
 	var arr []string
 	if err := json.Unmarshal(raw, &arr); err != nil {
