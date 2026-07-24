@@ -178,52 +178,62 @@ func validateUpdateFlags(f updateFlags) error {
 // pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool, error) {
 	var req updateRequest
-	any := false
-
-	start, ok, err := buildEndpointFromFlags(endpointFlags{
-		itemID: f.startItemID, itemIDSet: f.startItemIDSet,
-		snapTo: f.startSnapTo, snapToSet: f.startSnapToSet,
-		position: f.startPos, positionSet: f.startPosSet,
-	})
+	endpointsSet, err := applyEndpointUpdates(f, &req)
 	if err != nil {
 		return updateRequest{}, false, err
+	}
+	contentSet, err := applyContentUpdates(f, &req)
+	if err != nil {
+		return updateRequest{}, false, err
+	}
+	return req, endpointsSet || contentSet, nil
+}
+
+// applyEndpointUpdates copies the start/end endpoint sections the user
+// touched onto the PATCH body. Reports whether either endpoint was set.
+func applyEndpointUpdates(f updateFlags, req *updateRequest) (bool, error) {
+	changed := false
+	start, ok, err := buildEndpointFromFlags(f.startEndpoint())
+	if err != nil {
+		return false, err
 	}
 	if ok {
 		req.StartItem = start
-		any = true
+		changed = true
 	}
-
-	end, ok, err := buildEndpointFromFlags(endpointFlags{
-		itemID: f.endItemID, itemIDSet: f.endItemIDSet,
-		snapTo: f.endSnapTo, snapToSet: f.endSnapToSet,
-		position: f.endPos, positionSet: f.endPosSet,
-	})
+	end, ok, err := buildEndpointFromFlags(f.endEndpoint())
 	if err != nil {
-		return updateRequest{}, false, err
+		return false, err
 	}
 	if ok {
 		req.EndItem = end
-		any = true
+		changed = true
 	}
+	return changed, nil
+}
 
+// applyContentUpdates copies the shape, caption, and style sections the
+// user touched onto the PATCH body. Reports whether any of them was set.
+func applyContentUpdates(f updateFlags, req *updateRequest) (bool, error) {
+	changed := false
 	if f.shapeSet {
 		req.Shape = f.shape
-		any = true
+		changed = true
 	}
 	if f.captionsSet {
 		captions, err := buildCaptions(f.captions)
 		if err != nil {
-			return updateRequest{}, false, err
+			return false, err
 		}
 		req.Captions = captions
 		req.captionsSet = true
-		any = true
+		changed = true
 	}
 	if style := buildUpdateStyle(f); style != nil {
 		req.Style = style
-		any = true
+		changed = true
 	}
-	return req, any, nil
+	return changed, nil
 }
 
 // endpointFlags groups one endpoint's (item/snap/position) flag values
@@ -237,11 +247,36 @@ type endpointFlags struct {
 	positionSet bool
 }
 
+// anySet reports whether the user touched any of this endpoint's flags.
+func (ef endpointFlags) anySet() bool {
+	return ef.itemIDSet || ef.snapToSet || ef.positionSet
+}
+
+// startEndpoint projects the start-side flag values and presence bits
+// into the shape buildEndpointFromFlags consumes.
+func (f updateFlags) startEndpoint() endpointFlags {
+	return endpointFlags{
+		itemID: f.startItemID, itemIDSet: f.startItemIDSet,
+		snapTo: f.startSnapTo, snapToSet: f.startSnapToSet,
+		position: f.startPos, positionSet: f.startPosSet,
+	}
+}
+
+// endEndpoint projects the end-side flag values and presence bits into
+// the shape buildEndpointFromFlags consumes.
+func (f updateFlags) endEndpoint() endpointFlags {
+	return endpointFlags{
+		itemID: f.endItemID, itemIDSet: f.endItemIDSet,
+		snapTo: f.endSnapTo, snapToSet: f.endSnapToSet,
+		position: f.endPos, positionSet: f.endPosSet,
+	}
+}
+
 // buildEndpointFromFlags reports whether any of an endpoint's fields were
 // set and, if so, returns the constructed itemEndpoint. ok=false means
 // the caller should leave that endpoint untouched in the PATCH body.
 func buildEndpointFromFlags(ef endpointFlags) (*itemEndpoint, bool, error) {
-	if !ef.itemIDSet && !ef.snapToSet && !ef.positionSet {
+	if !ef.anySet() {
 		return nil, false, nil
 	}
 	ep := &itemEndpoint{}
