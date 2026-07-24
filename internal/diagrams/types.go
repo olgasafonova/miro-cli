@@ -142,7 +142,14 @@ func (d *Diagram) AddSubGraph(sg *SubGraph) {
 
 // GetNodeOrder returns nodes in topological order for layout.
 func (d *Diagram) GetNodeOrder() []string {
-	// Build adjacency list
+	incoming, outgoing := d.buildAdjacency()
+	order := kahnTopologicalOrder(incoming, outgoing)
+	return d.appendCycleNodes(order)
+}
+
+// buildAdjacency builds the in-degree and adjacency maps for the diagram's
+// nodes, skipping edges that reference undefined nodes.
+func (d *Diagram) buildAdjacency() (map[string]int, map[string][]string) {
 	incoming := make(map[string]int)
 	outgoing := make(map[string][]string)
 
@@ -152,48 +159,73 @@ func (d *Diagram) GetNodeOrder() []string {
 	}
 
 	for _, edge := range d.Edges {
-		if _, ok := d.Nodes[edge.FromID]; !ok {
-			continue
+		if d.hasBothEndpoints(edge) {
+			incoming[edge.ToID]++
+			outgoing[edge.FromID] = append(outgoing[edge.FromID], edge.ToID)
 		}
-		if _, ok := d.Nodes[edge.ToID]; !ok {
-			continue
-		}
-		incoming[edge.ToID]++
-		outgoing[edge.FromID] = append(outgoing[edge.FromID], edge.ToID)
 	}
 
-	// Kahn's algorithm for topological sort
-	var queue []string
-	for id, count := range incoming {
-		if count == 0 {
-			queue = append(queue, id)
-		}
-	}
+	return incoming, outgoing
+}
+
+// hasBothEndpoints reports whether both edge endpoints are defined nodes.
+func (d *Diagram) hasBothEndpoints(edge *Edge) bool {
+	_, fromOK := d.Nodes[edge.FromID]
+	_, toOK := d.Nodes[edge.ToID]
+	return fromOK && toOK
+}
+
+// kahnTopologicalOrder runs Kahn's algorithm over the given in-degree and
+// adjacency maps, consuming the incoming map as it goes. Nodes that are part
+// of a cycle are left out of the result.
+func kahnTopologicalOrder(incoming map[string]int, outgoing map[string][]string) []string {
+	queue := zeroInDegreeNodes(incoming)
 
 	var order []string
 	for len(queue) > 0 {
 		node := queue[0]
 		queue = queue[1:]
 		order = append(order, node)
-
-		for _, neighbor := range outgoing[node] {
-			incoming[neighbor]--
-			if incoming[neighbor] == 0 {
-				queue = append(queue, neighbor)
-			}
-		}
+		queue = releaseNeighbors(node, incoming, outgoing, queue)
 	}
 
-	// Add any remaining nodes (cycles)
-	for id := range d.Nodes {
-		found := false
-		for _, ordered := range order {
-			if ordered == id {
-				found = true
-				break
-			}
+	return order
+}
+
+// zeroInDegreeNodes returns the nodes with no incoming edges — the starting
+// frontier for the topological sort.
+func zeroInDegreeNodes(incoming map[string]int) []string {
+	var queue []string
+	for id, count := range incoming {
+		if count == 0 {
+			queue = append(queue, id)
 		}
-		if !found {
+	}
+	return queue
+}
+
+// releaseNeighbors decrements the in-degree of node's neighbors and appends
+// any that reach zero to the queue, returning the updated queue.
+func releaseNeighbors(node string, incoming map[string]int, outgoing map[string][]string, queue []string) []string {
+	for _, neighbor := range outgoing[node] {
+		incoming[neighbor]--
+		if incoming[neighbor] == 0 {
+			queue = append(queue, neighbor)
+		}
+	}
+	return queue
+}
+
+// appendCycleNodes appends any nodes the topological sort could not reach
+// (members of cycles) to the order.
+func (d *Diagram) appendCycleNodes(order []string) []string {
+	ordered := make(map[string]bool, len(order))
+	for _, id := range order {
+		ordered[id] = true
+	}
+
+	for id := range d.Nodes {
+		if !ordered[id] {
 			order = append(order, id)
 		}
 	}
