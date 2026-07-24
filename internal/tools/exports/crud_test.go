@@ -390,7 +390,7 @@ func TestRunGetTaskLinkHappyPath(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
-	if err := runGetTaskLink(context.Background(), g, "o", "j", "t"); err != nil {
+	if err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "o", jobID: "j", taskID: "t"}); err != nil {
 		t.Fatalf("runGetTaskLink: %v", err)
 	}
 	if gotMethod != http.MethodPost {
@@ -407,13 +407,13 @@ func TestRunGetTaskLinkHappyPath(t *testing.T) {
 func TestRunGetTaskLinkRejectsEmptyArgs(t *testing.T) {
 	t.Parallel()
 	g := &clictx.Globals{Stdout: io.Discard}
-	if err := runGetTaskLink(context.Background(), g, "", "j", "t"); err == nil {
+	if err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "", jobID: "j", taskID: "t"}); err == nil {
 		t.Fatal("runGetTaskLink with empty org returned nil, want error")
 	}
-	if err := runGetTaskLink(context.Background(), g, "o", "", "t"); err == nil {
+	if err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "o", jobID: "", taskID: "t"}); err == nil {
 		t.Fatal("runGetTaskLink with empty job returned nil, want error")
 	}
-	if err := runGetTaskLink(context.Background(), g, "o", "j", ""); err == nil {
+	if err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "o", jobID: "j", taskID: ""}); err == nil {
 		t.Fatal("runGetTaskLink with empty task returned nil, want error")
 	}
 }
@@ -421,7 +421,7 @@ func TestRunGetTaskLinkRejectsEmptyArgs(t *testing.T) {
 func TestRunGetTaskLinkRejectsMissingTaskID(t *testing.T) {
 	t.Parallel()
 	g := &clictx.Globals{Stdout: io.Discard}
-	err := runGetTaskLink(context.Background(), g, "o", "j", "")
+	err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "o", jobID: "j", taskID: ""})
 	if err == nil {
 		t.Fatal("runGetTaskLink with empty --task-id returned nil, want error")
 	}
@@ -439,7 +439,7 @@ func TestRunGetTaskLinkDryRun(t *testing.T) {
 
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), DryRun: true}
-	if err := runGetTaskLink(context.Background(), g, "o", "j", "t"); err != nil {
+	if err := runGetTaskLink(context.Background(), g, getTaskLinkParams{orgID: "o", jobID: "j", taskID: "t"}); err != nil {
 		t.Fatalf("runGetTaskLink: %v", err)
 	}
 	if !strings.Contains(stdout.String(), "DRY-RUN POST /v2/orgs/o/boards/export/jobs/j/tasks/t/export-link") {

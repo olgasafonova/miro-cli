@@ -40,10 +40,13 @@ func newShareCmd(g *clictx.Globals) *cobra.Command {
 			"call.",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runShare(cmd.Context(), g, shareDeps{}, args[0], shareRequest{
-				Emails:  []string{email},
-				Role:    role,
-				Message: message,
+			return runShare(cmd.Context(), g, shareParams{
+				boardID: args[0],
+				req: shareRequest{
+					Emails:  []string{email},
+					Role:    role,
+					Message: message,
+				},
 			})
 		},
 	}
@@ -54,29 +57,37 @@ func newShareCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-// runShare is the testable entry point. deps.allowlist may be nil, in
+// shareParams bundles the runShare inputs: the injectable deps, the
+// target board, and the invitation request.
+type shareParams struct {
+	deps    shareDeps
+	boardID string
+	req     shareRequest
+}
+
+// runShare is the testable entry point. p.deps.allowlist may be nil, in
 // which case we lazily load from the env. Tests inject a pre-built
 // allowlist to avoid depending on process-wide env state.
 //
 // Gate order is load-bearing: input validation, then the fail-closed
 // allowlist (so --dry-run still validates config), then dry-run, then
 // the --yes confirmation, then the real POST.
-func runShare(ctx context.Context, g *clictx.Globals, deps shareDeps, boardID string, req shareRequest) error {
-	if err := validateShareInput(boardID, req); err != nil {
+func runShare(ctx context.Context, g *clictx.Globals, p shareParams) error {
+	if err := validateShareInput(p.boardID, p.req); err != nil {
 		return err
 	}
-	if err := authorizeShare(deps, req.Emails[0]); err != nil {
+	if err := authorizeShare(p.deps, p.req.Emails[0]); err != nil {
 		return err
 	}
 
-	path := "/v2/boards/" + boardID + "/members"
+	path := "/v2/boards/" + p.boardID + "/members"
 	if g.DryRun {
 		return g.EmitDryRun("POST", path)
 	}
 	if !g.Yes {
 		return &miro.ConfigError{Reason: "refusing to share board without --yes; pass --yes to confirm or --dry-run to preview"}
 	}
-	return postShare(ctx, g, path, req)
+	return postShare(ctx, g, path, p.req)
 }
 
 // validateShareInput rejects malformed board IDs, missing emails, and

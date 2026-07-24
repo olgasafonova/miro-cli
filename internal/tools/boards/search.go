@@ -52,7 +52,12 @@ func newSearchCmd(g *clictx.Globals) *cobra.Command {
 			"shape, text). Returns { board_id, query, matches[], total }.",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runSearch(cmd.Context(), g, args[0], query, itemType, limit)
+			return runSearch(cmd.Context(), g, searchParams{
+				boardID:  args[0],
+				query:    query,
+				itemType: itemType,
+				limit:    limit,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&query, "query", "", "Search query (required)")
@@ -62,18 +67,27 @@ func newSearchCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-func runSearch(ctx context.Context, g *clictx.Globals, boardID, query, itemType string, limit int) error {
-	if err := miro.ValidateID("board_id", boardID); err != nil {
+// searchParams bundles the runSearch inputs: the target board, the
+// query text, and the optional type/limit scan narrowing.
+type searchParams struct {
+	boardID  string
+	query    string
+	itemType string
+	limit    int
+}
+
+func runSearch(ctx context.Context, g *clictx.Globals, p searchParams) error {
+	if err := miro.ValidateID("board_id", p.boardID); err != nil {
 		return err
 	}
-	if strings.TrimSpace(query) == "" {
+	if strings.TrimSpace(p.query) == "" {
 		return errors.New("--query is required")
 	}
-	if limit <= 0 {
-		limit = defaultSearchLimit
+	if p.limit <= 0 {
+		p.limit = defaultSearchLimit
 	}
 
-	lf := items.ListFlags{BoardID: boardID, ItemType: itemType, Limit: limit}
+	lf := items.ListFlags{BoardID: p.boardID, ItemType: p.itemType, Limit: p.limit}
 	path := items.BuildListPath(lf)
 	if g.DryRun {
 		return g.EmitDryRun("GET", path)
@@ -88,10 +102,10 @@ func runSearch(ctx context.Context, g *clictx.Globals, boardID, query, itemType 
 		return err
 	}
 
-	matches := scanItems(resp.Data, query)
+	matches := scanItems(resp.Data, p.query)
 	return g.EmitJSON(searchResult{
-		BoardID: boardID,
-		Query:   query,
+		BoardID: p.boardID,
+		Query:   p.query,
 		Matches: matches,
 		Total:   len(matches),
 	})

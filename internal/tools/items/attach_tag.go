@@ -24,7 +24,11 @@ func newAttachTagCmd(g *clictx.Globals) *cobra.Command {
 			"may reject the call.",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAttachTag(cmd.Context(), g, boardID, itemID, tagID)
+			return runAttachTag(cmd.Context(), g, attachTagParams{
+				boardID: boardID,
+				itemID:  itemID,
+				tagID:   tagID,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&boardID, "board-id", "", "Board ID (required)")
@@ -36,19 +40,27 @@ func newAttachTagCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-func runAttachTag(ctx context.Context, g *clictx.Globals, boardID, itemID, tagID string) error {
-	if err := miro.ValidateID("board_id", boardID); err != nil {
+// attachTagParams bundles the runAttachTag inputs: the board, the item
+// receiving the tag, and the tag to attach.
+type attachTagParams struct {
+	boardID string
+	itemID  string
+	tagID   string
+}
+
+func runAttachTag(ctx context.Context, g *clictx.Globals, p attachTagParams) error {
+	if err := miro.ValidateID("board_id", p.boardID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("item_id", itemID); err != nil {
+	if err := miro.ValidateID("item_id", p.itemID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("tag_id", tagID); err != nil {
+	if err := miro.ValidateID("tag_id", p.tagID); err != nil {
 		return err
 	}
 	q := url.Values{}
-	q.Set("tag_id", tagID)
-	path := "/v2/boards/" + boardID + "/items/" + itemID + "?" + q.Encode()
+	q.Set("tag_id", p.tagID)
+	path := "/v2/boards/" + p.boardID + "/items/" + p.itemID + "?" + q.Encode()
 	if g.DryRun {
 		return g.EmitDryRun("POST", path)
 	}
@@ -64,7 +76,7 @@ func runAttachTag(ctx context.Context, g *clictx.Globals, boardID, itemID, tagID
 	if resp == nil {
 		// 204-style response: synthesize an envelope so agents have a
 		// deterministic JSON shape to branch on.
-		resp = map[string]any{"attached": true, "item_id": itemID, "tag_id": tagID}
+		resp = map[string]any{"attached": true, "item_id": p.itemID, "tag_id": p.tagID}
 	}
 	return g.EmitJSON(resp)
 }

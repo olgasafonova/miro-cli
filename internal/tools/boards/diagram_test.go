@@ -74,7 +74,7 @@ func TestDiagramHappyPath(t *testing.T) {
 	}
 
 	f := diagramFlags{diagram: simpleFlowchart, outputMode: "discrete"}
-	if err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f); err != nil {
+	if err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f}); err != nil {
 		t.Fatalf("runDiagram: %v", err)
 	}
 
@@ -109,7 +109,7 @@ func TestDiagramGroupedMode(t *testing.T) {
 	g := &clictx.Globals{Stdout: &stdout, Stderr: &stderr, Client: client}
 	f := diagramFlags{diagram: simpleFlowchart, outputMode: "grouped"}
 
-	if err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f); err != nil {
+	if err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f}); err != nil {
 		t.Fatalf("runDiagram: %v", err)
 	}
 
@@ -135,7 +135,7 @@ func TestDiagramFramedMode(t *testing.T) {
 	g := &clictx.Globals{Stdout: &stdout, Stderr: &stderr, Client: client}
 	f := diagramFlags{diagram: simpleFlowchart, outputMode: "framed"}
 
-	if err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f); err != nil {
+	if err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f}); err != nil {
 		t.Fatalf("runDiagram: %v", err)
 	}
 
@@ -155,7 +155,7 @@ func TestDiagramFramedMode(t *testing.T) {
 
 func TestDiagramRejectsEmptyBoardID(t *testing.T) {
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Stderr: new(bytes.Buffer)}
-	err := runDiagram(t.Context(), g, strings.NewReader(""), "", diagramFlags{diagram: simpleFlowchart})
+	err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "", flags: diagramFlags{diagram: simpleFlowchart}})
 	if err == nil {
 		t.Fatal("empty board_id should error")
 	}
@@ -166,7 +166,7 @@ func TestDiagramRejectsEmptyBoardID(t *testing.T) {
 
 func TestDiagramRejectsMissingSource(t *testing.T) {
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Stderr: new(bytes.Buffer)}
-	err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", diagramFlags{})
+	err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: diagramFlags{}})
 	if err == nil {
 		t.Fatal("missing --diagram/--diagram-file/--diagram-stdin should error")
 	}
@@ -178,7 +178,7 @@ func TestDiagramRejectsMissingSource(t *testing.T) {
 func TestDiagramRejectsMutuallyExclusiveSources(t *testing.T) {
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Stderr: new(bytes.Buffer)}
 	f := diagramFlags{diagram: simpleFlowchart, diagramStdin: true}
-	err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f)
+	err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f})
 	if err == nil {
 		t.Fatal("both --diagram and --diagram-stdin should error")
 	}
@@ -192,7 +192,7 @@ func TestDiagramRejectsInvalidOutputMode(t *testing.T) {
 	client := miro.New(&miro.Config{Token: "test-token", BaseURL: srv.URL})
 	g := &clictx.Globals{Stdout: new(bytes.Buffer), Stderr: new(bytes.Buffer), Client: client}
 	f := diagramFlags{diagram: simpleFlowchart, outputMode: "weird"}
-	err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f)
+	err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f})
 	if err == nil {
 		t.Fatal("invalid --output-mode should error")
 	}
@@ -209,7 +209,7 @@ func TestDiagramDryRunSkipsHTTP(t *testing.T) {
 	g := &clictx.Globals{Stdout: &stdout, Stderr: &stderr, Client: client, DryRun: true}
 	f := diagramFlags{diagram: simpleFlowchart, outputMode: "discrete"}
 
-	if err := runDiagram(t.Context(), g, strings.NewReader(""), "board-abc", f); err != nil {
+	if err := runDiagram(t.Context(), g, diagramParams{stdin: strings.NewReader(""), boardID: "board-abc", flags: f}); err != nil {
 		t.Fatalf("dry-run runDiagram: %v", err)
 	}
 	if got := counter.Load(); got != 0 {
@@ -229,7 +229,7 @@ func TestDiagramStdinSource(t *testing.T) {
 	f := diagramFlags{diagramStdin: true, outputMode: "discrete"}
 
 	stdin := strings.NewReader(simpleFlowchart)
-	if err := runDiagram(t.Context(), g, stdin, "board-abc", f); err != nil {
+	if err := runDiagram(t.Context(), g, diagramParams{stdin: stdin, boardID: "board-abc", flags: f}); err != nil {
 		t.Fatalf("stdin runDiagram: %v", err)
 	}
 	var res diagramResult

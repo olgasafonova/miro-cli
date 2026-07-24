@@ -33,9 +33,9 @@ func TestRunShareRejectsEmailOutsideAllowlist(t *testing.T) {
 
 	g := &clictx.Globals{Stdout: io.Discard, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), Yes: true}
 	deps := shareDeps{allowlist: allowed()}
-	err := runShare(context.Background(), g, deps, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: deps, boardID: "abc", req: shareRequest{
 		Emails: []string{"attacker@evil.com"}, Role: "viewer",
-	})
+	}})
 	if err == nil {
 		t.Fatal("runShare to disallowed domain returned nil, want allowlist error")
 	}
@@ -55,9 +55,9 @@ func TestRunShareEmptyAllowlistBlocksEverything(t *testing.T) {
 
 	g := &clictx.Globals{Stdout: io.Discard, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), Yes: true}
 	deps := shareDeps{allowlist: blocked()}
-	err := runShare(context.Background(), g, deps, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: deps, boardID: "abc", req: shareRequest{
 		Emails: []string{"alice@tietoevry.com"}, Role: "viewer",
-	})
+	}})
 	if err == nil {
 		t.Fatal("empty allowlist accepted share — fail-closed default violated")
 	}
@@ -74,9 +74,9 @@ func TestRunShareRefusesWithoutYes(t *testing.T) {
 
 	g := &clictx.Globals{Stdout: io.Discard, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL})}
 	deps := shareDeps{allowlist: allowed()}
-	err := runShare(context.Background(), g, deps, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: deps, boardID: "abc", req: shareRequest{
 		Emails: []string{"alice@tietoevry.com"}, Role: "viewer",
-	})
+	}})
 	if err == nil {
 		t.Fatal("share without --yes returned nil, want refusal")
 	}
@@ -102,9 +102,9 @@ func TestRunShareHappyPath(t *testing.T) {
 	var stdout bytes.Buffer
 	g := &clictx.Globals{Stdout: &stdout, Client: miro.New(&miro.Config{Token: "t", BaseURL: srv.URL}), Yes: true}
 	deps := shareDeps{allowlist: allowed()}
-	err := runShare(context.Background(), g, deps, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: deps, boardID: "abc", req: shareRequest{
 		Emails: []string{"alice@tietoevry.com"}, Role: "commenter", Message: "join us",
-	})
+	}})
 	if err != nil {
 		t.Fatalf("runShare: %v", err)
 	}
@@ -139,16 +139,16 @@ func TestRunShareDryRunRunsAllowlistButSkipsHTTP(t *testing.T) {
 
 	// First: blocked-by-allowlist should still error in dry-run, since
 	// dry-run is for previewing valid requests, not bypassing the gate.
-	if err := runShare(context.Background(), g, shareDeps{allowlist: allowed()}, "abc", shareRequest{
+	if err := runShare(context.Background(), g, shareParams{deps: shareDeps{allowlist: allowed()}, boardID: "abc", req: shareRequest{
 		Emails: []string{"attacker@evil.com"}, Role: "viewer",
-	}); err == nil {
+	}}); err == nil {
 		t.Error("dry-run with disallowed domain returned nil, want allowlist error")
 	}
 
 	// Then: allowed email in dry-run prints preview line, no HTTP.
-	if err := runShare(context.Background(), g, shareDeps{allowlist: allowed()}, "abc", shareRequest{
+	if err := runShare(context.Background(), g, shareParams{deps: shareDeps{allowlist: allowed()}, boardID: "abc", req: shareRequest{
 		Emails: []string{"alice@tietoevry.com"}, Role: "viewer",
-	}); err != nil {
+	}}); err != nil {
 		t.Fatalf("runShare dry-run with allowed email: %v", err)
 	}
 	if !strings.Contains(stdout.String(), "DRY-RUN POST /v2/boards/abc/members") {
@@ -158,9 +158,9 @@ func TestRunShareDryRunRunsAllowlistButSkipsHTTP(t *testing.T) {
 
 func TestRunShareRejectsInvalidRole(t *testing.T) {
 	g := &clictx.Globals{Stdout: io.Discard}
-	err := runShare(context.Background(), g, shareDeps{allowlist: allowed()}, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: shareDeps{allowlist: allowed()}, boardID: "abc", req: shareRequest{
 		Emails: []string{"alice@tietoevry.com"}, Role: "admin",
-	})
+	}})
 	if err == nil {
 		t.Fatal("runShare with invalid role returned nil, want error")
 	}
@@ -171,9 +171,9 @@ func TestRunShareRejectsInvalidRole(t *testing.T) {
 
 func TestRunShareRequiresEmail(t *testing.T) {
 	g := &clictx.Globals{Stdout: io.Discard}
-	err := runShare(context.Background(), g, shareDeps{allowlist: allowed()}, "abc", shareRequest{
+	err := runShare(context.Background(), g, shareParams{deps: shareDeps{allowlist: allowed()}, boardID: "abc", req: shareRequest{
 		Emails: []string{""}, Role: "viewer",
-	})
+	}})
 	if err == nil {
 		t.Fatal("runShare with empty email returned nil, want error")
 	}

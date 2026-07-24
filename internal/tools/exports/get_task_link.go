@@ -23,7 +23,11 @@ func newGetTaskLinkCmd(g *clictx.Globals) *cobra.Command {
 			"task's export artifact. Each task in a job has its own link.",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGetTaskLink(cmd.Context(), g, orgID, jobID, taskID)
+			return runGetTaskLink(cmd.Context(), g, getTaskLinkParams{
+				orgID:  orgID,
+				jobID:  jobID,
+				taskID: taskID,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&orgID, "org-id", "", "Organization ID (required)")
@@ -35,17 +39,25 @@ func newGetTaskLinkCmd(g *clictx.Globals) *cobra.Command {
 	return cmd
 }
 
-func runGetTaskLink(ctx context.Context, g *clictx.Globals, orgID, jobID, taskID string) error {
-	if err := miro.ValidateID("org_id", orgID); err != nil {
+// getTaskLinkParams bundles the runGetTaskLink inputs: the org, the
+// export job, and the task whose download link is requested.
+type getTaskLinkParams struct {
+	orgID  string
+	jobID  string
+	taskID string
+}
+
+func runGetTaskLink(ctx context.Context, g *clictx.Globals, p getTaskLinkParams) error {
+	if err := miro.ValidateID("org_id", p.orgID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("job_id", jobID); err != nil {
+	if err := miro.ValidateID("job_id", p.jobID); err != nil {
 		return err
 	}
-	if err := miro.ValidateID("task_id", taskID); err != nil {
+	if err := miro.ValidateID("task_id", p.taskID); err != nil {
 		return err
 	}
-	path := "/v2/orgs/" + orgID + "/boards/export/jobs/" + jobID + "/tasks/" + taskID + "/export-link"
+	path := "/v2/orgs/" + p.orgID + "/boards/export/jobs/" + p.jobID + "/tasks/" + p.taskID + "/export-link"
 	if g.DryRun {
 		return g.EmitDryRun("POST", path)
 	}

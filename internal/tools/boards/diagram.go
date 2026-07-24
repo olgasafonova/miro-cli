@@ -47,7 +47,11 @@ func newDiagramCmd(g *clictx.Globals) *cobra.Command {
 			"shape API is GA-stable.",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDiagram(cmd.Context(), g, cmd.InOrStdin(), args[0], f)
+			return runDiagram(cmd.Context(), g, diagramParams{
+				stdin:   cmd.InOrStdin(),
+				boardID: args[0],
+				flags:   f,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&f.diagram, "diagram", "", "Mermaid source as a string")
@@ -81,26 +85,34 @@ type diagramResult struct {
 	Message           string   `json:"message"`
 }
 
-func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID string, f diagramFlags) error {
-	if err := miro.ValidateID("board_id", boardID); err != nil {
+// diagramParams bundles the runDiagram inputs: the stdin source for
+// --diagram-stdin, the target board, and the parsed flag set.
+type diagramParams struct {
+	stdin   io.Reader
+	boardID string
+	flags   diagramFlags
+}
+
+func runDiagram(ctx context.Context, g *clictx.Globals, p diagramParams) error {
+	if err := miro.ValidateID("board_id", p.boardID); err != nil {
 		return err
 	}
-	diagram, err := parseDiagram(stdin, f)
+	diagram, err := parseDiagram(p.stdin, p.flags)
 	if err != nil {
 		return err
 	}
 
-	mode, err := resolveOutputMode(f.outputMode)
+	mode, err := resolveOutputMode(p.flags.outputMode)
 	if err != nil {
 		return err
 	}
 
-	out := diagrams.ConvertToMiroWithOptions(diagram, f.useStencils)
+	out := diagrams.ConvertToMiroWithOptions(diagram, p.flags.useStencils)
 
 	if g.DryRun {
 		return g.EmitDryRun("POST",
 			fmt.Sprintf("/v2/boards/%s/{shapes,connectors,frames,groups} × %d items",
-				boardID, len(out.Shapes)+len(out.Connectors)+len(out.Frames)))
+				p.boardID, len(out.Shapes)+len(out.Connectors)+len(out.Frames)))
 	}
 
 	client, err := g.BuildClient()
@@ -108,7 +120,7 @@ func runDiagram(ctx context.Context, g *clictx.Globals, stdin io.Reader, boardID
 		return err
 	}
 
-	w := diagramWriter{client: client, boardID: boardID, flags: f}
+	w := diagramWriter{client: client, boardID: p.boardID, flags: p.flags}
 	result := createDiagramItems(ctx, g, w, diagramPlan{diagram: diagram, out: out, mode: mode})
 	return g.EmitJSON(result)
 }
