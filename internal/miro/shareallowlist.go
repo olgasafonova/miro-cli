@@ -162,8 +162,17 @@ func (a *ShareAllowlist) Validate(email string) error {
 func extractEmailDomain(email string) (string, bool) {
 	email = strings.TrimSpace(strings.ToLower(email))
 	at := strings.Index(email, "@")
-	if at <= 0 || at != strings.LastIndex(email, "@") || at == len(email)-1 {
+	if !isSingleInteriorAt(email, at) {
 		return "", false
 	}
 	return email[at+1:], true
+}
+
+// isSingleInteriorAt reports whether at marks the only '@' in email, with
+// at least one character on each side of it.
+func isSingleInteriorAt(email string, at int) bool {
+	if at <= 0 || at == len(email)-1 {
+		return false
+	}
+	return at == strings.LastIndex(email, "@")
 }

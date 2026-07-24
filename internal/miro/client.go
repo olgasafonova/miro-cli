@@ -199,12 +199,9 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 	if err := validatePath(path); err != nil {
 		return err
 	}
-	url := c.baseURL + path
 
-	cacheable := method == http.MethodGet && body == nil
-	var cacheKey string
+	cacheKey, cacheable := cacheKeyFor(method, path, body)
 	if cacheable {
-		cacheKey = method + " " + path
 		if cached, ok := c.cache.Get(cacheKey); ok {
 			return decodeCached(cached, out)
 		}
@@ -215,24 +212,61 @@ func (c *Client) Do(ctx context.Context, method, path string, body, out any) err
 		return err
 	}
 
-	status, respBody, err := c.executeWithRetry(ctx, method, path, url, rb)
+	req := apiRequest{method: method, path: path, url: c.baseURL + path, body: rb}
+	respBody, err := c.fetch(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	if status < 200 || status >= 300 {
-		return &APIError{Method: method, Path: path, Status: status, Body: string(respBody)}
-	}
-
 	if cacheable {
-		// Copy the body — respBody backs LimitReader's buffer, and the
-		// cache may outlive this call. Without the copy, a concurrent
-		// reader would race the next call's read into the same buffer.
-		stored := make([]byte, len(respBody))
-		copy(stored, respBody)
-		c.cache.Put(cacheKey, stored)
+		c.storeInCache(cacheKey, respBody)
 	}
+	return decodeResponse(respBody, out)
+}
 
+// apiRequest bundles the routing data for one API call as it moves
+// through the request pipeline: send, retry, and error reporting.
+type apiRequest struct {
+	method string
+	path   string
+	url    string
+	body   requestBody
+}
+
+// cacheKeyFor reports whether a request is cacheable (GET with no body)
+// and, when it is, returns its cache key.
+func cacheKeyFor(method, path string, body any) (string, bool) {
+	if method != http.MethodGet || body != nil {
+		return "", false
+	}
+	return method + " " + path, true
+}
+
+// fetch executes the request with retry and converts non-2xx responses
+// into *APIError.
+func (c *Client) fetch(ctx context.Context, req apiRequest) ([]byte, error) {
+	status, respBody, err := c.executeWithRetry(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if status < 200 || status >= 300 {
+		return nil, &APIError{Method: req.method, Path: req.path, Status: status, Body: string(respBody)}
+	}
+	return respBody, nil
+}
+
+// storeInCache copies respBody before caching — respBody backs LimitReader's
+// buffer, and the cache may outlive this call. Without the copy, a concurrent
+// reader would race the next call's read into the same buffer.
+func (c *Client) storeInCache(cacheKey string, respBody []byte) {
+	stored := make([]byte, len(respBody))
+	copy(stored, respBody)
+	c.cache.Put(cacheKey, stored)
+}
+
+// decodeResponse unmarshals a fresh response body into out, matching the
+// contract of the cached path: nil out or empty body returns nil.
+func decodeResponse(respBody []byte, out any) error {
 	if out == nil || len(respBody) == 0 {
 		return nil
 	}
@@ -284,26 +318,26 @@ func (rb requestBody) reader() io.Reader {
 }
 
 // newRequest builds an authenticated request for a single attempt.
-func (c *Client) newRequest(ctx context.Context, method, url string, rb requestBody) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, method, url, rb.reader())
+func (c *Client) newRequest(ctx context.Context, req apiRequest) (*http.Request, error) {
+	httpReq, err := http.NewRequestWithContext(ctx, req.method, req.url, req.body.reader())
 	if err != nil {
 		return nil, fmt.Errorf("miro: build request: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
-	req.Header.Set("Accept", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+c.token)
+	httpReq.Header.Set("Accept", "application/json")
 	if c.userAgent != "" {
-		req.Header.Set("User-Agent", c.userAgent)
+		httpReq.Header.Set("User-Agent", c.userAgent)
 	}
-	if rb.contentType != "" {
-		req.Header.Set("Content-Type", rb.contentType)
+	if req.body.contentType != "" {
+		httpReq.Header.Set("Content-Type", req.body.contentType)
 	}
-	return req, nil
+	return httpReq, nil
 }
 
 // sendOnce performs one request attempt and reads the bounded response body.
 // The returned retryAfter is the parsed Retry-After header (0 when absent).
-func (c *Client) sendOnce(ctx context.Context, method, url string, rb requestBody) (status int, body []byte, retryAfter time.Duration, err error) {
-	req, err := c.newRequest(ctx, method, url, rb)
+func (c *Client) sendOnce(ctx context.Context, apiReq apiRequest) (status int, body []byte, retryAfter time.Duration, err error) {
+	req, err := c.newRequest(ctx, apiReq)
 	if err != nil {
 		return 0, nil, 0, err
 	}
@@ -326,31 +360,38 @@ func (c *Client) sendOnce(ctx context.Context, method, url string, rb requestBod
 // executeWithRetry runs sendOnce with bounded retry on transient transport
 // errors and retryable statuses (429/5xx), honoring Retry-After. Only requests
 // with a replayable body are retried. Context cancellation is never retried.
-func (c *Client) executeWithRetry(ctx context.Context, method, path, url string, rb requestBody) (int, []byte, error) {
+func (c *Client) executeWithRetry(ctx context.Context, req apiRequest) (int, []byte, error) {
 	maxAttempts := 1
-	if rb.replayable {
+	if req.body.replayable {
 		maxAttempts = maxRetryAttempts
 	}
 	for attempt := 0; ; attempt++ {
 		last := attempt+1 >= maxAttempts
-		status, body, retryAfter, err := c.sendOnce(ctx, method, url, rb)
-		if err != nil {
-			if last || ctx.Err() != nil {
-				return 0, nil, fmt.Errorf("miro: %s %s: %w", method, path, err)
-			}
-			if waitErr := retrySleep(ctx, attempt, 0); waitErr != nil {
-				return 0, nil, waitErr
-			}
-			continue
+		status, body, retryAfter, err := c.sendOnce(ctx, req)
+		if err != nil && !retryableSendFailure(ctx, last) {
+			return 0, nil, fmt.Errorf("miro: %s %s: %w", req.method, req.path, err)
 		}
-		if !last && isRetryableStatus(status) {
-			if waitErr := retrySleep(ctx, attempt, retryAfter); waitErr != nil {
-				return 0, nil, waitErr
-			}
-			continue
+		if err == nil && !retryableResponse(status, last) {
+			return status, body, nil
 		}
-		return status, body, nil
+		// sendOnce returns retryAfter == 0 on transport errors, so the
+		// error path falls back to exponential backoff inside retrySleep.
+		if waitErr := retrySleep(ctx, attempt, retryAfter); waitErr != nil {
+			return 0, nil, waitErr
+		}
 	}
+}
+
+// retryableSendFailure reports whether a transport-level send error should
+// be retried: never on the final attempt, never once the context is done.
+func retryableSendFailure(ctx context.Context, last bool) bool {
+	return !last && ctx.Err() == nil
+}
+
+// retryableResponse reports whether a completed response should be retried:
+// only retryable statuses (429/502/503/504), never on the final attempt.
+func retryableResponse(status int, last bool) bool {
+	return !last && isRetryableStatus(status)
 }
 
 // decodeCached unmarshals a cached body into out, matching the contract of
