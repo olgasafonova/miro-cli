@@ -50,16 +50,8 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+	if err := validateUpdateFlags(f); err != nil {
 		return err
-	}
-	if err := miro.ValidateID("tag_id", f.tagID); err != nil {
-		return err
-	}
-	if f.fillColorSet {
-		if err := validateFillColor(f.fillColor); err != nil {
-			return err
-		}
 	}
 	req, ok := buildUpdateRequest(f)
 	if !ok {
@@ -78,6 +70,22 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 		return err
 	}
 	return g.EmitJSON(resp)
+}
+
+// validateUpdateFlags checks the identifier flags and, when --fill-color
+// was passed, the fill color value. It runs before any request is built
+// so flag errors surface without touching the network.
+func validateUpdateFlags(f updateFlags) error {
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
+	}
+	if err := miro.ValidateID("tag_id", f.tagID); err != nil {
+		return err
+	}
+	if !f.fillColorSet {
+		return nil
+	}
+	return validateFillColor(f.fillColor)
 }
 
 // buildUpdateRequest projects the updateFlags into the wire body and

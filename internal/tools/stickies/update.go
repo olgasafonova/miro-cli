@@ -101,42 +101,74 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 // pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	dataSet := applyDataFields(&req, f)
+	styleSet := applyStyleField(&req, f)
+	positionSet := applyPositionFields(&req, f)
+	geometrySet := applyGeometryField(&req, f)
+	parentSet := applyParentField(&req, f)
+	return req, dataSet || styleSet || positionSet || geometrySet || parentSet
+}
 
-	if f.contentSet || f.shapeSet {
-		req.Data = &dataField{}
-		if f.contentSet {
-			req.Data.Content = f.content
-		}
-		if f.shapeSet {
-			req.Data.Shape = f.shape
-		}
-		any = true
+// applyDataFields fills the data envelope when --content or --shape was
+// passed. It reports whether req.Data was set.
+func applyDataFields(req *updateRequest, f updateFlags) bool {
+	if !f.contentSet && !f.shapeSet {
+		return false
 	}
-	if f.colorSet {
-		req.Style = &styleField{FillColor: normalizeStickyColor(f.color)}
-		any = true
+	req.Data = &dataField{}
+	if f.contentSet {
+		req.Data.Content = f.content
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	if f.shapeSet {
+		req.Data.Shape = f.shape
 	}
-	if f.widthSet {
-		req.Geometry = &geometryData{Width: f.width}
-		any = true
+	return true
+}
+
+// applyStyleField fills the style envelope when --color was passed.
+// It reports whether req.Style was set.
+func applyStyleField(req *updateRequest, f updateFlags) bool {
+	if !f.colorSet {
+		return false
 	}
-	if f.parentIDSet {
-		// Empty string detaches; non-empty re-parents. Both flow
-		// through a non-nil parentRef so the JSON encoder emits the
-		// envelope.
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	req.Style = &styleField{FillColor: normalizeStickyColor(f.color)}
+	return true
+}
+
+// applyPositionFields fills the position envelope when --x or --y was
+// passed. It reports whether req.Position was set.
+func applyPositionFields(req *updateRequest, f updateFlags) bool {
+	if !f.xSet && !f.ySet {
+		return false
 	}
-	return req, any
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+// applyGeometryField fills the geometry envelope when --width was
+// passed. It reports whether req.Geometry was set.
+func applyGeometryField(req *updateRequest, f updateFlags) bool {
+	if !f.widthSet {
+		return false
+	}
+	req.Geometry = &geometryData{Width: f.width}
+	return true
+}
+
+// applyParentField fills the parent envelope when --parent-id was
+// passed. Empty string detaches; non-empty re-parents. Both flow
+// through a non-nil parentRef so the JSON encoder emits the envelope.
+// It reports whether req.Parent was set.
+func applyParentField(req *updateRequest, f updateFlags) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }

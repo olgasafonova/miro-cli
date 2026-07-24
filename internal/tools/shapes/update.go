@@ -106,53 +106,103 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 	return g.EmitJSON(resp)
 }
 
+// buildUpdateRequest projects the updateFlags into the wire body and
+// reports whether any field was set. ok=false means the caller should
+// reject the update — Miro 400s an empty PATCH body anyway, and a
+// pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	applied := f.applyData(&req)
+	applied = f.applyStyle(&req) || applied
+	applied = f.applyPosition(&req) || applied
+	applied = f.applyGeometry(&req) || applied
+	applied = f.applyParent(&req) || applied
+	return req, applied
+}
 
-	if f.contentSet || f.shapeSet {
-		req.Data = &dataField{}
-		if f.contentSet {
-			req.Data.Content = f.content
-		}
-		if f.shapeSet {
-			req.Data.Shape = f.shape
-		}
-		any = true
+// dataChanged reports whether any field of the data envelope was set.
+func (f updateFlags) dataChanged() bool {
+	return f.contentSet || f.shapeSet
+}
+
+// styleChanged reports whether any field of the style envelope was set.
+func (f updateFlags) styleChanged() bool {
+	return f.colorSet || f.textColorSet || f.textAlignSet || f.textAlignVerticalSet
+}
+
+func (f updateFlags) positionChanged() bool {
+	return f.xSet || f.ySet
+}
+
+func (f updateFlags) geometryChanged() bool {
+	return f.widthSet || f.heightSet
+}
+
+// applyData fills the data envelope with the changed content fields
+// and reports whether it set anything.
+func (f updateFlags) applyData(req *updateRequest) bool {
+	if !f.dataChanged() {
+		return false
 	}
-	if f.colorSet || f.textColorSet || f.textAlignSet || f.textAlignVerticalSet {
-		req.Style = &styleField{}
-		if f.colorSet {
-			req.Style.FillColor = f.color
-		}
-		if f.textColorSet {
-			req.Style.Color = f.textColor
-		}
-		if f.textAlignSet {
-			req.Style.TextAlign = f.textAlign
-		}
-		if f.textAlignVerticalSet {
-			req.Style.TextAlignVertical = f.textAlignVertical
-		}
-		any = true
+	req.Data = &dataField{}
+	if f.contentSet {
+		req.Data.Content = f.content
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	if f.shapeSet {
+		req.Data.Shape = f.shape
 	}
-	if f.widthSet || f.heightSet {
-		req.Geometry = &geometryData{Width: f.width, Height: f.height}
-		any = true
+	return true
+}
+
+func (f updateFlags) applyStyle(req *updateRequest) bool {
+	if !f.styleChanged() {
+		return false
 	}
-	if f.parentIDSet {
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	req.Style = &styleField{}
+	if f.colorSet {
+		req.Style.FillColor = f.color
 	}
-	return req, any
+	if f.textColorSet {
+		req.Style.Color = f.textColor
+	}
+	if f.textAlignSet {
+		req.Style.TextAlign = f.textAlign
+	}
+	if f.textAlignVerticalSet {
+		req.Style.TextAlignVertical = f.textAlignVertical
+	}
+	return true
+}
+
+func (f updateFlags) applyPosition(req *updateRequest) bool {
+	if !f.positionChanged() {
+		return false
+	}
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+func (f updateFlags) applyGeometry(req *updateRequest) bool {
+	if !f.geometryChanged() {
+		return false
+	}
+	req.Geometry = &geometryData{Width: f.width, Height: f.height}
+	return true
+}
+
+// applyParent re-parents the item. An empty string detaches; non-empty
+// re-parents. Both flow through a non-nil parentRef so the JSON
+// encoder emits the envelope.
+func (f updateFlags) applyParent(req *updateRequest) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }

@@ -82,16 +82,8 @@ func newUpdateCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
-	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+	if err := validateUpdateArgs(f); err != nil {
 		return err
-	}
-	if err := miro.ValidateID("item_id", f.itemID); err != nil {
-		return err
-	}
-	if f.statusSet {
-		if err := validateStatus(f.status); err != nil {
-			return err
-		}
 	}
 	req, ok := buildUpdateRequest(f)
 	if !ok {
@@ -112,61 +104,114 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 	return g.EmitJSON(resp)
 }
 
+// validateUpdateArgs checks the identifying IDs and any enum-valued
+// flags before the request body is built.
+func validateUpdateArgs(f updateFlags) error {
+	if err := miro.ValidateID("board_id", f.boardID); err != nil {
+		return err
+	}
+	if err := miro.ValidateID("item_id", f.itemID); err != nil {
+		return err
+	}
+	if f.statusSet {
+		return validateStatus(f.status)
+	}
+	return nil
+}
+
 // buildUpdateRequest projects the updateFlags into the wire body and
 // reports whether any field was set. ok=false means the caller should
 // reject the update — Miro 400s an empty PATCH body anyway, and a
 // pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	applied := f.applyData(&req)
+	applied = f.applyStyle(&req) || applied
+	applied = f.applyPosition(&req) || applied
+	applied = f.applyGeometry(&req) || applied
+	applied = f.applyParent(&req) || applied
+	return req, applied
+}
 
-	if f.titleSet || f.descriptionSet || f.statusSet || f.ownedSet {
-		req.Data = &dataField{}
-		if f.titleSet {
-			req.Data.Title = f.title
-		}
-		if f.descriptionSet {
-			req.Data.Description = f.description
-		}
-		if f.statusSet {
-			req.Data.Status = f.status
-		}
-		if f.ownedSet {
-			owned := f.owned
-			req.Data.Owned = &owned
-		}
-		any = true
+// dataChanged reports whether any field of the data envelope was set.
+func (f updateFlags) dataChanged() bool {
+	return f.titleSet || f.descriptionSet || f.statusSet || f.ownedSet
+}
+
+func (f updateFlags) positionChanged() bool {
+	return f.xSet || f.ySet
+}
+
+func (f updateFlags) geometryChanged() bool {
+	return f.widthSet || f.heightSet
+}
+
+// applyData fills the data envelope with the changed content fields
+// and reports whether it set anything.
+func (f updateFlags) applyData(req *updateRequest) bool {
+	if !f.dataChanged() {
+		return false
 	}
-	if f.colorSet {
-		req.Style = &styleField{FillColor: f.color}
-		any = true
+	req.Data = &dataField{}
+	if f.titleSet {
+		req.Data.Title = f.title
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	if f.descriptionSet {
+		req.Data.Description = f.description
 	}
-	if f.widthSet || f.heightSet {
-		req.Geometry = &geometryData{}
-		if f.widthSet {
-			req.Geometry.Width = f.width
-		}
-		if f.heightSet {
-			req.Geometry.Height = f.height
-		}
-		any = true
+	if f.statusSet {
+		req.Data.Status = f.status
 	}
-	if f.parentIDSet {
-		// Empty string detaches; non-empty re-parents. Both flow
-		// through a non-nil parentRef so the JSON encoder emits the
-		// envelope.
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	if f.ownedSet {
+		owned := f.owned
+		req.Data.Owned = &owned
 	}
-	return req, any
+	return true
+}
+
+func (f updateFlags) applyStyle(req *updateRequest) bool {
+	if !f.colorSet {
+		return false
+	}
+	req.Style = &styleField{FillColor: f.color}
+	return true
+}
+
+func (f updateFlags) applyPosition(req *updateRequest) bool {
+	if !f.positionChanged() {
+		return false
+	}
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+func (f updateFlags) applyGeometry(req *updateRequest) bool {
+	if !f.geometryChanged() {
+		return false
+	}
+	req.Geometry = &geometryData{}
+	if f.widthSet {
+		req.Geometry.Width = f.width
+	}
+	if f.heightSet {
+		req.Geometry.Height = f.height
+	}
+	return true
+}
+
+// applyParent re-parents the item. An empty string detaches; non-empty
+// re-parents. Both flow through a non-nil parentRef so the JSON
+// encoder emits the envelope.
+func (f updateFlags) applyParent(req *updateRequest) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }

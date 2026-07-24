@@ -115,54 +115,92 @@ func runUpdate(ctx context.Context, g *clictx.Globals, f updateFlags) error {
 // pre-flight check produces a clearer error.
 func buildUpdateRequest(f updateFlags) (updateRequest, bool) {
 	var req updateRequest
-	any := false
+	applied := f.applyData(&req)
+	applied = f.applyStyle(&req) || applied
+	applied = f.applyPosition(&req) || applied
+	applied = f.applyGeometry(&req) || applied
+	applied = f.applyParent(&req) || applied
+	return req, applied
+}
 
-	if f.titleSet || f.descriptionSet || f.assigneeIDSet || f.dueDateSet {
-		req.Data = &dataField{}
-		if f.titleSet {
-			req.Data.Title = f.title
-		}
-		if f.descriptionSet {
-			req.Data.Description = f.description
-		}
-		if f.assigneeIDSet {
-			req.Data.AssigneeID = f.assigneeID
-		}
-		if f.dueDateSet {
-			req.Data.DueDate = f.dueDate
-		}
-		any = true
+// dataChanged reports whether any field of the data envelope was set.
+func (f updateFlags) dataChanged() bool {
+	return f.titleSet || f.descriptionSet || f.assigneeIDSet || f.dueDateSet
+}
+
+func (f updateFlags) positionChanged() bool {
+	return f.xSet || f.ySet
+}
+
+func (f updateFlags) geometryChanged() bool {
+	return f.widthSet || f.heightSet
+}
+
+// applyData fills the data envelope with the changed content fields
+// and reports whether it set anything.
+func (f updateFlags) applyData(req *updateRequest) bool {
+	if !f.dataChanged() {
+		return false
 	}
-	if f.cardThemeSet {
-		req.Style = &styleField{CardTheme: f.cardTheme}
-		any = true
+	req.Data = &dataField{}
+	if f.titleSet {
+		req.Data.Title = f.title
 	}
-	if f.xSet || f.ySet {
-		req.Position = &positionData{Origin: "center"}
-		if f.xSet {
-			req.Position.X = f.x
-		}
-		if f.ySet {
-			req.Position.Y = f.y
-		}
-		any = true
+	if f.descriptionSet {
+		req.Data.Description = f.description
 	}
-	if f.widthSet || f.heightSet {
-		req.Geometry = &geometryData{}
-		if f.widthSet {
-			req.Geometry.Width = f.width
-		}
-		if f.heightSet {
-			req.Geometry.Height = f.height
-		}
-		any = true
+	if f.assigneeIDSet {
+		req.Data.AssigneeID = f.assigneeID
 	}
-	if f.parentIDSet {
-		// Empty string detaches; non-empty re-parents. Both flow
-		// through a non-nil parentRef so the JSON encoder emits the
-		// envelope.
-		req.Parent = &parentRef{ID: f.parentID}
-		any = true
+	if f.dueDateSet {
+		req.Data.DueDate = f.dueDate
 	}
-	return req, any
+	return true
+}
+
+func (f updateFlags) applyStyle(req *updateRequest) bool {
+	if !f.cardThemeSet {
+		return false
+	}
+	req.Style = &styleField{CardTheme: f.cardTheme}
+	return true
+}
+
+func (f updateFlags) applyPosition(req *updateRequest) bool {
+	if !f.positionChanged() {
+		return false
+	}
+	req.Position = &positionData{Origin: "center"}
+	if f.xSet {
+		req.Position.X = f.x
+	}
+	if f.ySet {
+		req.Position.Y = f.y
+	}
+	return true
+}
+
+func (f updateFlags) applyGeometry(req *updateRequest) bool {
+	if !f.geometryChanged() {
+		return false
+	}
+	req.Geometry = &geometryData{}
+	if f.widthSet {
+		req.Geometry.Width = f.width
+	}
+	if f.heightSet {
+		req.Geometry.Height = f.height
+	}
+	return true
+}
+
+// applyParent re-parents the item. An empty string detaches; non-empty
+// re-parents. Both flow through a non-nil parentRef so the JSON
+// encoder emits the envelope.
+func (f updateFlags) applyParent(req *updateRequest) bool {
+	if !f.parentIDSet {
+		return false
+	}
+	req.Parent = &parentRef{ID: f.parentID}
+	return true
 }
