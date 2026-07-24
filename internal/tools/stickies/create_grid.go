@@ -143,40 +143,79 @@ func (r *gridResult) append(resp map[string]any) {
 }
 
 // loadGridContents reads the sticky-text payload from --contents-file or
-// --contents-json. File mode treats each non-empty line as one sticky
-// (trailing whitespace trimmed); JSON mode expects an array of strings.
+// --contents-json, then applies the shared size limits.
 func loadGridContents(f createGridFlags) ([]string, error) {
-	if f.contentsFile == "" && f.contentsJSON == "" {
-		return nil, errors.New("one of --contents-file or --contents-json is required")
+	if err := validateContentSource(f); err != nil {
+		return nil, err
 	}
-	if f.contentsFile != "" && f.contentsJSON != "" {
-		return nil, errors.New("--contents-file and --contents-json are mutually exclusive")
+	contents, err := readGridContents(f)
+	if err != nil {
+		return nil, err
 	}
-	var contents []string
-	if f.contentsFile != "" {
-		raw, err := os.ReadFile(f.contentsFile) //nolint:gosec // G304: path is operator-supplied; create-grid exists to load operator-curated content
-		if err != nil {
-			return nil, fmt.Errorf("read --contents-file: %w", err)
-		}
-		for _, line := range strings.Split(string(raw), "\n") {
-			line = strings.TrimRight(line, "\r")
-			line = strings.TrimSpace(line)
-			if line != "" {
-				contents = append(contents, line)
-			}
-		}
-	} else {
-		if err := json.Unmarshal([]byte(f.contentsJSON), &contents); err != nil {
-			return nil, fmt.Errorf("parse --contents-json as []string: %w", err)
-		}
-	}
-	if len(contents) == 0 {
-		return nil, errors.New("contents is empty")
-	}
-	if len(contents) > gridMaxStickies {
-		return nil, fmt.Errorf("contents has %d entries, max %d", len(contents), gridMaxStickies)
+	if err := validateGridSize(contents); err != nil {
+		return nil, err
 	}
 	return contents, nil
+}
+
+// validateContentSource enforces that exactly one of --contents-file and
+// --contents-json was provided.
+func validateContentSource(f createGridFlags) error {
+	if f.contentsFile == "" && f.contentsJSON == "" {
+		return errors.New("one of --contents-file or --contents-json is required")
+	}
+	if f.contentsFile != "" && f.contentsJSON != "" {
+		return errors.New("--contents-file and --contents-json are mutually exclusive")
+	}
+	return nil
+}
+
+// readGridContents dispatches to file or inline-JSON parsing; the two modes
+// have already been validated as mutually exclusive.
+func readGridContents(f createGridFlags) ([]string, error) {
+	if f.contentsFile != "" {
+		return readContentsFile(f.contentsFile)
+	}
+	return parseContentsJSON(f.contentsJSON)
+}
+
+// readContentsFile treats each non-empty line as one sticky's text
+// (trailing whitespace trimmed).
+func readContentsFile(path string) ([]string, error) {
+	raw, err := os.ReadFile(path) //nolint:gosec // G304: path is operator-supplied; create-grid exists to load operator-curated content
+	if err != nil {
+		return nil, fmt.Errorf("read --contents-file: %w", err)
+	}
+	var contents []string
+	for _, line := range strings.Split(string(raw), "\n") {
+		line = strings.TrimRight(line, "\r")
+		line = strings.TrimSpace(line)
+		if line != "" {
+			contents = append(contents, line)
+		}
+	}
+	return contents, nil
+}
+
+// parseContentsJSON expects a JSON array of strings, one per sticky.
+func parseContentsJSON(s string) ([]string, error) {
+	var contents []string
+	if err := json.Unmarshal([]byte(s), &contents); err != nil {
+		return nil, fmt.Errorf("parse --contents-json as []string: %w", err)
+	}
+	return contents, nil
+}
+
+// validateGridSize rejects an empty payload and payloads beyond the
+// per-call sticky cap.
+func validateGridSize(contents []string) error {
+	if len(contents) == 0 {
+		return errors.New("contents is empty")
+	}
+	if len(contents) > gridMaxStickies {
+		return fmt.Errorf("contents has %d entries, max %d", len(contents), gridMaxStickies)
+	}
+	return nil
 }
 
 // effectiveColumns clamps --columns to >=1. Caller code can rely on the

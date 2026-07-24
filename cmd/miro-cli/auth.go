@@ -61,14 +61,7 @@ func newAuthStatusCmd(g *clictx.Globals) *cobra.Command {
 
 func runAuthStatus(ctx context.Context, g *clictx.Globals, verify bool) error {
 	st := authStatus{}
-	switch {
-	case strings.TrimSpace(g.Token) != "":
-		st.TokenPresent, st.Source = true, "flag"
-	case strings.TrimSpace(os.Getenv(miro.EnvAccessToken)) != "":
-		st.TokenPresent, st.Source = true, "env"
-	default:
-		st.Source = "none"
-	}
+	st.TokenPresent, st.Source = detectToken(g)
 
 	if !st.TokenPresent {
 		st.Status = "no_token"
@@ -81,13 +74,31 @@ func runAuthStatus(ctx context.Context, g *clictx.Globals, verify bool) error {
 		return emitAuthStatus(g, st)
 	}
 
+	return verifyToken(ctx, g, st)
+}
+
+// detectToken reports whether a token is configured and where it came
+// from, without touching the network. The --token flag wins over the
+// environment variable, mirroring the client's own config precedence.
+func detectToken(g *clictx.Globals) (present bool, source string) {
+	if strings.TrimSpace(g.Token) != "" {
+		return true, "flag"
+	}
+	if strings.TrimSpace(os.Getenv(miro.EnvAccessToken)) != "" {
+		return true, "env"
+	}
+	return false, "none"
+}
+
+// verifyToken performs the --verify probe and emits the outcome.
+// GET /v1/oauth-token returns metadata about the access token itself.
+// It is read-only and cheap, which makes it the right probe for a
+// verify check that must not cause side effects.
+func verifyToken(ctx context.Context, g *clictx.Globals, st authStatus) error {
 	client, err := g.BuildClient()
 	if err != nil {
 		return err
 	}
-	// GET /v1/oauth-token returns metadata about the access token itself.
-	// It is read-only and cheap, which makes it the right probe for a
-	// verify check that must not cause side effects.
 	var out any
 	verr := client.Get(ctx, "/v1/oauth-token", &out)
 	if verr == nil {
@@ -96,17 +107,27 @@ func runAuthStatus(ctx context.Context, g *clictx.Globals, verify bool) error {
 		return emitAuthStatus(g, st)
 	}
 
-	var api *miro.APIError
-	switch {
-	case errors.As(verr, &api) && api.Status == 401:
-		st.Status = "invalid_or_expired"
-	case errors.As(verr, &api) && api.Status == 403:
-		st.Status = "insufficient_scope"
-	default:
-		st.Status = "error"
-	}
+	st.Status = classifyVerifyError(verr)
 	_ = emitAuthStatus(g, st)
 	return verr
+}
+
+// classifyVerifyError maps a failed verify probe onto the machine-readable
+// status vocabulary: 401 means the token itself is bad, 403 means it works
+// but lacks scope, anything else is an unclassified error.
+func classifyVerifyError(verr error) string {
+	var api *miro.APIError
+	if !errors.As(verr, &api) {
+		return "error"
+	}
+	switch api.Status {
+	case 401:
+		return "invalid_or_expired"
+	case 403:
+		return "insufficient_scope"
+	default:
+		return "error"
+	}
 }
 
 // emitAuthStatus writes the status to stdout: JSON under --json/--agent,
