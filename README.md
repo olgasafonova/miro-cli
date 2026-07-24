@@ -1,5 +1,8 @@
 # Miro Developer Platform CLI
 
+![lint](https://github.com/olgasafonova/miro-cli/actions/workflows/lint.yml/badge.svg)
+<!-- CodeScene Code Health badge: add after onboarding repo at codescene.io -->
+
 Drive Miro from your shell. Bulk-migrate stickies between boards, audit
 board access, or script Miro operations in CI. One verb per Miro REST
 endpoint, JSON in and out, with a local SQLite mirror for offline search.
