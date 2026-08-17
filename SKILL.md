@@ -82,6 +82,7 @@ run `miro-cli <group> --help` for the exact verbs and flags of that group, and
 | `canvas` | SVG bridge: `read-svg` renders the board as SVG locally, `create-from-svg` creates shapes/texts from an SVG document |
 | `members` | Board members and sharing roles |
 | `boards share` | Invite members to a board (gated by the share allowlist — see Security) |
+| `tables` | Data-table items (read-only `list` / `get`) |
 | `exports` | Board export jobs |
 | `audit` | Organization audit events (last 90 days; Enterprise) |
 | `sync` | Mirror boards/items into a local SQLite store for offline use |
