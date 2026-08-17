@@ -115,7 +115,7 @@ own Miro REST resource. The table only calls out non-standard verbs.
 | `app-cards` | `/v2/boards/{id}/app_cards` | — |
 | `connectors` | `/v2/boards/{id}/connectors` | `list` |
 | `embeds` | `/v2/boards/{id}/embeds` | — |
-| `documents` | `/v2/boards/{id}/documents` and `/v2/boards/{id}/docs` | `upload` (multipart from disk), `update-from-file` (replace bytes), `create-doc` (Markdown rich-text) |
+| `documents` | `/v2/boards/{id}/documents` and `/v2/boards/{id}/docs` | `upload` (multipart from disk), `update-from-file` (replace bytes), `create-doc` / `get-doc` / `update-doc` / `delete-doc` (Markdown rich-text on the separate `/docs` resource; update is delete + recreate, the item ID changes) |
 | `images` | `/v2/boards/{id}/images` | `upload`, `update-from-file` |
 | `codewidgets` | `/v2-experimental/boards/{id}/code_widgets` | `move` (dedicated position endpoint) |
 | `mindmap` | `/v2-experimental/boards/{id}/mindmap_nodes` | `list` |

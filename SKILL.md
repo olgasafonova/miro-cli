@@ -72,7 +72,7 @@ run `miro-cli <group> --help` for the exact verbs and flags of that group, and
 | `frames` | Frames |
 | `images` | Image items |
 | `embeds` | Embedded URLs |
-| `documents` | Document items |
+| `documents` | Document items, plus the `*-doc` verbs for Markdown rich-text docs (`create-doc`/`get-doc`/`update-doc`/`delete-doc`; update-doc is delete + recreate, the item ID changes) |
 | `connectors` | Connectors (lines/arrows between items) |
 | `tags` | Tags and tag assignment |
 | `groups` | Item groups |
