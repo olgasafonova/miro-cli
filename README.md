@@ -149,6 +149,8 @@ computed locally (no export job, no rendering service).
 | `canvas read-svg` | Render the board's items (and connectors) as an SVG document |
 | `canvas create-from-svg` | Parse rect / circle / ellipse / text (plus nested `translate` groups) into shapes and texts; unsupported elements are reported, never silently dropped |
 
+The [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) sibling carries a fuller SVG dialect on the same idea: frame-scoped reads (`frame_id`), `data-type` hints for stickies and frames, images, connectors from `line` elements, and a `miro_update_from_svg` diff tool keyed on `data-miro-id`. This CLI's bridge is the read/create subset.
+
 ### Tags and grouping
 
 | Group | Purpose | Verbs |
