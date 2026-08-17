@@ -11,9 +11,11 @@ import (
 	"github.com/olgasafonova/miro-cli/internal/tools/appcards"
 	"github.com/olgasafonova/miro-cli/internal/tools/audit"
 	"github.com/olgasafonova/miro-cli/internal/tools/boards"
+	"github.com/olgasafonova/miro-cli/internal/tools/canvas"
 	"github.com/olgasafonova/miro-cli/internal/tools/cards"
 	"github.com/olgasafonova/miro-cli/internal/tools/clictx"
 	"github.com/olgasafonova/miro-cli/internal/tools/codewidgets"
+	"github.com/olgasafonova/miro-cli/internal/tools/comments"
 	"github.com/olgasafonova/miro-cli/internal/tools/connectors"
 	"github.com/olgasafonova/miro-cli/internal/tools/documents"
 	"github.com/olgasafonova/miro-cli/internal/tools/embeds"
@@ -92,8 +94,10 @@ func newRootCmd() (*cobra.Command, *clictx.Globals) {
 	cmd.AddCommand(appcards.NewCmd(g))
 	cmd.AddCommand(audit.NewCmd(g))
 	cmd.AddCommand(boards.NewCmd(g))
+	cmd.AddCommand(canvas.NewCmd(g))
 	cmd.AddCommand(cards.NewCmd(g))
 	cmd.AddCommand(codewidgets.NewCmd(g))
+	cmd.AddCommand(comments.NewCmd(g))
 	cmd.AddCommand(connectors.NewCmd(g))
 	cmd.AddCommand(documents.NewCmd(g))
 	cmd.AddCommand(embeds.NewCmd(g))

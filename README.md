@@ -89,7 +89,7 @@ Run `miro-cli --help` for the full command reference, or
 
 ## Commands
 
-Twenty-two resource groups today. The tables below summarize each group at
+Twenty-four resource groups today. The tables below summarize each group at
 a glance; run `miro-cli <group> --help` for the full verb list and flags.
 
 ### Board management
@@ -98,6 +98,7 @@ a glance; run `miro-cli <group> --help` for the full verb list and flags.
 | --- | --- | --- |
 | `boards` | Board lifecycle plus a few search / content helpers | `list`, `get`, `create`, `update`, `delete`, `copy`, `find`, `search`, `content`, `summary`, `picture`, `share`, `diagram`, `audit` |
 | `members` | Board access control | `list`, `get`, `update`, `remove` |
+| `comments` | Comment threads (v2-experimental) | `create`, `list`, `get`, `reply`, `resolve` — no delete; the API answers 405 |
 
 ### Item CRUD (one group per item type)
 
@@ -137,6 +138,16 @@ array, not per-resource arrays.
 | `items get-within-frame` | List items inside a frame |
 | `items get-by-tag` | List items carrying a tag |
 | `items get-tags` / `attach-tag` / `detach-tag` | Tag membership for a single item |
+
+### SVG bridge
+
+`canvas` converts between board items and plain SVG, both directions
+computed locally (no export job, no rendering service).
+
+| Verb | What it does |
+| --- | --- |
+| `canvas read-svg` | Render the board's items (and connectors) as an SVG document |
+| `canvas create-from-svg` | Parse rect / circle / ellipse / text (plus nested `translate` groups) into shapes and texts; unsupported elements are reported, never silently dropped |
 
 ### Tags and grouping
 
