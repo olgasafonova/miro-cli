@@ -55,7 +55,7 @@ func runList(ctx context.Context, g *clictx.Globals, lf ListFlags) error {
 	}
 	var resp ListResponse
 	if err := client.Get(ctx, path, &resp); err != nil {
-		return err
+		return wrapExperimentalErr(err)
 	}
 	return g.EmitJSON(resp)
 }

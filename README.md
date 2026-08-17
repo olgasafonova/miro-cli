@@ -117,7 +117,7 @@ own Miro REST resource. The table only calls out non-standard verbs.
 | `embeds` | `/v2/boards/{id}/embeds` | — |
 | `documents` | `/v2/boards/{id}/documents` and `/v2/boards/{id}/docs` | `upload` (multipart from disk), `update-from-file` (replace bytes), `create-doc` (Markdown rich-text) |
 | `images` | `/v2/boards/{id}/images` | `upload`, `update-from-file` |
-| `codewidgets` | `/v2-experimental/boards/{id}/code_widgets` | read-only `list` (experimental) |
+| `codewidgets` | `/v2-experimental/boards/{id}/code_widgets` | `move` (dedicated position endpoint) |
 | `mindmap` | `/v2-experimental/boards/{id}/mindmap_nodes` | `list` |
 | `tables` | `/v2/boards/{id}/data_table_formats` | read-only `list` and `get` |
 

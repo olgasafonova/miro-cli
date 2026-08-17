@@ -11,3 +11,42 @@ type ListResponse struct {
 	Cursor string           `json:"cursor,omitempty"`
 	Limit  int              `json:"limit,omitempty"`
 }
+
+// writeRequest is the POST / PATCH body shared by create and update.
+// Every section is omitted when unset so a partial PATCH leaves the
+// other fields alone.
+type writeRequest struct {
+	Data     map[string]any `json:"data,omitempty"`
+	Position *positionData  `json:"position,omitempty"`
+	Geometry *geometryData  `json:"geometry,omitempty"`
+	Parent   *parentRef     `json:"parent,omitempty"`
+}
+
+// moveRequest is the PATCH .../code_widgets/{item_id}/position body.
+type moveRequest struct {
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Origin string  `json:"origin"`
+}
+
+type positionData struct {
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Origin string  `json:"origin,omitempty"`
+}
+
+type geometryData struct {
+	Width  float64 `json:"width,omitempty"`
+	Height float64 `json:"height,omitempty"`
+}
+
+type parentRef struct {
+	ID string `json:"id"`
+}
+
+// deleteResult is the synthesized JSON envelope emitted after a 204.
+// Agents branch on `deleted` rather than inspecting exit codes.
+type deleteResult struct {
+	Deleted bool   `json:"deleted"`
+	ID      string `json:"id"`
+}
