@@ -179,41 +179,47 @@ func New(cfg *Config, opts ...Option) *Client {
 	return c
 }
 
-// Do issues an HTTP request to path (joined onto the base URL) with the
-// given method and body. The bearer token is attached automatically.
-// Non-2xx responses are returned as *APIError; 2xx responses are decoded
-// into out (which may be nil to discard the body).
+// Request names one API call for Do: the HTTP method, the path to join
+// onto the base URL, and an optional body.
 //
-// body may be:
+// Body may be:
 //   - nil: no request body
 //   - []byte: sent as-is with Content-Type: application/octet-stream
 //   - *MultipartBody: sent as-is with the supplied Content-Type (used by
 //     file uploads in internal/tools/uploads)
 //   - everything else: JSON-encoded with Content-Type: application/json
-//
-// Context cancellation is honored end-to-end.
-func (c *Client) Do(ctx context.Context, method, path string, body, out any) error {
+type Request struct {
+	Method string
+	Path   string
+	Body   any
+}
+
+// Do issues the described HTTP request. The bearer token is attached
+// automatically. Non-2xx responses are returned as *APIError; 2xx
+// responses are decoded into out (which may be nil to discard the
+// body). Context cancellation is honored end-to-end.
+func (c *Client) Do(ctx context.Context, req Request, out any) error {
 	if c == nil {
 		return errors.New("miro: nil client")
 	}
-	if err := validatePath(path); err != nil {
+	if err := validatePath(req.Path); err != nil {
 		return err
 	}
 
-	cacheKey, cacheable := cacheKeyFor(method, path, body)
+	cacheKey, cacheable := cacheKeyFor(req.Method, req.Path, req.Body)
 	if cacheable {
 		if cached, ok := c.cache.Get(cacheKey); ok {
 			return decodeCached(cached, out)
 		}
 	}
 
-	rb, err := prepareBody(body)
+	rb, err := prepareBody(req.Body)
 	if err != nil {
 		return err
 	}
 
-	req := apiRequest{method: method, path: path, url: c.baseURL + path, body: rb}
-	respBody, err := c.fetch(ctx, req)
+	apiReq := apiRequest{method: req.Method, path: req.Path, url: c.baseURL + req.Path, body: rb}
+	respBody, err := c.fetch(ctx, apiReq)
 	if err != nil {
 		return err
 	}
@@ -406,27 +412,28 @@ func decodeCached(cached []byte, out any) error {
 	return nil
 }
 
-// Get is a convenience for Do(ctx, GET, path, nil, out).
+// Get is a convenience for Do with GET and no body.
 func (c *Client) Get(ctx context.Context, path string, out any) error {
-	return c.Do(ctx, http.MethodGet, path, nil, out)
+	return c.Do(ctx, Request{Method: http.MethodGet, Path: path}, out)
 }
 
-// Post is a convenience for Do(ctx, POST, path, body, out).
+// Post is a convenience for Do with POST.
 func (c *Client) Post(ctx context.Context, path string, body, out any) error {
-	return c.Do(ctx, http.MethodPost, path, body, out)
+	return c.Do(ctx, Request{Method: http.MethodPost, Path: path, Body: body}, out)
 }
 
-// Patch is a convenience for Do(ctx, PATCH, path, body, out).
+// Patch is a convenience for Do with PATCH.
 func (c *Client) Patch(ctx context.Context, path string, body, out any) error {
-	return c.Do(ctx, http.MethodPatch, path, body, out)
+	return c.Do(ctx, Request{Method: http.MethodPatch, Path: path, Body: body}, out)
 }
 
-// Put is a convenience for Do(ctx, PUT, path, body, out).
+// Put is a convenience for Do with PUT.
 func (c *Client) Put(ctx context.Context, path string, body, out any) error {
-	return c.Do(ctx, http.MethodPut, path, body, out)
+	return c.Do(ctx, Request{Method: http.MethodPut, Path: path, Body: body}, out)
 }
 
-// Delete is a convenience for Do(ctx, DELETE, path, nil, nil).
+// Delete is a convenience for Do with DELETE, no body, and a discarded
+// response.
 func (c *Client) Delete(ctx context.Context, path string) error {
-	return c.Do(ctx, http.MethodDelete, path, nil, nil)
+	return c.Do(ctx, Request{Method: http.MethodDelete, Path: path}, nil)
 }

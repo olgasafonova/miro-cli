@@ -49,19 +49,7 @@ func newCreateJobCmd(g *clictx.Globals) *cobra.Command {
 }
 
 func runCreateJob(ctx context.Context, g *clictx.Globals, f createJobFlags) error {
-	if err := miro.ValidateID("org_id", f.orgID); err != nil {
-		return err
-	}
-	if err := miro.ValidateID("request_id", f.requestID); err != nil {
-		return err
-	}
-	if len(f.boardIDs) == 0 {
-		return errors.New("at least one --board-id is required")
-	}
-	if f.format == "" {
-		return errors.New("--format is required")
-	}
-	if err := validateFormat(f.format); err != nil {
+	if err := validateCreateJobFlags(f); err != nil {
 		return err
 	}
 	req := createRequest{BoardIDs: f.boardIDs, BoardFormat: f.format}
@@ -78,4 +66,23 @@ func runCreateJob(ctx context.Context, g *clictx.Globals, f createJobFlags) erro
 		return err
 	}
 	return g.EmitJSON(resp)
+}
+
+// validateCreateJobFlags checks the identifiers, board list, and format
+// before any request is built, so flag errors surface without touching
+// the network.
+func validateCreateJobFlags(f createJobFlags) error {
+	if err := miro.ValidateID("org_id", f.orgID); err != nil {
+		return err
+	}
+	if err := miro.ValidateID("request_id", f.requestID); err != nil {
+		return err
+	}
+	if len(f.boardIDs) == 0 {
+		return errors.New("at least one --board-id is required")
+	}
+	if f.format == "" {
+		return errors.New("--format is required")
+	}
+	return validateFormat(f.format)
 }
