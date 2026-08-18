@@ -225,6 +225,59 @@ func svgPosition(el svgElement, off svgOffset) map[string]any {
 	return map[string]any{"x": el.x + off.dx, "y": el.y + off.dy, "origin": "center"}
 }
 
+// itemBody assembles the common create-body shape — data + position +
+// geometry — with an optional fillColor style when fill is non-empty.
+func itemBody(data, position, geometry map[string]any, fill string) map[string]any {
+	body := map[string]any{"data": data, "position": position, "geometry": geometry}
+	if fill != "" {
+		body["style"] = map[string]any{"fillColor": fill}
+	}
+	return body
+}
+
+// stickyBody builds the sticky-note create body; hex fills are dropped
+// because the sticky API only accepts named colors.
+func stickyBody(el svgElement, position map[string]any) map[string]any {
+	return itemBody(
+		map[string]any{"content": el.text},
+		position,
+		map[string]any{"width": el.w},
+		svgStickyColor(el.fill),
+	)
+}
+
+// imageBody builds the image create body; data-title becomes the title.
+func imageBody(el svgElement, position map[string]any) map[string]any {
+	data := map[string]any{"url": el.href}
+	if el.title != "" {
+		data["title"] = el.title
+	}
+	return map[string]any{
+		"data":     data,
+		"position": position,
+		"geometry": map[string]any{"width": el.w},
+	}
+}
+
+// shapeFill normalizes an SVG fill for the shape API: "none" means no
+// fill, everything else (named or hex) passes through.
+func shapeFill(fill string) string {
+	if fill == "none" {
+		return ""
+	}
+	return fill
+}
+
+// shapeBody builds the shape create body for rects, ellipses and polygons.
+func shapeBody(el svgElement, position map[string]any) map[string]any {
+	return itemBody(
+		map[string]any{"shape": elementShape(el)},
+		position,
+		map[string]any{"width": el.w, "height": el.h},
+		shapeFill(el.fill),
+	)
+}
+
 // buildElementRequest maps a parsed non-line element to its typed
 // endpoint and wire body.
 func buildElementRequest(boardID string, el svgElement, off svgOffset) (path string, body map[string]any) {
@@ -238,15 +291,7 @@ func buildElementRequest(boardID string, el svgElement, off svgOffset) (path str
 			"position": position,
 		}
 	case "sticky_note":
-		body = map[string]any{
-			"data":     map[string]any{"content": el.text},
-			"position": position,
-			"geometry": map[string]any{"width": el.w},
-		}
-		if color := svgStickyColor(el.fill); color != "" {
-			body["style"] = map[string]any{"fillColor": color}
-		}
-		return base + "/sticky_notes", body
+		return base + "/sticky_notes", stickyBody(el, position)
 	case "frame":
 		return base + "/frames", map[string]any{
 			"data":     map[string]any{"title": el.title},
@@ -254,26 +299,9 @@ func buildElementRequest(boardID string, el svgElement, off svgOffset) (path str
 			"geometry": map[string]any{"width": el.w, "height": el.h},
 		}
 	case "image":
-		body = map[string]any{
-			"data":     map[string]any{"url": el.href},
-			"position": position,
-			"geometry": map[string]any{"width": el.w},
-		}
-		if el.title != "" {
-			body["data"].(map[string]any)["title"] = el.title
-		}
-		return base + "/images", body
+		return base + "/images", imageBody(el, position)
 	}
-
-	body = map[string]any{
-		"data":     map[string]any{"shape": elementShape(el)},
-		"position": position,
-		"geometry": map[string]any{"width": el.w, "height": el.h},
-	}
-	if el.fill != "" && el.fill != "none" {
-		body["style"] = map[string]any{"fillColor": el.fill}
-	}
-	return base + "/shapes", body
+	return base + "/shapes", shapeBody(el, position)
 }
 
 // svgCreateRun carries the state of one create pass: what landed, what

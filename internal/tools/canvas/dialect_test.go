@@ -5,6 +5,7 @@ package canvas
 // ported from miro-mcp-server's SVG round trip.
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -13,76 +14,89 @@ import (
 	"testing"
 )
 
-func TestParseSVGElements_DataTypeHints(t *testing.T) {
-	t.Parallel()
-	elements, skipped, err := parseSVGElements(`<svg>
-		<rect data-type="sticky" data-content="do it" x="0" y="0" width="100" height="100" fill="light_yellow"/>
-		<rect data-type="frame" data-title="Sprint" x="0" y="0" width="400" height="300"/>
-		<rect data-type="banana" x="0" y="0" width="10" height="10"/>
-	</svg>`)
+// parseElements parses the document, failing the test on a parse error
+// or an unexpected drawable count.
+func parseElements(t *testing.T, svg string, wantCount int) ([]svgElement, []skippedElement) {
+	t.Helper()
+	elements, skipped, err := parseSVGElements(svg)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	if len(elements) != 2 {
-		t.Fatalf("elements = %d, want 2 (sticky + frame; banana skipped)", len(elements))
+	if len(elements) != wantCount {
+		t.Fatalf("elements = %d, want %d (skipped: %+v)", len(elements), wantCount, skipped)
 	}
-	if elements[0].dataType != "sticky" || elements[0].text != "do it" {
-		t.Errorf("sticky = %+v, want dataType sticky with data-content", elements[0])
+	return elements, skipped
+}
+
+// assertElement compares one parsed element against its expected value
+// in full; svgElement is comparable, so this pins every field at once.
+func assertElement(t *testing.T, label string, got, want svgElement) {
+	t.Helper()
+	if got != want {
+		t.Errorf("%s = %+v, want %+v", label, got, want)
 	}
-	if elements[1].dataType != "frame" || elements[1].title != "Sprint" {
-		t.Errorf("frame = %+v, want dataType frame with data-title", elements[1])
+}
+
+// assertSingleSkip checks that exactly one element was skipped and its
+// reason names the expected cause.
+func assertSingleSkip(t *testing.T, skipped []skippedElement, wantInReason string) {
+	t.Helper()
+	if len(skipped) != 1 {
+		t.Fatalf("skipped = %+v, want exactly one entry", skipped)
 	}
-	if len(skipped) != 1 || !strings.Contains(skipped[0].Reason, "banana") {
-		t.Errorf("skipped = %+v, want the banana data-type named", skipped)
+	if !strings.Contains(skipped[0].Reason, wantInReason) {
+		t.Errorf("skip reason = %q, want it to name %q", skipped[0].Reason, wantInReason)
 	}
+}
+
+func TestParseSVGElements_DataTypeHints(t *testing.T) {
+	t.Parallel()
+	elements, skipped := parseElements(t, `<svg>
+		<rect data-type="sticky" data-content="do it" x="0" y="0" width="100" height="100" fill="light_yellow"/>
+		<rect data-type="frame" data-title="Sprint" x="0" y="0" width="400" height="300"/>
+		<rect data-type="banana" x="0" y="0" width="10" height="10"/>
+	</svg>`, 2)
+	assertElement(t, "sticky", elements[0], svgElement{
+		name: "rect", x: 50, y: 50, w: 100, h: 100,
+		fill: "light_yellow", dataType: "sticky", text: "do it",
+	})
+	assertElement(t, "frame", elements[1], svgElement{
+		name: "rect", x: 200, y: 150, w: 400, h: 300,
+		dataType: "frame", title: "Sprint",
+	})
+	assertSingleSkip(t, skipped, "banana")
 }
 
 func TestParseSVGElements_TrianglePolygonAndImage(t *testing.T) {
 	t.Parallel()
-	elements, skipped, err := parseSVGElements(`<svg>
+	elements, skipped := parseElements(t, `<svg>
 		<polygon points="0,10 10,10 5,0" fill="#ff0000"/>
 		<image href="https://example.com/pic.png" x="20" y="20" width="40" height="30"/>
 		<image x="0" y="0" width="40" height="30"/>
-	</svg>`)
-	if err != nil {
-		t.Fatalf("parse: %v", err)
-	}
-	if len(elements) != 2 {
-		t.Fatalf("elements = %d, want 2 (triangle + image; hrefless image skipped)", len(elements))
-	}
-	tri := elements[0]
-	if tri.name != "polygon" || tri.x != 5 || tri.y != 5 || tri.w != 10 || tri.h != 10 {
-		t.Errorf("triangle = %+v, want bounding box center (5,5) 10x10", tri)
-	}
-	img := elements[1]
-	if img.name != "image" || img.href != "https://example.com/pic.png" || img.x != 40 {
-		t.Errorf("image = %+v, want href and center x=40", img)
-	}
-	if len(skipped) != 1 || !strings.Contains(skipped[0].Reason, "href") {
-		t.Errorf("skipped = %+v, want the hrefless image named", skipped)
-	}
+	</svg>`, 2)
+	assertElement(t, "triangle", elements[0], svgElement{
+		name: "polygon", x: 5, y: 5, w: 10, h: 10, fill: "#ff0000",
+	})
+	assertElement(t, "image", elements[1], svgElement{
+		name: "image", x: 40, y: 35, w: 40, h: 30,
+		href: "https://example.com/pic.png",
+	})
+	assertSingleSkip(t, skipped, "href")
 }
 
 func TestParseSVGElements_IdentityStamping(t *testing.T) {
 	t.Parallel()
-	elements, _, err := parseSVGElements(`<svg>
+	elements, _ := parseElements(t, `<svg>
 		<rect id="a" data-miro-id="m1" data-deleted="true" x="0" y="0" width="5" height="5"/>
 		<line data-start="a" data-end="b" data-caption="flows"/>
-	</svg>`)
-	if err != nil {
-		t.Fatalf("parse: %v", err)
-	}
-	if len(elements) != 2 {
-		t.Fatalf("elements = %d, want 2", len(elements))
-	}
-	rect := elements[0]
-	if rect.authoredID != "a" || rect.miroID != "m1" || !rect.deleted {
-		t.Errorf("rect identity = %+v, want id=a miroID=m1 deleted", rect)
-	}
-	line := elements[1]
-	if line.start != "a" || line.end != "b" || line.text != "flows" {
-		t.Errorf("line = %+v, want start=a end=b caption", line)
-	}
+	</svg>`, 2)
+	assertElement(t, "rect identity", elements[0], svgElement{
+		name: "rect", x: 2.5, y: 2.5, w: 5, h: 5,
+		authoredID: "a", miroID: "m1", deleted: true,
+	})
+	assertElement(t, "line", elements[1], svgElement{
+		name: "line", start: "a", end: "b", text: "flows",
+	})
 }
 
 func TestRunCreateFromSVG_TypedEndpointsAndConnector(t *testing.T) {
@@ -105,32 +119,55 @@ func TestRunCreateFromSVG_TypedEndpointsAndConnector(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runCreateFromSVG: %v", err)
 	}
+	decodeCreateResult(t, stdout, 4)
+	assertPathsHit(t, calls, "/sticky_notes", "/frames", "/images", "/connectors")
+	assertConnectorSecondPass(t, calls)
+}
+
+// decodeCreateResult unmarshals the create envelope and checks the count.
+func decodeCreateResult(t *testing.T, stdout *bytes.Buffer, wantCount int) createSVGResult {
+	t.Helper()
 	var out createSVGResult
 	if err := json.Unmarshal(stdout.Bytes(), &out); err != nil {
 		t.Fatalf("decode: %v\n%s", err, stdout.String())
 	}
-	if out.Count != 4 {
-		t.Fatalf("count = %d, want 4 (sticky, frame, image, connector): %+v", out.Count, out)
+	if out.Count != wantCount {
+		t.Fatalf("count = %d, want %d: %+v", out.Count, wantCount, out)
 	}
+	return out
+}
 
+// assertPathsHit checks that every wanted endpoint appears among the
+// recorded API calls.
+func assertPathsHit(t *testing.T, calls []recordedCall, wants ...string) {
+	t.Helper()
 	var paths []string
 	for _, c := range calls {
 		paths = append(paths, c.Path)
 	}
 	joined := strings.Join(paths, " ")
-	for _, want := range []string{"/sticky_notes", "/frames", "/images", "/connectors"} {
+	for _, want := range wants {
 		if !strings.Contains(joined, want) {
 			t.Errorf("API paths %v missing %s", paths, want)
 		}
 	}
-	// Connector last (second pass), referencing ids created this call.
+}
+
+// assertConnectorSecondPass checks the connector was created last and
+// references a created board id rather than the authored SVG id.
+func assertConnectorSecondPass(t *testing.T, calls []recordedCall) {
+	t.Helper()
 	last := calls[len(calls)-1]
 	if !strings.HasSuffix(last.Path, "/connectors") {
 		t.Fatalf("last call = %q, want the connector (second pass)", last.Path)
 	}
 	startItem, _ := last.Body["startItem"].(map[string]any)
-	if startItem["id"] == "" || startItem["id"] == "s" {
-		t.Errorf("connector startItem = %v, want a created board id, not the authored id", startItem)
+	id, _ := startItem["id"].(string)
+	if id == "" {
+		t.Errorf("connector startItem = %v, want a created board id", startItem)
+	}
+	if id == "s" {
+		t.Errorf("connector startItem still carries the authored id %q", id)
 	}
 }
 
@@ -150,22 +187,8 @@ func TestRunCreateFromSVG_UnresolvedConnectorIsSkip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runCreateFromSVG: %v", err)
 	}
-	var out createSVGResult
-	if err := json.Unmarshal(stdout.Bytes(), &out); err != nil {
-		t.Fatalf("decode: %v\n%s", err, stdout.String())
-	}
-	if out.Count != 1 {
-		t.Errorf("count = %d, want 1 (the rect; connector skipped)", out.Count)
-	}
-	found := false
-	for _, s := range out.Skipped {
-		if s.Element == "line" && strings.Contains(s.Reason, "ghost") {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("skipped = %+v, want the unresolved line naming its references", out.Skipped)
-	}
+	out := decodeCreateResult(t, stdout, 1)
+	assertSingleSkip(t, out.Skipped, "ghost")
 }
 
 // serveFrame answers the frame get and its children listing.

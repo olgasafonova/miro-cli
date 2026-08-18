@@ -127,49 +127,57 @@ func svgUpdateBody(el svgElement) (map[string]any, string) {
 	return body, ""
 }
 
-// applySVGUpdate updates one identified element in place via the
-// generic items PATCH.
-func applySVGUpdate(ctx context.Context, client *miro.Client, boardID string, el svgElement, out *svgUpdateOutcome) {
+// svgDiff bundles the fixed context one diff run applies against: the
+// API client, the target board, and the outcome accumulator.
+type svgDiff struct {
+	client  *miro.Client
+	boardID string
+	out     *svgUpdateOutcome
+}
+
+// applyUpdate updates one identified element in place via the generic
+// items PATCH.
+func (d *svgDiff) applyUpdate(ctx context.Context, el svgElement) {
 	body, reason := svgUpdateBody(el)
 	if reason != "" {
-		out.fail(el, reason)
+		d.out.fail(el, reason)
 		return
 	}
 	var resp map[string]any
-	if err := client.Patch(ctx, "/v2/boards/"+boardID+"/items/"+el.miroID, body, &resp); err != nil {
-		out.fail(el, err.Error())
+	if err := d.client.Patch(ctx, "/v2/boards/"+d.boardID+"/items/"+el.miroID, body, &resp); err != nil {
+		d.out.fail(el, err.Error())
 		return
 	}
-	out.updated = append(out.updated, updatedItem{ID: el.miroID, Element: el.name})
+	d.out.updated = append(d.out.updated, updatedItem{ID: el.miroID, Element: el.name})
 }
 
-// applySVGDelete deletes one identified element. Connectors are not
+// applyDelete deletes one identified element. Connectors are not
 // reachable through the generic items endpoint (DELETE there is a 404,
 // verified live 18-08-2026), so lines route to /connectors.
-func applySVGDelete(ctx context.Context, client *miro.Client, boardID string, el svgElement, out *svgUpdateOutcome) {
+func (d *svgDiff) applyDelete(ctx context.Context, el svgElement) {
 	family := "/items/"
 	if el.name == "line" {
 		family = "/connectors/"
 	}
-	if err := client.Delete(ctx, "/v2/boards/"+boardID+family+el.miroID); err != nil {
-		out.fail(el, err.Error())
+	if err := d.client.Delete(ctx, "/v2/boards/"+d.boardID+family+el.miroID); err != nil {
+		d.out.fail(el, err.Error())
 		return
 	}
-	out.deleted = append(out.deleted, el.miroID)
+	d.out.deleted = append(d.out.deleted, el.miroID)
 }
 
-// routeSVGElement sends one parsed element to its diff action: delete,
-// update, or (for elements with no data-miro-id) deferred creation.
-func routeSVGElement(ctx context.Context, client *miro.Client, boardID string, el svgElement, out *svgUpdateOutcome) {
+// route sends one parsed element to its diff action: delete, update, or
+// (for elements with no data-miro-id) deferred creation.
+func (d *svgDiff) route(ctx context.Context, el svgElement) {
 	switch {
 	case el.miroID == "":
-		out.creates = append(out.creates, el)
+		d.out.creates = append(d.out.creates, el)
 	case el.deleted:
-		applySVGDelete(ctx, client, boardID, el, out)
+		d.applyDelete(ctx, el)
 	case el.name == "line":
-		out.fail(el, "connectors cannot be updated through SVG; use `miro connectors update`")
+		d.out.fail(el, "connectors cannot be updated through SVG; use `miro connectors update`")
 	default:
-		applySVGUpdate(ctx, client, boardID, el, out)
+		d.applyUpdate(ctx, el)
 	}
 }
 
@@ -206,8 +214,9 @@ func runUpdateFromSVG(ctx context.Context, g *clictx.Globals, f updateSVGFlags) 
 	}
 
 	out := &svgUpdateOutcome{updated: []updatedItem{}, deleted: []string{}}
+	diff := &svgDiff{client: client, boardID: f.boardID, out: out}
 	for _, el := range plan.elements {
-		routeSVGElement(ctx, client, f.boardID, el, out)
+		diff.route(ctx, el)
 	}
 
 	createPlan := svgPlan{boardID: f.boardID, elements: out.creates}

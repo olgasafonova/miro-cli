@@ -137,9 +137,11 @@ func frameChildrenPath(boardID, frameID, cursor string) string {
 	return "/v2/boards/" + boardID + "/items?" + q.Encode()
 }
 
-// fetchFrameChildren pages through a frame's children up to maxItems.
-// The returned truncated flag reports whether more children remained.
-func fetchFrameChildren(ctx context.Context, client *miro.Client, boardID, frameID string, maxItems int) ([]map[string]any, bool, error) {
+// fetchFrameChildren pages through a frame's children up to the flags'
+// item cap. The returned truncated flag reports whether more children
+// remained.
+func fetchFrameChildren(ctx context.Context, client *miro.Client, f readSVGFlags) ([]map[string]any, bool, error) {
+	maxItems := clampSVGMaxItems(f.maxItems)
 	var children []map[string]any
 	cursor := ""
 	for {
@@ -147,7 +149,7 @@ func fetchFrameChildren(ctx context.Context, client *miro.Client, boardID, frame
 			Data   []map[string]any `json:"data"`
 			Cursor string           `json:"cursor"`
 		}
-		if err := client.Get(ctx, frameChildrenPath(boardID, frameID, cursor), &resp); err != nil {
+		if err := client.Get(ctx, frameChildrenPath(f.boardID, f.frameID, cursor), &resp); err != nil {
 			return nil, false, fmt.Errorf("failed to list frame items: %w", err)
 		}
 		children = append(children, resp.Data...)
@@ -186,7 +188,7 @@ func runReadFrameSVG(ctx context.Context, g *clictx.Globals, f readSVGFlags) err
 	frameH := num(subMap(frame, "geometry"), "height")
 	frameTitle := str(subMap(frame, "data"), "title")
 
-	children, truncated, err := fetchFrameChildren(ctx, client, f.boardID, f.frameID, clampSVGMaxItems(f.maxItems))
+	children, truncated, err := fetchFrameChildren(ctx, client, f)
 	if err != nil {
 		return err
 	}

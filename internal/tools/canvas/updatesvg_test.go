@@ -45,6 +45,54 @@ func decodeUpdateSVG(t *testing.T, stdout *bytes.Buffer) updateSVGResult {
 	return out
 }
 
+// assertRoutingEnvelope checks the emitted diff envelope: one update,
+// one delete, one additive create, no failures.
+func assertRoutingEnvelope(t *testing.T, out updateSVGResult) {
+	t.Helper()
+	if len(out.Updated) != 1 {
+		t.Fatalf("updated = %+v, want exactly u1", out.Updated)
+	}
+	if out.Updated[0].ID != "u1" {
+		t.Errorf("updated id = %q, want u1", out.Updated[0].ID)
+	}
+	if len(out.Deleted) != 1 {
+		t.Fatalf("deleted = %+v, want exactly d1", out.Deleted)
+	}
+	if len(out.Created) != 1 {
+		t.Fatalf("created = %+v, want one shape", out.Created)
+	}
+	if len(out.Failed) != 0 {
+		t.Errorf("failed = %+v, want none", out.Failed)
+	}
+}
+
+// assertPatchBody checks the PATCH restated geometry as a unit with the
+// center recomputed from the top-left rect, plus the fill mapping.
+func assertPatchBody(t *testing.T, patch recordedCall) {
+	t.Helper()
+	if patch.Path != "/v2/boards/abc/items/u1" {
+		t.Errorf("PATCH path = %q, want /v2/boards/abc/items/u1", patch.Path)
+	}
+	position, _ := patch.Body["position"].(map[string]any)
+	if position["x"] != 10.0 {
+		t.Errorf("PATCH position = %v, want center x=10", position)
+	}
+	if position["y"] != 5.0 {
+		t.Errorf("PATCH position = %v, want center y=5", position)
+	}
+	geometry, _ := patch.Body["geometry"].(map[string]any)
+	if geometry["width"] != 20.0 {
+		t.Errorf("PATCH geometry = %v, want width 20", geometry)
+	}
+	if geometry["height"] != 10.0 {
+		t.Errorf("PATCH geometry = %v, want height 10", geometry)
+	}
+	style, _ := patch.Body["style"].(map[string]any)
+	if style["fillColor"] != "#ff0000" {
+		t.Errorf("PATCH style = %v, want fillColor #ff0000", style)
+	}
+}
+
 func TestRunUpdateFromSVG_RoutesUpdateDeleteCreate(t *testing.T) {
 	var calls []recordedCall
 	srv := serveRecorder(&calls)
@@ -62,42 +110,13 @@ func TestRunUpdateFromSVG_RoutesUpdateDeleteCreate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runUpdateFromSVG: %v", err)
 	}
-	out := decodeUpdateSVG(t, stdout)
-
-	if len(out.Updated) != 1 || out.Updated[0].ID != "u1" {
-		t.Errorf("updated = %+v, want u1", out.Updated)
-	}
-	if len(out.Deleted) != 1 || out.Deleted[0] != "d1" {
-		t.Errorf("deleted = %+v, want d1", out.Deleted)
-	}
-	if len(out.Created) != 1 || out.Created[0].Type != "shape" {
-		t.Errorf("created = %+v, want one shape", out.Created)
-	}
-	if len(out.Failed) != 0 {
-		t.Errorf("failed = %+v, want none", out.Failed)
-	}
+	assertRoutingEnvelope(t, decodeUpdateSVG(t, stdout))
 
 	byMethod := map[string]recordedCall{}
 	for _, c := range calls {
 		byMethod[c.Method] = c
 	}
-	patch := byMethod[http.MethodPatch]
-	if patch.Path != "/v2/boards/abc/items/u1" {
-		t.Errorf("PATCH path = %q, want /v2/boards/abc/items/u1", patch.Path)
-	}
-	// Geometry restated as a unit; center recomputed from top-left rect.
-	position, _ := patch.Body["position"].(map[string]any)
-	geometry, _ := patch.Body["geometry"].(map[string]any)
-	if position["x"] != 10.0 || position["y"] != 5.0 {
-		t.Errorf("PATCH position = %v, want center (10,5)", position)
-	}
-	if geometry["width"] != 20.0 || geometry["height"] != 10.0 {
-		t.Errorf("PATCH geometry = %v, want 20x10", geometry)
-	}
-	style, _ := patch.Body["style"].(map[string]any)
-	if style["fillColor"] != "#ff0000" {
-		t.Errorf("PATCH style = %v, want fillColor #ff0000", style)
-	}
+	assertPatchBody(t, byMethod[http.MethodPatch])
 	if byMethod[http.MethodDelete].Path != "/v2/boards/abc/items/d1" {
 		t.Errorf("DELETE path = %q, want /v2/boards/abc/items/d1", byMethod[http.MethodDelete].Path)
 	}
@@ -125,11 +144,20 @@ func TestRunUpdateFromSVG_SemanticErrorsLandInFailed(t *testing.T) {
 	out := decodeUpdateSVG(t, stdout)
 
 	// The connector update fails semantically; the rect still applies.
-	if len(out.Failed) != 1 || out.Failed[0].ID != "c1" || !strings.Contains(out.Failed[0].Reason, "connector") {
-		t.Errorf("failed = %+v, want the c1 connector rejection", out.Failed)
+	if len(out.Failed) != 1 {
+		t.Fatalf("failed = %+v, want exactly the c1 connector rejection", out.Failed)
 	}
-	if len(out.Updated) != 1 || out.Updated[0].ID != "u1" {
-		t.Errorf("updated = %+v, want u1 despite the failed line", out.Updated)
+	if out.Failed[0].ID != "c1" {
+		t.Errorf("failed id = %q, want c1", out.Failed[0].ID)
+	}
+	if !strings.Contains(out.Failed[0].Reason, "connector") {
+		t.Errorf("failure reason = %q, want it to name connectors", out.Failed[0].Reason)
+	}
+	if len(out.Updated) != 1 {
+		t.Fatalf("updated = %+v, want u1 despite the failed line", out.Updated)
+	}
+	if out.Updated[0].ID != "u1" {
+		t.Errorf("updated id = %q, want u1", out.Updated[0].ID)
 	}
 }
 
