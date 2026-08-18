@@ -317,7 +317,7 @@ func TestRunCreateFromSVG_DryRunSkipsHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runCreateFromSVG: %v", err)
 	}
-	if !strings.Contains(stdout.String(), "DRY-RUN POST /v2/boards/abc/{shapes,texts} × 1 elements") {
+	if !strings.Contains(stdout.String(), "DRY-RUN POST /v2/boards/abc/{shapes,texts,sticky_notes,frames,images,connectors} × 1 elements") {
 		t.Errorf("dry-run output: %q", stdout.String())
 	}
 }
@@ -425,7 +425,7 @@ func TestSVGRoundTrip(t *testing.T) {
 	}
 }
 
-func TestNewCmdRegistersBothVerbs(t *testing.T) {
+func TestNewCmdRegistersAllVerbs(t *testing.T) {
 	t.Parallel()
 	cmd := NewCmd(clictx.New())
 	if cmd.Use != "canvas" {
@@ -435,7 +435,7 @@ func TestNewCmdRegistersBothVerbs(t *testing.T) {
 	for _, sub := range cmd.Commands() {
 		got[sub.Name()] = true
 	}
-	for _, want := range []string{"read-svg", "create-from-svg"} {
+	for _, want := range []string{"read-svg", "create-from-svg", "update-from-svg"} {
 		if !got[want] {
 			t.Errorf("canvas parent did not register %q", want)
 		}

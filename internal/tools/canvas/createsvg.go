@@ -46,15 +46,22 @@ func newCreateFromSVGCmd(g *clictx.Globals) *cobra.Command {
 		Use:   "create-from-svg",
 		Short: "Create board items from an SVG document",
 		Long: "Parses a constrained SVG subset and creates matching items via\n" +
-			"POST /v2/boards/{board_id}/shapes and /texts:\n\n" +
+			"the typed create endpoints:\n\n" +
 			"  rect            -> shape rectangle (rx>0 -> round_rectangle)\n" +
+			"  rect data-type=\"sticky\" -> sticky note (data-content -> text)\n" +
+			"  rect data-type=\"frame\"  -> frame (data-title -> title)\n" +
 			"  circle/ellipse  -> shape circle\n" +
 			"  text            -> text item\n" +
+			"  polygon (3 pts) -> shape triangle (bounding box)\n" +
+			"  image href=URL  -> image item\n" +
+			"  line data-start/data-end -> connector between element ids\n" +
 			"  g translate(x,y)-> offset applied to children (nesting ok)\n\n" +
-			"Unsupported elements (path, polygon, line, ...) are reported in\n" +
-			"`skipped`, never silently dropped. Supply the document with\n" +
-			"--svg-file (use \"-\" for stdin) or inline via --svg. The cap is\n" +
-			fmt.Sprintf("%d drawable elements per call.", maxSVGCreateElements),
+			"Lines resolve their references against the id attributes of\n" +
+			"elements created in the same call (items first, connectors\n" +
+			"second). Unsupported elements (path, multi-point polygon, ...)\n" +
+			"are reported in `skipped`, never silently dropped. Supply the\n" +
+			"document with --svg-file (use \"-\" for stdin) or inline via\n" +
+			fmt.Sprintf("--svg. The cap is %d drawable elements per call.", maxSVGCreateElements),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCreateFromSVG(cmd.Context(), g, f)
@@ -95,10 +102,10 @@ func validateSVGSource(svg string) error {
 }
 
 // svgPlan carries a parsed, bounds-checked document into the create
-// loop: the flags that produced it plus the drawable and skipped
-// elements.
+// loop: the offset that applies plus the drawable and skipped elements.
 type svgPlan struct {
-	flags    createSVGFlags
+	boardID  string
+	off      svgOffset
 	elements []svgElement
 	skipped  []skippedElement
 }
@@ -120,7 +127,12 @@ func loadAndParseSVG(f createSVGFlags) (svgPlan, error) {
 	if len(elements) > maxSVGCreateElements {
 		return svgPlan{}, fmt.Errorf("svg contains %d drawable elements; the cap is %d per call", len(elements), maxSVGCreateElements)
 	}
-	return svgPlan{flags: f, elements: elements, skipped: skipped}, nil
+	return svgPlan{
+		boardID:  f.boardID,
+		off:      svgOffset{dx: f.offsetX, dy: f.offsetY},
+		elements: elements,
+		skipped:  skipped,
+	}, nil
 }
 
 func runCreateFromSVG(ctx context.Context, g *clictx.Globals, f createSVGFlags) error {
@@ -133,13 +145,13 @@ func runCreateFromSVG(ctx context.Context, g *clictx.Globals, f createSVGFlags) 
 	}
 	if g.DryRun {
 		return g.EmitDryRun("POST",
-			fmt.Sprintf("/v2/boards/%s/{shapes,texts} × %d elements", f.boardID, len(plan.elements)))
+			fmt.Sprintf("/v2/boards/%s/{shapes,texts,sticky_notes,frames,images,connectors} × %d elements", f.boardID, len(plan.elements)))
 	}
 	if len(plan.elements) == 0 {
 		return g.EmitJSON(createSVGResult{
 			Created: []createdItem{},
 			Skipped: plan.skipped,
-			Message: "No supported elements found in the SVG (supported: rect, circle, ellipse, text)",
+			Message: "No supported elements found in the SVG (supported: rect, circle, ellipse, text, polygon, image, line)",
 		})
 	}
 
@@ -147,62 +159,110 @@ func runCreateFromSVG(ctx context.Context, g *clictx.Globals, f createSVGFlags) 
 	if err != nil {
 		return err
 	}
-	return createSVGElements(ctx, g, client, plan)
-}
-
-// createSVGElements posts one create per parsed element, emitting the
-// full envelope on success or the partial envelope (created IDs kept)
-// plus an error on a mid-batch failure.
-func createSVGElements(ctx context.Context, g *clictx.Globals, client *miro.Client, plan svgPlan) error {
-	created := make([]createdItem, 0, len(plan.elements))
-	for _, el := range plan.elements {
-		item, err := createSVGElement(ctx, client, plan.flags, el)
-		if err != nil {
-			_ = g.EmitJSON(createSVGResult{
-				Created: created,
-				Skipped: plan.skipped,
-				Count:   len(created),
-				Message: fmt.Sprintf("Partial failure after %d item(s); see error", len(created)),
-			})
-			return fmt.Errorf("create from svg failed after %d item(s): %w", len(created), err)
-		}
-		created = append(created, item)
+	run, err := createSVGElements(ctx, client, plan)
+	if err != nil {
+		_ = g.EmitJSON(createSVGResult{
+			Created: run.created,
+			Skipped: append(plan.skipped, run.skipped...),
+			Count:   len(run.created),
+			Message: fmt.Sprintf("Partial failure after %d item(s); see error", len(run.created)),
+		})
+		return fmt.Errorf("create from svg failed after %d item(s): %w", len(run.created), err)
 	}
 
+	allSkipped := append(plan.skipped, run.skipped...)
 	return g.EmitJSON(createSVGResult{
-		Created: created,
-		Skipped: plan.skipped,
-		Count:   len(created),
-		Message: fmt.Sprintf("Created %d item(s) from SVG (%d element(s) skipped)", len(created), len(plan.skipped)),
+		Created: run.created,
+		Skipped: allSkipped,
+		Count:   len(run.created),
+		Message: fmt.Sprintf("Created %d item(s) from SVG (%d element(s) skipped)", len(run.created), len(allSkipped)),
 	})
 }
 
-// createSVGElement creates one board item for a parsed element.
-func createSVGElement(ctx context.Context, client *miro.Client, f createSVGFlags, el svgElement) (createdItem, error) {
-	path, body := buildElementRequest(f, el)
-	var resp map[string]any
-	if err := client.Post(ctx, path, body, &resp); err != nil {
-		return createdItem{}, err
+// svgItemType names the Miro item type a parsed non-line element maps to.
+func svgItemType(el svgElement) string {
+	switch {
+	case el.name == "text":
+		return "text"
+	case el.dataType == "sticky":
+		return "sticky_note"
+	case el.dataType == "frame":
+		return "frame"
+	case el.name == "image":
+		return "image"
 	}
-	id, _ := resp["id"].(string)
-	itemType := "shape"
-	if el.name == "text" {
-		itemType = "text"
-	}
-	return createdItem{ID: id, Type: itemType, Element: el.name}, nil
+	return "shape"
 }
 
-// buildElementRequest maps a parsed element to its endpoint and wire
-// body. Positions are centers with origin=center, matching how the
-// parser recentered the SVG coordinates.
-func buildElementRequest(f createSVGFlags, el svgElement) (path string, body map[string]any) {
-	position := map[string]any{"x": el.x + f.offsetX, "y": el.y + f.offsetY, "origin": "center"}
+// elementShape picks the Miro shape kind for a parsed element.
+func elementShape(el svgElement) string {
+	switch {
+	case el.name == "circle" || el.name == "ellipse":
+		return "circle"
+	case el.name == "polygon":
+		return "triangle"
+	case el.rounded:
+		return "round_rectangle"
+	default:
+		return "rectangle"
+	}
+}
 
-	if el.name == "text" {
-		return "/v2/boards/" + f.boardID + "/texts", map[string]any{
+// svgStickyColor passes only named sticky colors through; the sticky
+// API rejects hex fills.
+func svgStickyColor(fill string) string {
+	unnamed := fill == "" || fill == "none"
+	if unnamed || strings.HasPrefix(fill, "#") {
+		return ""
+	}
+	return fill
+}
+
+// svgPosition builds the position payload for one element. Positions
+// are centers with origin=center, matching how the parser recentered
+// the SVG coordinates.
+func svgPosition(el svgElement, off svgOffset) map[string]any {
+	return map[string]any{"x": el.x + off.dx, "y": el.y + off.dy, "origin": "center"}
+}
+
+// buildElementRequest maps a parsed non-line element to its typed
+// endpoint and wire body.
+func buildElementRequest(boardID string, el svgElement, off svgOffset) (path string, body map[string]any) {
+	position := svgPosition(el, off)
+	base := "/v2/boards/" + boardID
+
+	switch svgItemType(el) {
+	case "text":
+		return base + "/texts", map[string]any{
 			"data":     map[string]any{"content": el.text},
 			"position": position,
 		}
+	case "sticky_note":
+		body = map[string]any{
+			"data":     map[string]any{"content": el.text},
+			"position": position,
+			"geometry": map[string]any{"width": el.w},
+		}
+		if color := svgStickyColor(el.fill); color != "" {
+			body["style"] = map[string]any{"fillColor": color}
+		}
+		return base + "/sticky_notes", body
+	case "frame":
+		return base + "/frames", map[string]any{
+			"data":     map[string]any{"title": el.title},
+			"position": position,
+			"geometry": map[string]any{"width": el.w, "height": el.h},
+		}
+	case "image":
+		body = map[string]any{
+			"data":     map[string]any{"url": el.href},
+			"position": position,
+			"geometry": map[string]any{"width": el.w},
+		}
+		if el.title != "" {
+			body["data"].(map[string]any)["title"] = el.title
+		}
+		return base + "/images", body
 	}
 
 	body = map[string]any{
@@ -213,17 +273,99 @@ func buildElementRequest(f createSVGFlags, el svgElement) (path string, body map
 	if el.fill != "" && el.fill != "none" {
 		body["style"] = map[string]any{"fillColor": el.fill}
 	}
-	return "/v2/boards/" + f.boardID + "/shapes", body
+	return base + "/shapes", body
 }
 
-// elementShape picks the Miro shape kind for a parsed element.
-func elementShape(el svgElement) string {
-	switch {
-	case el.name == "circle" || el.name == "ellipse":
-		return "circle"
-	case el.rounded:
-		return "round_rectangle"
-	default:
-		return "rectangle"
+// svgCreateRun carries the state of one create pass: what landed, what
+// was skipped, and the authored-id map connectors resolve against.
+type svgCreateRun struct {
+	created []createdItem
+	skipped []skippedElement
+	ids     map[string]string
+}
+
+// postCreate posts one create body and returns the new item's id.
+func postCreate(ctx context.Context, client *miro.Client, path string, body map[string]any) (string, error) {
+	var resp map[string]any
+	if err := client.Post(ctx, path, body, &resp); err != nil {
+		return "", err
 	}
+	id, _ := resp["id"].(string)
+	return id, nil
+}
+
+// createItem creates one non-line element and records its authored id.
+func (r *svgCreateRun) createItem(ctx context.Context, client *miro.Client, plan svgPlan, el svgElement) error {
+	path, body := buildElementRequest(plan.boardID, el, plan.off)
+	id, err := postCreate(ctx, client, path, body)
+	if err != nil {
+		return err
+	}
+	r.created = append(r.created, createdItem{ID: id, Type: svgItemType(el), Element: el.name})
+	if el.authoredID != "" {
+		r.ids[el.authoredID] = id
+	}
+	return nil
+}
+
+// createConnector creates one line connector, or records a skip when
+// its data-start/data-end references don't resolve against the ids
+// created this call. An unresolvable reference is a skip, not an
+// error: the referenced element may itself have been skipped.
+func (r *svgCreateRun) createConnector(ctx context.Context, client *miro.Client, plan svgPlan, el svgElement) error {
+	startID, okS := r.ids[el.start]
+	endID, okE := r.ids[el.end]
+	if !okS || !okE {
+		r.skipped = append(r.skipped, skippedElement{Element: "line", Reason: fmt.Sprintf("unresolved reference (data-start=%q, data-end=%q must match created element ids)", el.start, el.end)})
+		return nil
+	}
+	body := map[string]any{
+		"startItem": map[string]any{"id": startID},
+		"endItem":   map[string]any{"id": endID},
+	}
+	if el.text != "" {
+		body["captions"] = []map[string]any{{"content": el.text}}
+	}
+	id, err := postCreate(ctx, client, "/v2/boards/"+plan.boardID+"/connectors", body)
+	if err != nil {
+		return err
+	}
+	r.created = append(r.created, createdItem{ID: id, Type: "connector", Element: "line"})
+	return nil
+}
+
+// pass creates every element matching the line filter, in document order.
+func (r *svgCreateRun) pass(ctx context.Context, client *miro.Client, plan svgPlan, lines bool) error {
+	for _, el := range plan.elements {
+		if (el.name == "line") != lines {
+			continue
+		}
+		var err error
+		if lines {
+			err = r.createConnector(ctx, client, plan, el)
+		} else {
+			err = r.createItem(ctx, client, plan, el)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// createSVGElements runs the two creation passes: items first (building
+// the authored-id map connectors resolve against), then line
+// connectors. On a mid-batch failure the run so far is returned along
+// with the error so the caller can emit the partial envelope.
+func createSVGElements(ctx context.Context, client *miro.Client, plan svgPlan) (*svgCreateRun, error) {
+	run := &svgCreateRun{
+		created: make([]createdItem, 0, len(plan.elements)),
+		ids:     make(map[string]string),
+	}
+	for _, lines := range []bool{false, true} {
+		if err := run.pass(ctx, client, plan, lines); err != nil {
+			return run, err
+		}
+	}
+	return run, nil
 }

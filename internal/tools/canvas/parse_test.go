@@ -69,7 +69,7 @@ func TestParseSVGElements_UnsupportedAreReported(t *testing.T) {
 	t.Parallel()
 	svg := `<svg>
 		<path d="M0 0 L10 10"/>
-		<polygon points="0,0 10,0 5,10"/>
+		<polygon points="0,0 10,0 10,10 0,10"/>
 		<line x1="0" y1="0" x2="10" y2="10"/>
 		<rect x="0" y="0" width="10" height="10"/>
 	</svg>`

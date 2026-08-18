@@ -79,7 +79,7 @@ run `miro-cli <group> --help` for the exact verbs and flags of that group, and
 | `mindmap` | Mind-map nodes |
 | `codewidgets` | Code widget items |
 | `comments` | Comment threads: create, list, get, reply, resolve (v2-experimental; no delete — the API answers 405) |
-| `canvas` | SVG bridge: `read-svg` renders the board as SVG locally, `create-from-svg` creates shapes/texts from an SVG document |
+| `canvas` | SVG bridge: `read-svg` renders the board (or one frame via `--frame-id`) as SVG locally, `create-from-svg` creates items and connectors from an SVG document, `update-from-svg` applies an SVG diff keyed on `data-miro-id` |
 | `members` | Board members and sharing roles |
 | `boards share` | Invite members to a board (gated by the share allowlist — see Security) |
 | `tables` | Data-table items (read-only `list` / `get`) |

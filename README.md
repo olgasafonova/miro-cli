@@ -146,10 +146,11 @@ computed locally (no export job, no rendering service).
 
 | Verb | What it does |
 | --- | --- |
-| `canvas read-svg` | Render the board's items (and connectors) as an SVG document |
-| `canvas create-from-svg` | Parse rect / circle / ellipse / text (plus nested `translate` groups) into shapes and texts; unsupported elements are reported, never silently dropped |
+| `canvas read-svg` | Render the board's items (and connectors) as an SVG document; `--frame-id` scopes the render to one frame with frame-relative child coordinates |
+| `canvas create-from-svg` | Parse rect / circle / ellipse / text / 3-point polygon / image, `data-type` sticky/frame hints, and `line` elements with `data-start`/`data-end` into items and connectors (two-pass authored-id resolution); unsupported elements are reported, never silently dropped |
+| `canvas update-from-svg` | Apply an SVG document as a diff keyed on `data-miro-id`: update in place, delete via `data-deleted="true"` (a bare `<rect data-miro-id="X" data-deleted="true"/>` is a valid minimal diff), create additively; `read-svg` output is re-submittable as-is |
 
-The [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) sibling carries a fuller SVG dialect on the same idea: frame-scoped reads (`frame_id`), `data-type` hints for stickies and frames, images, connectors from `line` elements, and a `miro_update_from_svg` diff tool keyed on `data-miro-id`. This CLI's bridge is the read/create subset.
+The dialect matches the [miro-mcp-server](https://github.com/olgasafonova/miro-mcp-server) sibling's SVG round trip (`miro_read_board_svg` / `miro_create_from_svg` / `miro_update_from_svg`) — a document authored for one works with the other.
 
 ### Tags and grouping
 
