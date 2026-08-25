@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/spf13/cobra v1.10.2
-	modernc.org/sqlite v1.56.0
+	modernc.org/sqlite v1.57.0
 )
 
 require github.com/spf13/pflag v1.0.9 // indirect
