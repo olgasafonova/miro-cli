@@ -2,6 +2,8 @@
 
 ![lint](https://github.com/olgasafonova/miro-cli/actions/workflows/lint.yml/badge.svg)
 [![CodeScene Average Code Health](https://codescene.io/projects/82991/status-badges/average-code-health)](https://codescene.io/projects/82991)
+[![Go Reference](https://pkg.go.dev/badge/github.com/olgasafonova/miro-cli.svg)](https://pkg.go.dev/github.com/olgasafonova/miro-cli)
+[![codecov](https://codecov.io/gh/olgasafonova/miro-cli/branch/main/graph/badge.svg)](https://codecov.io/gh/olgasafonova/miro-cli)
 
 Drive Miro from your shell. Bulk-migrate stickies between boards, audit
 board access, or script Miro operations in CI. One verb per Miro REST
